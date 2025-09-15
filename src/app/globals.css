@@ -65,6 +65,7 @@
   body {
     @apply font-sans;
     @apply bg-background text-foreground;
+    background-color: #0f0f0f;
   }
 }
 

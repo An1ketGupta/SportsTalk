@@ -10,7 +10,7 @@ export default function CategorySection() {
   const lottieRef = useRef<any>(null);
 
   return (
-    <div className="flex gap-4 invisible md:visible">
+    <div className="hidden md:flex gap-4">
       <a
         className="flex justify-center gap-2 items-center hover:bg-[#515a67] h-[5vh] py-1 px-4 text-lg rounded-lg"
         href="/"

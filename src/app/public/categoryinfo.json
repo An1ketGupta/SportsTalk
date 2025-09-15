@@ -1,0 +1,55 @@
+
+[
+  {
+    "title": "Football",
+    "description": "Dive into global leagues, match analysis, transfer rumors, and tactics from the Premier League to the Champions League.",
+    "img": "https://images.unsplash.com/photo-1518091043644-c1d4457512c6?auto=format&fit=crop&w=1200&q=80"
+  },
+  {
+    "title": "Basketball",
+    "description": "Discuss NBA highlights, draft prospects, EuroLeague battles, and breakdowns of offensive and defensive schemes.",
+    "img": "https://media.istockphoto.com/id/1256247098/photo/basketball-on-court.jpg?b=1&s=170667a&w=0&k=20&c=LdicgXR9Vt-wCS2irbZx3FjefObYT2sJzW-LzuQwjlo="
+  },
+  {
+    "title": "Cricket",
+    "description": "From Tests to T20s: match threads, player form, domestic leagues, ICC events, and pitch reports.",
+    "img": "https://cdn.wallpapersafari.com/2/35/vOxGI3.jpg"
+  },
+  {
+    "title": "Tennis",
+    "description": "Grand Slams, ATP/WTA tours, draw predictions, match stats, and technique talk for all surfaces.",
+    "img": "https://plus.unsplash.com/premium_photo-1666913667082-c1fecc45275d?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8dGVubmlzfGVufDB8fDB8fHww"
+  },
+  {
+    "title": "Kabaddi",
+    "description": "Match raids, tackle strategies, Pro Kabaddi League discussions, player stats, and training techniques.",
+    "img": "https://wallpapers.com/images/featured/kabaddi-7awdb9vk9aw87dzo.jpg"
+  },
+  {
+    "title": "Baseball",
+    "description": "MLB game chats, sabermetrics, farm systems, free agency moves, and historical deep dives.",
+    "img": "https://tse3.mm.bing.net/th/id/OIP.lu5yf9PK2-pjx5kugZoAWAHaE8?r=0&rs=1&pid=ImgDetMain&o=7&rm=3"
+  },
+  {
+    "title": "American Football",
+    "description": "NFL breakdowns, college football talk, playbooks, draft boards, and fantasy lineup debates.",
+    "img": "https://cdn.wallpapersafari.com/71/63/9PdhgU.jpg"
+  },
+  {
+    "title": "Hockey",
+    "description": "NHL coverage, line combinations, goalie metrics, draft previews, and playoff series discussions.",
+    "img": "https://www.sportzcraazy.com/wp-content/uploads/2018/08/Half-Back-position-in-field-hockey-1024x683.jpg"
+  },
+  {
+    "title": "MMA",
+    "description": "Fight night threads, rankings, stylistic matchups, training talk, and promotion news across UFC, Bellator, and more.",
+    "img": "https://c4.wallpaperflare.com/wallpaper/235/522/543/arts-fighting-martial-mixed-wallpaper-preview.jpg"
+  },
+  {
+    "title": "Badminton",
+    "description": "Rallies, smashes, net play, BWF World Tour events, rankings, and tournament threads.",
+    "img": "https://wallpaperaccess.com/full/1429498.jpg"
+  }
+]
+
+
