@@ -1,11 +1,11 @@
-import Footer from "@/components/Footer/footer";
-import LandingBody from "@/components/Landing/Body/body";
-import NavBar from "@/components/Nav/Navbar";
+import Footer from "@/components/Parts/footer";
+import Part1 from "@/components/Parts/Part1";
+import Part2 from "@/components/Parts/Part2";
 
 export default function Main(){
   return <div>
-    <NavBar/>
-    <LandingBody/>
-    <Footer/>
-  </div>
+        <Part1/>
+        <Part2/>
+        <Footer/>
+    </div>
 }

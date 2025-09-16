@@ -1,0 +1,29 @@
+{
+  "menuItems": [
+    {
+      "icon": "home",
+      "label": "Home",
+      "path": "/"
+    },
+    {
+      "icon": "search",
+      "label": "Explore",
+      "path": "/explore"
+    },
+    {
+      "icon": "users",
+      "label": "Community",
+      "path": "/community"
+    },
+    {
+      "icon": "bell",
+      "label": "Notifications",
+      "path": "/notifications"
+    },
+    {
+      "icon": "user",
+      "label": "Profile",
+      "path": "/profile"
+    }
+  ]
+}

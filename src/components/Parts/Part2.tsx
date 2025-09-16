@@ -22,7 +22,7 @@ export default function Part2() {
             ))}
         </div>
         <div className="my-8 sm:my-10">
-            <SquareBox height="auto" width="auto" paddingx="4vw" paddingy="4vh sm:6vh" bg="#181818">
+            <SquareBox height="auto" width="auto" paddingx="4vw" paddingy="4vh" bg="#181818">
                 <div className="text-2xl sm:text-3xl md:text-4xl italic text-[#cfd2cc] font-semibold my-3 text-center">
                     Join Community
                 </div>

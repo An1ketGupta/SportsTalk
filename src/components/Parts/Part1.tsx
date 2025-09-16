@@ -76,7 +76,7 @@ export default function Part1() {
                             Connect with fellow sports enthusiasts and never miss a moment of the excitement
                         </div>
                         <div className="flex justify-center">
-                            <Button className="w-full max-w-xs sm:max-w-sm lg:max-w-md h-12 sm:h-14 lg:h-16 text-sm sm:text-base lg:text-lg mt-6">
+                            <Button variant={"destructive"} className="w-full max-w-xs sm:max-w-sm lg:max-w-md h-12 sm:h-14 lg:h-16 text-sm sm:text-base lg:text-lg mt-6">
                                 <a className="flex gap-2 items-center justify-center" href="/auth/v1/signin">
                                     Get Started Today
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6">
