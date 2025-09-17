@@ -1,7 +1,6 @@
-import Footer from "@/components/Parts/footer"
 import NavBar from "@/components/Parts/Navbar"
 
-export default function RootLayout({
+export default function ForYouLayout({
     children,
   }: {
     children: React.ReactNode

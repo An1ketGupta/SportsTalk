@@ -1,5 +1,5 @@
 import Catalogue from "@/components/ui/catalogue";
-import categories from "@/app/public/categoryinfo.json";
+import categories from "@/public/categoryinfo.json";
 import SquareBox from "@/components/ui/squarebox";
 import { Button } from "@/components/ui/button";
 

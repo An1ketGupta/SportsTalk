@@ -1,7 +1,8 @@
 import Post from "@/components/ui/post";
 import Sidebar from "@/components/ui/sidebar";
-import Posts from "../public/post.json"
+import Posts from "../../../public/post.json"
 import SearchBar from "@/components/ui/searchbar";
+import CommunityTabSwticher from "@/components/ui/communitytabswitch";
 export default function Main() {
 
 
@@ -13,8 +14,9 @@ export default function Main() {
             </div>
 
             {/* Main Content */}
-            <div className="border-r border-white border-opacity-20 flex justify-center overflow-y-auto hide-scrollbar">
-                <div className="w-full">
+            <div className="border-r border-white border-opacity-20 flex justify-center">
+                <CommunityTabSwticher/>
+                <div className="w-full scrollbar-hide">
                     <Post post={Posts.posts[0]} />
                 </div>
             </div>

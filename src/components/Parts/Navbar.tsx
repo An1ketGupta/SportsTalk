@@ -32,7 +32,7 @@ export default function NavBar() {
             </a>
             <a
                 className="flex justify-center gap-2 items-center hover:bg-[#515a67] h-[5vh] py-1 px-4 text-lg rounded-lg"
-                href="/community"
+                href="/community/foryou"
             >
                 <Lottie
                     lottieRef={lottieRef}
