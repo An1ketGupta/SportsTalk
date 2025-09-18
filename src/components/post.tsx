@@ -1,15 +1,17 @@
-import SquareBox from "./squarebox";
+import SquareBox from "../components/squarebox";
 import { GoCheckCircleFill } from "react-icons/go";
 export default function Post({
     post
 }: {
-    post: { imglink: string
+    post: { 
             title: string,
             content: string ,
+            imglink:string
             user:{
                 name:string,
                 username:string,
                 verified:boolean,
+                imglink:string
             }
     }
 }) {
@@ -18,7 +20,7 @@ export default function Post({
             <div className="grid grid-cols-12">
                 <div className="col-span-1">
                     <a href={`/user/`}>
-                        <img className="w-12 h-11 rounded-full" src={post.imglink}/>
+                        <img className="w-12 h-11 rounded-full" src={post.user.imglink}/>
                     </a>
                 </div>
                 <div className="col-span-11 pl-2">
@@ -31,6 +33,7 @@ export default function Post({
                         <div className="text-[#4b4d51]">@{post.user.username}</div>
                     </div>
                     <div>{post.content}</div>
+                    <img className="rounded-3xl pt-2 w-full h-g" src={post.imglink}/>
                 </div>
             </div>
         </SquareBox>

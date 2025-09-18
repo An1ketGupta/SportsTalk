@@ -1,9 +1,10 @@
-import Catalogue from "@/components/ui/catalogue";
+import Catalogue from "@/components/catalogue";
 import categories from "@/public/categoryinfo.json";
-import SquareBox from "@/components/ui/squarebox";
+import SquareBox from "@/components/squarebox";
 import { Button } from "@/components/ui/button";
 
 export default function Part2() {
+    // The Catalogue Section for the sports categories
     return <div className="bg-[#0f0f0f] min-h-screen text-[white] py-[8vh] sm:py-[12vh] px-[4vw] sm:px-[2vw]">
         <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold italic mb-2 flex justify-center text-center">
             Explore Sports Categories
@@ -21,6 +22,8 @@ export default function Part2() {
                 />
             ))}
         </div>
+
+        {/* Jolin Copmmunity Section */}
         <div className="my-8 sm:my-10">
             <SquareBox height="auto" width="auto" paddingx="4vw" paddingy="4vh" bg="#181818">
                 <div className="text-2xl sm:text-3xl md:text-4xl italic text-[#cfd2cc] font-semibold my-3 text-center">

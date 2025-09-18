@@ -1,7 +1,7 @@
 import { MdHome, MdSearch, MdNotifications, MdPerson, MdGroups, MdPostAdd } from "react-icons/md";
-import { Button } from "./button";
+import { Button } from "./ui/button";
 import Link from "next/link";
-import sidebarData from "../../public/sidebar.json";
+import sidebarData from "../public/sidebar.json";
 
 const iconMap: { [key: string]: any } = {
     "home": MdHome,
@@ -33,7 +33,7 @@ export default function Sidebar() {
             );
         })}
 
-        <Button className="w-auto bg-white text-black px-6 h-14 hover:bg-[#181818] text-lg font-medium">
+        <Button className="w-auto bg-white text-black px-6 h-14 hover:bg-gray-300 text-lg font-medium">
             <div className="flex gap-3">
                 <MdPostAdd size={'28px'} />
                 <div className="hidden xl:block">Post</div>

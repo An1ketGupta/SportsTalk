@@ -9,7 +9,7 @@ export default function FollowingLayout({
       <html lang="en">
         <body className="bg-black text-white">
           <NavBar/>
-          <main className="min-h-screen pt-[10vh]">{children}</main>
+          <main className="min-h-screen">{children}</main>
         </body>
       </html>
     )

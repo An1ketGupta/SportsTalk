@@ -1,0 +1,53 @@
+{
+  "tag":[
+    {
+    "category": "Football",
+    "country": "England",
+    "name": "PremierLeague"
+  },
+  {
+    "category": "Cricket",
+    "country": "India",
+    "name": "WorldCup2025"
+  },
+  {
+    "category": "Basketball",
+    "country": "USA",
+    "name": "NBAFinals"
+  },
+  {
+    "category": "Tennis",
+    "country": "Australia",
+    "name": "AusOpen"
+  },
+  {
+    "category": "Formula 1",
+    "country": "Italy",
+    "name": "MonzaGP"
+  },
+  {
+    "category": "Olympics",
+    "country": "France",
+    "name": "Paris2024"
+  },
+  {
+    "category": "Boxing",
+    "country": "UK",
+    "name": "Heavyweight"
+  },
+  {
+    "category": "Baseball",
+    "country": "USA",
+    "name": "MLBPlayoffs"
+  },
+  {
+    "category": "Rugby",
+    "country": "New Zealand",
+    "name": "AllBlacks"
+  },
+  {
+    "category": "Hockey",
+    "country": "Canada",
+    "name": "StanleyCup"
+  }]
+}

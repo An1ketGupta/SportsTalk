@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import SquareBox from "@/components/ui/squarebox";
+import SquareBox from "@/components/squarebox";
 
 export default function Part1() {
     return <div className="bg-[#0f0f0f] min-h-screen py-28 px-4 sm:px-6 lg:px-8">
