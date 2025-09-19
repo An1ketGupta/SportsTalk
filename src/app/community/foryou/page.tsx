@@ -1,4 +1,3 @@
-
 import Post from "@/components/post";
 import Sidebar from "@/components/sidebar";
 import Posts from "../../../public/post.json"
@@ -7,20 +6,20 @@ import CommunityTabSwticher from "@/components/communitytabswitch";
 import TagsBox from "@/components/tagbox";
 import WhoToFollow from "@/components/whotofollow";
 
-export default function Main() {
+export default function ForYou() {
     return (
-        <div className="w-full h-screen flex h-screen">
+        <div className="w-full h-screen flex">
             {/* Sidebar */}
-            <div className="border-r pt-[10vh] border-white border-opacity-20 pr-3 pl-3 xl:pl-[16vh] xl:pr-10 h-screen">
+            <div>
                 <Sidebar />
             </div>
 
             {/* Main Content */}
-            <div className="border-r pt-[10vh] max-w-[88vh] border-white border-opacity-20 overflow-y-auto scrollbar-hide">
+            <div className="border-r w-full pt-[10vh] max-w-[88vh] border-white border-opacity-20 overflow-y-auto scrollbar-hide">
                 <div className="sticky top-0 bg-black/20 backdrop-blur-md border-none">
                     <CommunityTabSwticher/>
                 </div>
-                <div className="w-full">
+                <div>
                     {Array.from({ length: 15 }).map((_, i) => (
                         <Post key={i} post={Posts.posts[0]} />
                     ))}

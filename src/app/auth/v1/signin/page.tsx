@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-export default function Main(){
-    return <div className="gap-y-4 h-screen flex flex-col justify-center items-center">
+export default function Signin(){
+    return <div className="gap-y-4 text-white h-screen flex flex-col justify-center items-center">
         <div className="text-[7vh] font-bold">
             LOG IN
         </div>
@@ -12,6 +12,6 @@ export default function Main(){
         </div>
         <Input type="email" placeholder="Enter your email"/>
         <Input type="password" placeholder="Enter password"/>
-        <Button className="rounded-md h-[6vh] w-[20vw] text-lg"><a>Sign In</a></Button>
+        <Button className="rounded-lg hover:bg-neutral-200 text-black h-[6vh] w-[20vw] text-lg bg-white"><a>Sign In</a></Button>
     </div>
 }

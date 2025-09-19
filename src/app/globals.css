@@ -93,5 +93,6 @@
     @apply font-sans;
     @apply bg-background text-foreground;
     background-color: #000000;
+    color: white;
   }
 }

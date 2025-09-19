@@ -1,6 +1,6 @@
-import Footer from "@/components/Parts/footer";
-import Part1 from "@/components/Parts/BodyUpper";
-import Part2 from "@/components/Parts/BodyLower";
+import Footer from "@/components/footer";
+import Part1 from "@/components/BodyUpper";
+import Part2 from "@/components/BodyLower";
 
 export default function Main(){
   return <div>

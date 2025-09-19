@@ -1,4 +1,4 @@
-import NavBar from "@/components/Parts/Navbar"
+import NavBar from "@/components/Navbar"
 
 export default function ForYouLayout({
   children,

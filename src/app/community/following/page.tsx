@@ -7,11 +7,11 @@ import CommunityTabSwticher from "@/components/communitytabswitch";
 import TagsBox from "@/components/tagbox";
 import WhoToFollow from "@/components/whotofollow";
 
-export default function Main() {
+export default function Following() {
     return (
         <div className="w-full h-screen flex h-screen">
             {/* Sidebar */}
-            <div className="border-r pt-[10vh] border-white border-opacity-20 pr-3 pl-3 xl:pl-[16vh] xl:pr-10 h-screen">
+            <div>
                 <Sidebar />
             </div>
 
