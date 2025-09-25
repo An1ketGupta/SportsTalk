@@ -20,7 +20,7 @@ export default function Userpage(){
                 <Sidebar/>
             </div>
             {/* The user profile will be rendered here */}
-            <div className="border-r w-full pt-[10vh] max-w-[88vh] border-white border-opacity-20 overflow-y-auto scrollbar-hide">
+            <div className="border-r w-full max-w-[88vh] border-white border-opacity-20 overflow-y-auto scrollbar-hide">
                 <div className="w-full sticky top-0 z-10">
                     <Userpagenavbar name="Aniket" numberofposts={10}/>
                 </div>
@@ -31,7 +31,7 @@ export default function Userpage(){
                     ))}
                 </div>
             </div>
-            <div className="pl-8 py-[10vh] overflow-y-auto scrollbar-hide hidden lg:block">
+            <div className="pl-8 overflow-y-auto scrollbar-hide hidden lg:block">
                     <SearchBar/>
                     <TagsBox/>
                     <WhoToFollow/>

@@ -12,8 +12,8 @@
     },
     {
       "icon": "users",
-      "label": "Community",
-      "path": "/community"
+      "label": "Groups",
+      "path": "/groups"
     },
     {
       "icon": "bell",

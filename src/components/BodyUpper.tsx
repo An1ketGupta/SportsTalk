@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import SquareBox from "@/components/squarebox";
 
 export default function Part1() {
-    return <div className="bg-[#0f0f0f] min-h-screen py-28 px-4 sm:px-6 lg:px-8">
+    return <div className="bg-[#0f0f0f] min-h-screen py-6 px-4 sm:px-6 lg:px-8">
         <div>
             <div className="h-auto w-full flex flex-col gap-6 lg:gap-8 lg:flex-row">
                 <SquareBox bg="#0f0f0f" height="auto" width="auto" paddingx="1vh" paddingy="6vh">

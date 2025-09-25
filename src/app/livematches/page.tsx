@@ -30,7 +30,7 @@ export default function LiveMatches() {
   return (
     <div className="w-full min-h-screen bg-[#0f0f0f] text-white">
       {/* Main Content full width */}
-      <div className="w-full pt-[10vh] border-none overflow-y-auto scrollbar-hide px-4 sm:px-6">
+      <div className="w-full border-none overflow-y-auto scrollbar-hide px-4 sm:px-6">
         <div className="sticky top-0 bg-black/20 backdrop-blur-md border-none py-6">
           <h1 className="text-3xl font-extrabold italic">Live Matches</h1>
           <p className="text-sm text-[#cfd2cc] mt-1 max-w-2xl">Follow live scores and join real-time discussions with fellow sports fans</p>
