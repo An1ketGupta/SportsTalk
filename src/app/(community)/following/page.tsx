@@ -16,7 +16,7 @@ export default function Following() {
             </div>
 
             {/* Main Content */}
-            <div className="border-r pt-[10vh] max-w-[88vh] border-white border-opacity-20 overflow-y-auto scrollbar-hide">
+            <div className="border-r max-w-[88vh] border-white border-opacity-20 overflow-y-auto scrollbar-hide">
                 <div className="sticky top-0 bg-black/20 backdrop-blur-md border-none">
                     <CommunityTabSwticher/>
                 </div>
@@ -28,7 +28,7 @@ export default function Following() {
             </div>
 
             {/* Right Section */}
-            <div className="pl-8 py-[10vh] overflow-y-auto scrollbar-hide hidden lg:block">
+            <div className="pl-8 overflow-y-auto scrollbar-hide hidden lg:block">
                 <SearchBar/>
                 <TagsBox/>
                 <WhoToFollow/>
