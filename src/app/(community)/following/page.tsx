@@ -9,7 +9,7 @@ import WhoToFollow from "@/components/whotofollow";
 
 export default function Following() {
     return (
-        <div className="w-full h-screen flex h-screen">
+        <div className="w-full h-screen flex">
             {/* Sidebar */}
             <div>
                 <Sidebar />
