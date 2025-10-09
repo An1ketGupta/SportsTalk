@@ -1,3 +1,5 @@
+// prisma/schema.prisma
+
 generator client {
   provider = "prisma-client-js"
   output   = "../src/generated/prisma"
@@ -8,43 +10,98 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Users {
-  user_id   Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  username  String   @unique
-  password  String
-  sports    String[]
-
+model User {
+  id             String      @id @default(cuid())
+  username       String      @unique
+  password       String
+  email          String?     @unique
+  firstName      String?
+  lastName       String?
+  bio            String?
+  profilePic     String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  
   // Relations
-  tweets    Tweet[]
-  comments  Comment[]
+  posts          Post[]
+  comments       Comment[]
+  likes          Like[]
 
-  // Self-relation for following/followers
-  following Users[] @relation("UserFollows")
-  followers Users[] @relation("UserFollows")
+  // Followers & Following relationships
+  followers      UserFollow[] @relation("followers")
+  following      UserFollow[] @relation("following")
+
+  // Chat (future)
+  messagesSent   Message[]   @relation("sentMessages")
+  messagesReceived Message[] @relation("receivedMessages")
 }
 
-model Tweet {
-  tweet_id     Int      @id @default(autoincrement())
-  title        String
-  description  String
-  img_link     String[]
-  like_count   Int      @default(0)
+model Post {
+  id          String     @id @default(cuid())
+  content     String
+  mediaUrl    String?
+  sport       String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 
-  // Relations
-  author       Users    @relation(fields: [authorId], references: [user_id])
-  authorId     Int
-  comments     Comment[]
+  author      User        @relation(fields: [authorId], references: [id])
+  authorId    String
+  comments    Comment[]
+  likes       Like[]
 }
 
 model Comment {
-  id           Int      @id @default(autoincrement())
-  description  String
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
 
-  // Relations
-  tweet        Tweet    @relation(fields: [tweetId], references: [tweet_id])
-  tweetId      Int
-  author       Users    @relation(fields: [userId], references: [user_id])
-  userId       Int
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  String
+  post      Post     @relation(fields: [postId], references: [id])
+  postId    String
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  post      Post     @relation(fields: [postId], references: [id])
+  postId    String
+
+  @@unique([userId, postId]) // user can like a post only once
+}
+
+model UserFollow {
+  id             String  @id @default(cuid())
+  follower       User    @relation("following", fields: [followerId], references: [id])
+  followerId     String
+  following      User    @relation("followers", fields: [followingId], references: [id])
+  followingId    String
+  createdAt      DateTime @default(now())
+
+  @@unique([followerId, followingId])
+}
+
+model Message {
+  id          String   @id @default(cuid())
+  content     String
+  createdAt   DateTime @default(now())
+
+  sender      User     @relation("sentMessages", fields: [senderId], references: [id])
+  senderId    String
+  receiver    User     @relation("receivedMessages", fields: [receiverId], references: [id])
+  receiverId  String
+}
+
+model SportsScore {
+  id          String    @id @default(cuid())
+  sport       String
+  teamA       String
+  teamB       String
+  scoreA      Int?
+  scoreB      Int?
+  status      String?   // e.g. "LIVE", "FINISHED"
+  updatedAt   DateTime  @default(now())
 }
