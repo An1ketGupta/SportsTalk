@@ -3,9 +3,11 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 import { useRef } from "react";
 
 export default function Signin(){
+    const router = useRouter()
     const usernameref = useRef<HTMLInputElement>(null)
     const passwordref = useRef<HTMLInputElement>(null)
     return <div className="gap-y-4 text-white h-full pt-28 flex flex-col justify-center items-center">
@@ -19,10 +21,13 @@ export default function Signin(){
         <Input ref={usernameref} type="username" placeholder="Enter your Username"/> 
         <Input ref={passwordref} type="password" placeholder="Enter Password"/>
         <Button onClick={async function (){
-            await axios.post("./api/v1/signin", {
+            const response  = await axios.post("../../api/v1/signin", {
                 username:usernameref.current?.value,
                 password:passwordref.current?.value
             })
+            if(response.data.success){
+                router.push("/")
+            }
         }} className="rounded-lg hover:bg-neutral-200 text-black h-[6vh] w-[20vw] text-lg bg-white"><a>Sign In</a></Button>
     </div>
 }

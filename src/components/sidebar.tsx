@@ -1,7 +1,10 @@
+'use client'
+
 import { MdHome, MdSearch, MdNotifications, MdPerson, MdGroups, MdPostAdd } from "react-icons/md";
 import { Button } from "./ui/button";
 import Link from "next/link";
 import sidebarData from "../public/sidebar.json";
+import { Dispatch, SetStateAction } from "react";
 
 const iconMap: { [key: string]: any } = {
     "home": MdHome,
@@ -11,7 +14,11 @@ const iconMap: { [key: string]: any } = {
     "user": MdPerson,
 };
 
-export default function Sidebar() {
+export default function Sidebar({
+    setAddPost
+}:{
+    setAddPost:Dispatch<SetStateAction<boolean>>
+}) {
     return <div className="flex flex-col items-end xl:items-start w-auto gap-6 pt-4 border-r border-white border-opacity-20 pr-3 pl-3 xl:pl-[16vh] xl:pr-10 h-screen">
         <Button className="hover:bg-[#181818] w-auto h-14 rounded-full">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="white" className="size-8">
@@ -33,7 +40,9 @@ export default function Sidebar() {
             );
         })}
 
-        <Button className="w-auto bg-white text-black px-6 h-14 hover:bg-gray-300 text-lg font-medium">
+        <Button onClick={()=>{
+            setAddPost((c)=>!c)
+        }} className="w-auto bg-white text-black px-6 h-14 hover:bg-gray-300 text-lg font-medium">
             <div className="flex gap-3">
                 <MdPostAdd size={'28px'} />
                 <div className="hidden xl:block">Post</div>

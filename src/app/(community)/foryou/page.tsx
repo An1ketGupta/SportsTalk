@@ -1,3 +1,5 @@
+'use client'
+
 import Post from "@/components/post";
 import Sidebar from "@/components/sidebar";
 import Posts from "../../../public/post.json"
@@ -5,19 +7,25 @@ import SearchBar from "@/components/searchbar";
 import CommunityTabSwticher from "@/components/communitytabswitch";
 import TagsBox from "@/components/tagbox";
 import WhoToFollow from "@/components/whotofollow";
+import { useState } from "react";
+import TweetBox from "@/components/ui/tweetbox";
 
 export default function ForYou() {
+    const [showAddPost, setAddPost] = useState(false);
     return (
         <div className="w-full h-screen flex">
             {/* Sidebar */}
             <div>
-                <Sidebar />
+                <Sidebar setAddPost={setAddPost} />
             </div>
 
             {/* Main Content */}
             <div className="border-r w-full max-w-[88vh] border-white border-opacity-20 overflow-y-auto scrollbar-hide">
                 <div className="sticky top-0 bg-black/20 backdrop-blur-md border-none">
-                    <CommunityTabSwticher/>
+                    <CommunityTabSwticher />
+                </div>
+                <div className="sticky top-0 mx-2">
+                    {showAddPost && <TweetBox />}
                 </div>
                 <div>
                     {Array.from({ length: 15 }).map((_, i) => (
@@ -28,9 +36,9 @@ export default function ForYou() {
 
             {/* Right Section */}
             <div className="pl-8 overflow-y-auto scrollbar-hide hidden lg:block">
-                <SearchBar/>
-                <TagsBox/>
-                <WhoToFollow/>
+                <SearchBar />
+                <TagsBox />
+                <WhoToFollow />
             </div>
         </div>
     );
