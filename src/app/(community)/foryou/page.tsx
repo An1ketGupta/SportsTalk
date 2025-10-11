@@ -9,6 +9,7 @@ import TagsBox from "@/components/ui/tagbox";
 import WhoToFollow from "@/components/whotofollow";
 import { useState } from "react";
 import TweetBox from "@/components/ui/tweetbox";
+import RightSection from "@/components/rightsection";
 
 export default function ForYou() {
     const [showAddPost, setAddPost] = useState(false);
@@ -35,11 +36,7 @@ export default function ForYou() {
             </div>
 
             {/* Right Section */}
-            <div className="pl-8 overflow-y-auto scrollbar-hide hidden lg:block">
-                <SearchBar />
-                <TagsBox />
-                <WhoToFollow />
-            </div>
+            <RightSection/>
         </div>
     );
 }

@@ -28,7 +28,7 @@ export default function LiveMatches() {
     : matchesData.filter((m) => m.category === active);
 
   return (
-    <div className="w-full min-h-screen bg-[#0f0f0f] text-white">
+    <div className="w-full h-screen bg-[#0f0f0f] text-white">
       {/* Main Content full width */}
       <div className="w-full border-none overflow-y-auto scrollbar-hide px-4 sm:px-6">
         <div className="sticky top-0 bg-black/20 backdrop-blur-md border-none py-6">

@@ -23,7 +23,7 @@
     {
       "icon": "user",
       "label": "Profile",
-      "path": "/profile"
+      "path": "/dashboard"
     }
   ]
 }
