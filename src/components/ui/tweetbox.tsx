@@ -1,12 +1,12 @@
 "use client";
-
+import EmojiPicker from 'emoji-picker-react';
+import axios from "axios";
 import { useState } from "react";
-import { FiImage, FiSmile, FiCalendar, FiMapPin } from "react-icons/fi";
-import { MdOutlinePoll } from "react-icons/md";
+import { FiImage, FiSmile} from "react-icons/fi";
 
 export default function TweetBox() {
   const [text, setText] = useState("");
-
+  const [emojiselected , setemojiselected] = useState(false)
   return (
     <div className="text-white w-full rounded-2xl p-3 space-y-2 bg-black/10 backdrop-blur-lg">
       {/* Top section */}
@@ -30,18 +30,16 @@ export default function TweetBox() {
       {/* Bottom actions */}
       <div className="flex justify-between items-center pl-12">
         <div className="flex space-x-4 text-blue-400">
-          <FiImage className="cursor-pointer" />
-          <MdOutlinePoll className="cursor-pointer" />
-          <FiSmile className="cursor-pointer" />
-          <FiCalendar className="cursor-pointer" />
-          <FiMapPin className="cursor-pointer" />
+          <div className='flex items-center gap-2 cursor-pointer'><FiImage/>Upload Media</div>
         </div>
 
         {/* Post Button */}
-        <button onClick={()=>{
-          let tweetcontent = text;
-          const username = cook
-
+        <button onClick={async ()=>{
+          let tweettext = text;
+          const response  = await axios.post("../../api/posttweet" , {
+            tweettext: tweettext,
+          })
+          alert(response.data.message)
         }}
           disabled={!text.trim()}
           className={`px-4 py-1.5 rounded-full font-semibold ${

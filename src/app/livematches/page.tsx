@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import MatchCatalogue from "@/components/matchcatalogue";
+import MatchCatalogue from "@/components/MatchPreview";
 import matchesData from "@/public/matchesdata.json";
 import Footer from "@/components/footer";
 

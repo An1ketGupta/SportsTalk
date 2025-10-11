@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
+import axios from "axios";
 import { User, MapPin } from "lucide-react";
 
-export default function Profile() {
+export default async function Profile() {
   return (
     <div className="flex flex-col">
       {/* Banner */}

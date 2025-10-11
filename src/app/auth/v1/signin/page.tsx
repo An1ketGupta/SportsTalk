@@ -20,14 +20,6 @@ export default function Signin(){
         </div>
         <Input ref={usernameref} type="username" placeholder="Enter your Username"/> 
         <Input ref={passwordref} type="password" placeholder="Enter Password"/>
-        <Button onClick={async function (){
-            const response  = await axios.post("../../api/v1/signin", {
-                username:usernameref.current?.value,
-                password:passwordref.current?.value
-            })
-            if(response.data.success){
-                router.push("/")
-            }
-        }} className="rounded-lg hover:bg-neutral-200 text-black h-[6vh] w-[20vw] text-lg bg-white"><a>Sign In</a></Button>
+        <Button className="rounded-lg hover:bg-neutral-200 text-black h-[6vh] w-[20vw] text-lg bg-white"><a>Sign In</a></Button>
     </div>
 }

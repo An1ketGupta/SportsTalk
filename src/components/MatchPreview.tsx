@@ -1,6 +1,4 @@
-import { Button } from "./ui/button";
 import { MdCalendarToday, MdAccessTime } from "react-icons/md";
-import { HiOutlineChatAlt } from "react-icons/hi";
 import Link from "next/link";
 
 export default function MatchCatalogue({

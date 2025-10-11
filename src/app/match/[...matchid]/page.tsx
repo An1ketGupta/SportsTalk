@@ -1,5 +1,5 @@
 
-import SquareBox from "@/components/squarebox";
+import SquareBox from "@/components/ui/squarebox";
 import { Button } from "@/components/ui/button";
 
 export default function Match() {

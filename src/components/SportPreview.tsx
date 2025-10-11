@@ -1,6 +1,6 @@
 import { Button } from "./ui/button";
 
-export default function Catalogue({
+export default function SportsCatalogue({
     imglink,
     Title,
     Description

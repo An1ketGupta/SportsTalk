@@ -1,11 +1,11 @@
-import SearchBar from "@/components/searchbar"
+import SearchBar from "@/components/ui/searchbar"
 import Sidebar from "@/components/sidebar"
-import TagsBox from "@/components/tagbox"
-import Userpagenavbar from "@/components/userpagenavbar"
+import TagsBox from "@/components/ui/tagbox"
+import Userpagenavbar from "@/components/ui/ProfilePageNavbar"
 import WhoToFollow from "@/components/whotofollow"
 import Posts from "../../public/post.json"
-import Post from "@/components/post"
-import UserInfo from "@/components/userinfo"
+import Post from "@/components/ui/post"
+import UserInfo from "@/components/ProfilePage"
 
 interface User{
     "username":string,

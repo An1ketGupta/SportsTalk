@@ -1,11 +1,11 @@
 'use client'
 
-import Post from "@/components/post";
+import Post from "@/components/ui/post";
 import Sidebar from "@/components/sidebar";
 import Posts from "../../../public/post.json"
-import SearchBar from "@/components/searchbar";
-import CommunityTabSwticher from "@/components/communitytabswitch";
-import TagsBox from "@/components/tagbox";
+import SearchBar from "@/components/ui/searchbar";
+import CommunityTabSwticher from "@/components/communityTabSwitcher";
+import TagsBox from "@/components/ui/tagbox";
 import WhoToFollow from "@/components/whotofollow";
 import { useState } from "react";
 import TweetBox from "@/components/ui/tweetbox";

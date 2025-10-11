@@ -1,5 +1,5 @@
 import Tags from "../../public/tag.json"
-import SquareBox from "../squarebox";
+import SquareBox from "./squarebox";
 
 export default function TagsBox(){
     return (

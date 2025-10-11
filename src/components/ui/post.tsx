@@ -1,5 +1,5 @@
 import Link from "next/link";
-import SquareBox from "../components/squarebox";
+import SquareBox from "./squarebox";
 import { GoCheckCircleFill } from "react-icons/go";
 export default function Post({
     post

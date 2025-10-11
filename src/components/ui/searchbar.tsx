@@ -1,4 +1,4 @@
-import { Input } from "./ui/input";
+import { Input } from "./input";
 
 export default function SearchBar(){
     return <div className="text-white my-2">

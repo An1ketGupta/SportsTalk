@@ -1,21 +1,21 @@
 'use client'
-import Post from "@/components/post";
+import Post from "@/components/ui/post";
 import Sidebar from "@/components/sidebar";
 import Posts from "../../../public/post.json"
-import SearchBar from "@/components/searchbar";
-import CommunityTabSwticher from "@/components/communitytabswitch";
-import TagsBox from "@/components/tagbox";
+import SearchBar from "@/components/ui/searchbar";
+import CommunityTabSwticher from "@/components/communityTabSwitcher";
+import TagsBox from "@/components/ui/tagbox";
 import WhoToFollow from "@/components/whotofollow";
 import { useState } from "react";
 import TweetBox from "@/components/ui/tweetbox";
 
 export default function Following() {
-    const [showAddPost , setAddPost] = useState(false);
+    const [showTweetBox , setTweetBox] = useState(false);
     return (
         <div className="w-full h-screen flex">
             {/* Sidebar */}
             <div>
-                <Sidebar setAddPost={setAddPost}/>
+                <Sidebar setAddPost={setTweetBox}/>
             </div>
             {/* Main Content */}
             <div className="border-r max-w-[88vh] border-white border-opacity-20 overflow-y-auto scrollbar-hide">
@@ -23,7 +23,7 @@ export default function Following() {
                     <CommunityTabSwticher/>
                 </div>
                 <div className="sticky top-0 mx-2">
-                    {showAddPost && <TweetBox/>}
+                    {showTweetBox && <TweetBox/>}
                 </div>
                 <div className="w-full">
                     {Array.from({ length: 15 }).map((_, i) => (
