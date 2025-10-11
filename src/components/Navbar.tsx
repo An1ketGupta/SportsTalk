@@ -1,11 +1,10 @@
 "use client";
-import { Button } from "./ui/button";
-
 import { useRef } from "react";
 import Lottie from "lottie-react";
 import footballAnimation from "./ui/animations/football Goal.json";
 import categoryanimation from "./ui/animations/Design icon.json";
 import chatanimation from "./ui/animations/Chat.json";
+import SignIn from "./ui/signin";
 
 export default function NavBar() {
   const lottieRef = useRef<any>(null);
@@ -57,6 +56,6 @@ export default function NavBar() {
                 Live Matches
             </a>
         </div>
-        <Button className="px-[5vh] bg-white text-black"><a href="/auth/v1/signin">Sign In</a></Button>
+        <SignIn/>
     </div>
 }
