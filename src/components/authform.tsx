@@ -1,4 +1,4 @@
-import SigninHandler from "@/app/handlers/signinhandler";
+import SigninHandler from "@/app/handlers/auth/signinhandler";
 
 export default async function AuthForm() {
     return <div className="flex flex-col items-center justify-center h-[90vh] px-4">

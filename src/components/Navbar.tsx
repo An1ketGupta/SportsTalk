@@ -4,11 +4,10 @@ import Lottie from "lottie-react";
 import footballAnimation from "./ui/animations/football Goal.json";
 import categoryanimation from "./ui/animations/Design icon.json";
 import chatanimation from "./ui/animations/Chat.json";
-import { auth } from "@/auth";
 
-export default async function NavBar() {
+export default function NavBar() {
   const lottieRef = useRef<any>(null);
-  const session = await auth()
+//   const session = await auth()
     return <div className="w-full px-[2vw] bg-black/20 backdrop-blur-md border-b border-white/10 h-[10vh] text-white flex justify-between items-center sticky top-0 z-50 shadow-xl">
         <a href="/" className="flex items-center gap-1 text-2xl font-bold italic">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="white" className="size-10">
@@ -57,12 +56,12 @@ export default async function NavBar() {
                 Live Matches
             </a>
         </div>
-        {session?.user?
-        <a href="/dashboard" className="flex flex-col gap-1 items-center">
+        {/* {session?.user?
+        <a href="/me" className="flex flex-col gap-1 items-center">
             <img className="h-7 w-7 rounded-full" src={session.user.image}/>
             {`Hi ${(session.user.name?.split(" ")[0])}`}
         </a>
         :<a className="bg-white text-lg text-black h-auto w-auto px-3 py-1 rounded-full flex items-center" href="/auth">
-            Sign In</a>}
+            Sign In</a>} */}
     </div>
 }
