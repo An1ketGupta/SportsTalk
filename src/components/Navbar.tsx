@@ -44,7 +44,7 @@ export default function NavBar() {
             </a>
             <a
                 className="text-white flex justify-center gap-2 items-center hover:bg-[#515a67] h-[5vh] py-1 px-4 text-lg rounded-lg"
-                href="/livematches/tennis"
+                href="/livematches/nfl"
             >
                 <Lottie
                     lottieRef={lottieRef}

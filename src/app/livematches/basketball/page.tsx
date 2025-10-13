@@ -3,8 +3,8 @@
 import Footer from "@/components/footer";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import category from "../../../public/sportsCategory";
 import basketballMatchesHandler from "@/app/handlers/sports/basketball";
-import category from "@/public/sportsCategory";
 
 export default function LiveMatches() {
   const [selectedCategory, setSelectedCategory] = useState("Basketball");
@@ -19,101 +19,76 @@ export default function LiveMatches() {
   }, []);
 
   return (
-    <div className="w-full h-screen bg-[#0f0f0f] text-white">
-      <div className="w-full border-none overflow-y-auto scrollbar-hide px-4 sm:px-6">
-        <div className="sticky top-0 bg-black/20 backdrop-blur-md border-none py-6">
-          <h1 className="text-3xl font-extrabold italic">Live Matches</h1>
-          <p className="text-sm text-[#cfd2cc] mt-1 max-w-2xl">
-            Follow live scores and join real-time discussions with fellow sports fans
-          </p>
+    <div className="w-full min-h-screen bg-[#0f0f0f] text-white flex flex-col">
+      {/* Header */}
+      <div className="sticky top-0 z-50 bg-black/40 backdrop-blur-md px-6 py-6 border-b border-white/10">
+        <h1 className="text-4xl font-extrabold italic tracking-tight">Live Matches</h1>
+        <p className="text-sm text-[#cfd2cc] mt-1 max-w-xl">
+          Follow live scores and join real-time discussions with fans worldwide.
+        </p>
 
-          {/* Categories */}
-          <div className="mt-4 bg-[#181818] px-4 py-3 rounded-xl flex flex-wrap gap-3 overflow-x-auto">
-            {category.map((cat) => (
-              <Link
-                href={`./${cat.toLowerCase()}`}
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-4 py-1 rounded-full transition ${
+        {/* Categories */}
+        <div className="mt-5 flex flex-wrap gap-3">
+          {category.map((cat) => (
+            <Link
+              href={`./${cat.toLowerCase()}`}
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-200
+                ${
                   selectedCategory === cat
-                    ? "bg-blue-600 text-white font-bold"
-                    : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                    ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md"
+                    : "bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white"
                 }`}
-              >
-                {cat}
-              </Link>
-            ))}
-          </div>
+            >
+              {cat.replace("_", " ")}
+            </Link>
+          ))}
         </div>
-
-        {/* Matches Grid */}
-        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6 pb-20">
-          {matchData.length > 0 ? (
-            matchData.map((match: any) => (
-              <div
-                key={match.id}
-                className="bg-[#181818] rounded-xl p-4 shadow-md hover:shadow-lg transition"
-              >
-                {/* Arena and Status */}
-                <div className="flex justify-between items-center text-sm text-gray-400 mb-2">
-                  <span>{match.arena?.name}</span>
-                  <span
-                    className={`${
-                      match.status.long === "Finished"
-                        ? "text-green-500"
-                        : "text-yellow-400"
-                    }`}
-                  >
-                    {match.status.long}
-                  </span>
-                </div>
-
-                {/* Teams */}
-                <div className="flex items-center justify-between gap-3">
-                  {/* Visitor */}
-                  <div className="flex flex-col items-center w-1/3">
-                    <img
-                      src={match.teams.visitors.logo}
-                      alt={match.teams.visitors.name}
-                      className="w-12 h-12 object-contain"
-                    />
-                    <p className="text-sm font-semibold text-center mt-1">
-                      {match.teams.visitors.nickname}
-                    </p>
-                    <p className="text-lg font-bold">{match.scores.visitors.points ?? "-"}</p>
-                  </div>
-
-                  <span className="text-gray-400 font-bold">VS</span>
-
-                  {/* Home */}
-                  <div className="flex flex-col items-center w-1/3">
-                    <img
-                      src={match.teams.home.logo}
-                      alt={match.teams.home.name}
-                      className="w-12 h-12 object-contain"
-                    />
-                    <p className="text-sm font-semibold text-center mt-1">
-                      {match.teams.home.nickname}
-                    </p>
-                    <p className="text-lg font-bold">{match.scores.home.points ?? "-"}</p>
-                  </div>
-                </div>
-
-                {/* Date */}
-                <p className="text-xs text-gray-500 text-center mt-3">
-                  {new Date(match.date.start).toLocaleString()}
-                </p>
-              </div>
-            ))
-          ) : (
-            <p className="text-gray-400 col-span-3 text-center">
-              No matches available
-            </p>
-          )}
-        </div>
-
-        <Footer />
       </div>
+
+      {/* Matches */}
+      <div className="flex-1 w-full px-4 sm:px-8 lg:px-12 py-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {matchData.length === 0 && (
+          <div className="text-gray-400 col-span-full text-center py-20">
+            No live matches available
+          </div>
+        )}
+
+        {matchData.map((match) => (
+          <div key={match.id} className="bg-gray-900 p-4 rounded-lg shadow-md flex flex-col items-center">
+            <div className="text-sm text-gray-400 mb-2">
+              {match.league?.name} - {match.date?.split("T")[0]}
+            </div>
+
+            <div className="flex justify-between w-full items-center mb-2">
+              {/* Home Team */}
+              <div className="flex flex-col items-center">
+                {match.teams?.home?.logo && (
+                  <img src={match.teams.home.logo} alt={match.teams.home.name} className="w-12 h-12 mb-1" />
+                )}
+                <div className="font-bold">{match.teams?.home?.name}</div>
+                <div className="text-lg">{match.scores?.home?.total ?? 0}</div>
+              </div>
+
+              <div className="text-gray-300 font-semibold">vs</div>
+
+              {/* Away Team */}
+              <div className="flex flex-col items-center">
+                {match.teams?.away?.logo && (
+                  <img src={match.teams.away.logo} alt={match.teams.away.name} className="w-12 h-12 mb-1" />
+                )}
+                <div className="font-bold">{match.teams?.away?.name}</div>
+                <div className="text-lg">{match.scores?.away?.total ?? 0}</div>
+              </div>
+            </div>
+
+            <div className="text-sm text-gray-300">{match.status?.short}</div>
+          </div>
+        ))}
+      </div>
+
+      <Footer />
     </div>
   );
 }

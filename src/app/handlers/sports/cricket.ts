@@ -13,10 +13,8 @@ export default async function CricketMatchesHandler() {
         }
     };
 
-    console.log("Called the handler")
     const response = await axios.request(config)
-    
-    console.log(response)
-    const matches = await response.data.typeMatches[0].seriesMatches
+    const matches = await response.data.typeMatches
+    console.log(matches)
     return matches
 }

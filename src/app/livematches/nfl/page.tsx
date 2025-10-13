@@ -4,16 +4,15 @@ import Footer from "@/components/footer";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import category from "../../../public/sportsCategory";
-import footballMatchesHandler from "@/app/handlers/sports/football";
+import NFLMatchesHandler from "@/app/handlers/sports/nfl";
 
 export default function LiveMatches() {
-  const [selectedCategory, setSelectedCategory] = useState("Football");
+  const [selectedCategory, setSelectedCategory] = useState("NFL");
   const [matchData, setMatchData] = useState<any[]>([]);
 
   useEffect(() => {
     async function HandlerCaller() {
-      const response = await footballMatchesHandler();
-      // response.response contains the live matches array
+      const response = await NFLMatchesHandler();
       setMatchData(Array.isArray(response) ? response : []);
     }
     HandlerCaller();
@@ -50,36 +49,43 @@ export default function LiveMatches() {
 
       {/* Matches */}
       <main className="flex-1 w-full px-4 sm:px-8 lg:px-12 py-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {matchData.length === 0 ? (
-          <p>Loading live matches...</p>
-        ) : (
-          matchData.map((match) => (
+        {matchData.length === 0 && <p>No matches available.</p>}
+
+        {matchData.map((item) => {
+          const { game, league, teams, scores } = item;
+          return (
             <div
-              key={match.fixture.id}
-              className="border rounded-lg shadow p-4 flex flex-col justify-center items-center bg-gray-900 hover:bg-gray-800 transition"
+              key={game.id}
+              className="bg-gray-900 rounded-xl p-4 flex flex-col justify-between shadow-md"
             >
-              <h2 className="text-lg font-bold mb-2">{match.league.name}</h2>
-              <p className="text-sm text-gray-400 mb-2">{match.league.round}</p>
-              <div className="flex justify-between items-center w-full mb-2">
+              <div className="flex justify-between items-center mb-3">
+                <h2 className="font-bold text-lg">{league.name} - {game.week}</h2>
+                <span className="text-sm text-gray-400">{game.status.long}</span>
+              </div>
+
+              <div className="flex justify-between items-center mb-2">
                 <div className="flex flex-col items-center">
-                  <img src={match.teams.home.logo} alt={match.teams.home.name} className="w-12 h-12 mb-1" />
-                  <p>{match.teams.home.name}</p>
-                  <p className="font-bold">{match.goals.home}</p>
+                  <img src={teams.home.logo} alt={teams.home.name} className="w-12 h-12 mb-1" />
+                  <span className="text-center">{teams.home.name}</span>
                 </div>
-                <p className="text-xl font-bold">vs</p>
+
+                <div className="text-xl font-bold">
+                  {scores.home.total !== null ? `${scores.home.total} - ${scores.away.total}` : "VS"}
+                </div>
+
                 <div className="flex flex-col items-center">
-                  <img src={match.teams.away.logo} alt={match.teams.away.name} className="w-12 h-12 mb-1" />
-                  <p>{match.teams.away.name}</p>
-                  <p className="font-bold">{match.goals.away}</p>
+                  <img src={teams.away.logo} alt={teams.away.name} className="w-12 h-12 mb-1" />
+                  <span className="text-center">{teams.away.name}</span>
                 </div>
               </div>
-              <p className="text-sm text-gray-400">
-                Status: {match.fixture.status.long} ({match.fixture.status.elapsed} min)
-              </p>
-              <p className="text-sm text-gray-400 mt-1">{new Date(match.fixture.date).toLocaleString()}</p>
+
+              <div className="text-sm text-gray-400 mt-2">
+                <p>{game.date.date} {game.date.time} ({game.date.timezone})</p>
+                <p>{game.venue.name}, {game.venue.city}</p>
+              </div>
             </div>
-          ))
-        )}
+          );
+        })}
       </main>
 
       <Footer />

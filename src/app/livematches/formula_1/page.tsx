@@ -4,25 +4,16 @@ import Footer from "@/components/footer";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import category from "../../../public/sportsCategory";
-import CricketMatchesHandler from "@/app/handlers/sports/cricket";
+import F1MatchesHandler from "@/app/handlers/sports/f1";
 
 export default function LiveMatches() {
-  const [selectedCategory, setSelectedCategory] = useState("Cricket");
+  const [selectedCategory, setSelectedCategory] = useState("Formula_1");
   const [matchData, setMatchData] = useState<any[]>([]);
 
   useEffect(() => {
     async function HandlerCaller() {
-      const response = await CricketMatchesHandler();
-      // Flatten the nested structure
-      const matches: any[] = [];
-      response.forEach((matchTypeObj: any) => {
-        matchTypeObj.seriesMatches.forEach((seriesWrapper: any) => {
-          seriesWrapper.seriesAdWrapper.matches.forEach((match: any) => {
-            matches.push(match);
-          });
-        });
-      });
-      setMatchData(matches);
+      const response = await F1MatchesHandler();
+      setMatchData(Array.isArray(response) ? response : []);
     }
     HandlerCaller();
   }, []);
@@ -59,57 +50,60 @@ export default function LiveMatches() {
       {/* Matches */}
       <main className="flex-1 w-full px-4 sm:px-8 lg:px-12 py-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {matchData.length === 0 ? (
-          <p>Loading matches...</p>
+          <p>Loading F1 races...</p>
         ) : (
-          matchData.map((match: any) => {
-            const info = match.matchInfo;
-            const venue = info.venueInfo;
-            const startDate = new Date(Number(info.startDate));
-
-            const formattedDate = startDate.toLocaleDateString("en-US", {
+          matchData.map((race: any) => {
+            const date = new Date(race.date);
+            const formattedDate = date.toLocaleDateString("en-US", {
               weekday: "short",
               year: "numeric",
               month: "short",
               day: "numeric",
             });
-            const formattedTime = startDate.toLocaleTimeString("en-US", {
+            const formattedTime = date.toLocaleTimeString("en-US", {
               hour: "2-digit",
               minute: "2-digit",
             });
 
-            const team1Score = match.matchScore.team1Score?.inngs1?.runs ?? "-";
-            const team2Score = match.matchScore.team2Score?.inngs1?.runs ?? "-";
-
             return (
               <div
-                key={info.matchId}
+                key={race.id}
                 className="border rounded-lg shadow p-4 flex flex-col gap-2 bg-gray-900"
               >
-                {/* Series Name */}
-                <p className="text-sm text-gray-400 font-medium">{info.seriesName}</p>
+                {/* Race Name */}
+                <p className="text-sm text-gray-400 font-medium">{race.competition.name}</p>
 
-                {/* Teams */}
-                <div className="flex justify-between items-center">
-                  <span className="font-semibold">{info.team1.teamName}</span>
-                  <span className="font-bold">{team1Score}</span>
+                {/* Circuit */}
+                <div className="flex items-center gap-2">
+                  {race.circuit.image && (
+                    <img src={race.circuit.image} alt={race.circuit.name} className="w-10 h-10 object-contain" />
+                  )}
+                  <span className="font-semibold">{race.circuit.name}</span>
                 </div>
 
-                <div className="flex justify-between items-center">
-                  <span className="font-semibold">{info.team2.teamName}</span>
-                  <span className="font-bold">{team2Score}</span>
-                </div>
-
-                {/* Match Status */}
-                <p className="text-xs text-blue-400">{info.status}</p>
-
-                {/* Venue */}
+                {/* Laps & Distance */}
                 <p className="text-sm text-gray-500">
-                  📍 {venue?.ground ?? "Venue TBA"} - {venue?.city ?? ""}
+                  🏁 Laps: {race.laps.total} | Distance: {race.distance}
                 </p>
 
                 {/* Date & Time */}
                 <p className="text-sm text-gray-500">
-                  🗓 {formattedDate} – {formattedTime}
+                  🗓 {formattedDate} – {formattedTime} (UTC)
+                </p>
+
+                {/* Status */}
+                <p className="text-xs text-blue-400">Status: {race.status}</p>
+
+                {/* Fastest Lap */}
+                {race.fastest_lap && (
+                  <p className="text-xs text-green-400">
+                    ⚡ Fastest Lap: {race.fastest_lap.time} by Driver {race.fastest_lap.driver.id}
+                  </p>
+                )}
+
+                {/* Location */}
+                <p className="text-sm text-gray-500">
+                  📍 {race.competition.location.city}, {race.competition.location.country}
                 </p>
               </div>
             );

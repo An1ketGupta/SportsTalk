@@ -1,10 +1,13 @@
 const category = [
-    "Tennis",
+    "NFL",
     "Cricket",
     "Football",
+    "NBA",
+    "Tennis",
     "Basketball",
-    "American_Football",
-    "MMA"
+    "Formula_1",
+    "MMA",
+    "Hockey"
 ]
 
 export default category

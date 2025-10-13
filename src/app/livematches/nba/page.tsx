@@ -4,25 +4,16 @@ import Footer from "@/components/footer";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import category from "../../../public/sportsCategory";
-import CricketMatchesHandler from "@/app/handlers/sports/cricket";
+import NBAMatchesHandler from "@/app/handlers/sports/nba";
 
 export default function LiveMatches() {
-  const [selectedCategory, setSelectedCategory] = useState("Cricket");
+  const [selectedCategory, setSelectedCategory] = useState("NBA");
   const [matchData, setMatchData] = useState<any[]>([]);
 
   useEffect(() => {
     async function HandlerCaller() {
-      const response = await CricketMatchesHandler();
-      // Flatten the nested structure
-      const matches: any[] = [];
-      response.forEach((matchTypeObj: any) => {
-        matchTypeObj.seriesMatches.forEach((seriesWrapper: any) => {
-          seriesWrapper.seriesAdWrapper.matches.forEach((match: any) => {
-            matches.push(match);
-          });
-        });
-      });
-      setMatchData(matches);
+      const response = await NBAMatchesHandler();
+      setMatchData(Array.isArray(response) ? response : []);
     }
     HandlerCaller();
   }, []);
@@ -59,13 +50,10 @@ export default function LiveMatches() {
       {/* Matches */}
       <main className="flex-1 w-full px-4 sm:px-8 lg:px-12 py-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {matchData.length === 0 ? (
-          <p>Loading matches...</p>
+          <p>Loading NBA games...</p>
         ) : (
-          matchData.map((match: any) => {
-            const info = match.matchInfo;
-            const venue = info.venueInfo;
-            const startDate = new Date(Number(info.startDate));
-
+          matchData.map((game: any) => {
+            const startDate = new Date(game.date.start);
             const formattedDate = startDate.toLocaleDateString("en-US", {
               weekday: "short",
               year: "numeric",
@@ -77,39 +65,48 @@ export default function LiveMatches() {
               minute: "2-digit",
             });
 
-            const team1Score = match.matchScore.team1Score?.inngs1?.runs ?? "-";
-            const team2Score = match.matchScore.team2Score?.inngs1?.runs ?? "-";
-
             return (
               <div
-                key={info.matchId}
+                key={game.id}
                 className="border rounded-lg shadow p-4 flex flex-col gap-2 bg-gray-900"
               >
-                {/* Series Name */}
-                <p className="text-sm text-gray-400 font-medium">{info.seriesName}</p>
-
-                {/* Teams */}
-                <div className="flex justify-between items-center">
-                  <span className="font-semibold">{info.team1.teamName}</span>
-                  <span className="font-bold">{team1Score}</span>
-                </div>
-
-                <div className="flex justify-between items-center">
-                  <span className="font-semibold">{info.team2.teamName}</span>
-                  <span className="font-bold">{team2Score}</span>
-                </div>
-
-                {/* Match Status */}
-                <p className="text-xs text-blue-400">{info.status}</p>
-
-                {/* Venue */}
-                <p className="text-sm text-gray-500">
-                  📍 {venue?.ground ?? "Venue TBA"} - {venue?.city ?? ""}
+                {/* Arena */}
+                <p className="text-sm text-gray-400 font-medium">
+                  🏟 {game.arena.name}, {game.arena.city}, {game.arena.state}
                 </p>
 
                 {/* Date & Time */}
                 <p className="text-sm text-gray-500">
-                  🗓 {formattedDate} – {formattedTime}
+                  🗓 {formattedDate} – {formattedTime} (UTC)
+                </p>
+
+                {/* Teams */}
+                <div className="flex items-center justify-between mt-2">
+                  {/* Visitor */}
+                  <div className="flex flex-col items-center">
+                    <img src={game.teams.visitors.logo} alt={game.teams.visitors.name} className="w-12 h-12 object-contain mb-1" />
+                    <span className="text-sm font-semibold">{game.teams.visitors.nickname}</span>
+                    <span className="text-xs text-gray-400">{game.teams.visitors.name}</span>
+                    <span className="text-lg font-bold mt-1">{game.scores.visitors.points}</span>
+                  </div>
+
+                  <span className="text-xl font-bold">VS</span>
+
+                  {/* Home */}
+                  <div className="flex flex-col items-center">
+                    <img src={game.teams.home.logo} alt={game.teams.home.name} className="w-12 h-12 object-contain mb-1" />
+                    <span className="text-sm font-semibold">{game.teams.home.nickname}</span>
+                    <span className="text-xs text-gray-400">{game.teams.home.name}</span>
+                    <span className="text-lg font-bold mt-1">{game.scores.home.points}</span>
+                  </div>
+                </div>
+
+                {/* Status */}
+                <p className="text-xs text-blue-400 mt-2">Status: {game.status.long}</p>
+
+                {/* Optional: Periods and lead changes */}
+                <p className="text-xs text-gray-500">
+                  Period: {game.periods.current}/{game.periods.total} | Lead Changes: {game.leadChanges} | Times Tied: {game.timesTied}
                 </p>
               </div>
             );
