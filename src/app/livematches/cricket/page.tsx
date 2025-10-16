@@ -4,7 +4,7 @@ import Footer from "@/components/footer";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import category from "../../../public/sportsCategory";
-import CricketMatchesHandler from "@/app/handlers/sports/cricket";
+import {CricketMatchesHandler} from "@/app/handlers/sports/cricket";
 
 export default function LiveMatches() {
   const [selectedCategory, setSelectedCategory] = useState("Cricket");
@@ -13,7 +13,7 @@ export default function LiveMatches() {
   useEffect(() => {
     async function HandlerCaller() {
       const response = await CricketMatchesHandler();
-      // Flatten the nested structure
+
       const matches: any[] = [];
       response.forEach((matchTypeObj: any) => {
         matchTypeObj.seriesMatches.forEach((seriesWrapper: any) => {
@@ -22,6 +22,7 @@ export default function LiveMatches() {
           });
         });
       });
+
       setMatchData(matches);
     }
     HandlerCaller();
@@ -57,7 +58,7 @@ export default function LiveMatches() {
       </div>
 
       {/* Matches */}
-      <main className="flex-1 w-full px-4 sm:px-8 lg:px-12 py-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div  className="flex-1 w-full px-4 sm:px-8 lg:px-12 py-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {matchData.length === 0 ? (
           <p>Loading matches...</p>
         ) : (
@@ -77,16 +78,25 @@ export default function LiveMatches() {
               minute: "2-digit",
             });
 
-            const team1Score = match.matchScore.team1Score?.inngs1?.runs ?? "-";
-            const team2Score = match.matchScore.team2Score?.inngs1?.runs ?? "-";
+            // Scores (safe optional chaining)
+            const team1Innings = match.matchScore?.team1Score?.inngs1;
+            const team2Innings = match.matchScore?.team2Score?.inngs1;
+
+            const team1Score = team1Innings
+              ? `${team1Innings.runs}/${team1Innings.wickets} (${team1Innings.overs} ov)`
+              : "-";
+            const team2Score = team2Innings
+              ? `${team2Innings.runs}/${team2Innings.wickets} (${team2Innings.overs} ov)`
+              : "-";
 
             return (
-              <div
-                key={info.matchId}
+              <a key={info.matchId}
+                href={`/livematches/cricket/${info.matchId}`}
                 className="border rounded-lg shadow p-4 flex flex-col gap-2 bg-gray-900"
               >
                 {/* Series Name */}
                 <p className="text-sm text-gray-400 font-medium">{info.seriesName}</p>
+                <p className="text-xs italic text-gray-500">{info.matchDesc}</p>
 
                 {/* Teams */}
                 <div className="flex justify-between items-center">
@@ -111,11 +121,11 @@ export default function LiveMatches() {
                 <p className="text-sm text-gray-500">
                   🗓 {formattedDate} – {formattedTime}
                 </p>
-              </div>
+              </a>
             );
           })
         )}
-      </main>
+      </div>
 
       <Footer />
     </div>

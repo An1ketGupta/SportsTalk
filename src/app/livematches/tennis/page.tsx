@@ -3,7 +3,7 @@
 import Footer from "@/components/footer";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import tennisMatchesHandler from "@/app/handlers/sports/tennis";
+import {tennisMatchesHandler} from "@/app/handlers/sports/tennis";
 import category from "../../../public/sportsCategory"
 
 
@@ -53,10 +53,10 @@ export default function LiveMatches() {
         {matchData.length === 0 ? (
           <p className="text-center text-gray-500">Fetching live data...</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+          <a className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
             {matchData.map((match) => (
-              <div
-                key={match.id}
+              <a key={match.id}
+                href={`/livematches/tennis/${match.id}`}
                 className="bg-[#181818] rounded-2xl shadow-md hover:shadow-lg transition-all duration-200 border border-white/5 p-5"
               >
                 {/* Tournament */}
@@ -105,9 +105,9 @@ export default function LiveMatches() {
                     Points: {match.homeScore?.point || "0"} - {match.awayScore?.point || "0"}
                   </span>
                 </div>
-              </div>
+              </a>
             ))}
-          </div>
+          </a>
         )}
       </main>
 

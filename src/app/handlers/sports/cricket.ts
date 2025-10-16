@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-export default async function CricketMatchesHandler() {
+export async function CricketMatchesHandler() {
 
     let config = {
         method: 'get',
@@ -17,4 +17,16 @@ export default async function CricketMatchesHandler() {
     const matches = await response.data.typeMatches
     console.log(matches)
     return matches
+}
+
+export async function CricketMatchInfoHandler(matchid: any) {
+    const response = await axios.get(`https://Cricbuzz-Official-Cricket-API.proxy-production.allthingsdev.co/match/${matchid}/scorecard`, {
+        headers: {
+            'x-apihub-key': 'XZmTq6fV04Hz3jKAhkSKbKxuWGDzdczt6yMTRHTM11HTmAKqci',
+            'x-apihub-host': 'Cricbuzz-Official-Cricket-API.allthingsdev.co',
+            'x-apihub-endpoint': 'ac951751-d311-4d23-8f18-353e75432353'
+        },
+        maxBodyLength:Infinity
+    })
+    return await response.data
 }
