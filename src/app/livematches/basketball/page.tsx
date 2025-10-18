@@ -4,7 +4,7 @@ import Footer from "@/components/footer";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import category from "../../../public/sportsCategory";
-import basketballMatchesHandler from "@/app/handlers/sports/basketball";
+import {basketballMatchesHandler} from "@/app/handlers/sports/basketball";
 
 export default function LiveMatches() {
   const [selectedCategory, setSelectedCategory] = useState("Basketball");
@@ -56,7 +56,7 @@ export default function LiveMatches() {
         )}
 
         {matchData.map((match) => (
-          <div key={match.id} className="bg-gray-900 p-4 rounded-lg shadow-md flex flex-col items-center">
+          <a href={`/livematches/basketball/${match.id}`} key={match.id} className="bg-gray-900 p-4 rounded-lg shadow-md flex flex-col items-center">
             <div className="text-sm text-gray-400 mb-2">
               {match.league?.name} - {match.date?.split("T")[0]}
             </div>
@@ -84,7 +84,7 @@ export default function LiveMatches() {
             </div>
 
             <div className="text-sm text-gray-300">{match.status?.short}</div>
-          </div>
+          </a>
         ))}
       </div>
 

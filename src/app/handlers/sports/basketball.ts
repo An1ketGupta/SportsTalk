@@ -1,6 +1,6 @@
 import axios from "axios"
 
-export default async function basketballMatchesHandler(){
+export async function basketballMatchesHandler(){
     const todayDate = new Date().toISOString().split("T")[0]
     const response = await axios.get("https://v1.basketball.api-sports.io/games",{
         params:{

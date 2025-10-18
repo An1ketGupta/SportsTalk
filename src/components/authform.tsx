@@ -29,17 +29,7 @@ export default async function AuthForm() {
             </button>
         </form>
 
-        <div className="flex items-center my-6 w-full max-w-sm">
-            <div className="flex-grow h-px bg-gray-300"></div>
-            <span className="px-2 text-gray-500 text-sm">or</span>
-            <div className="flex-grow h-px bg-gray-300"></div>
-        </div>
 
-        <p className="text-xs text-gray-500 text-center max-w-sm">
-            By signing in, you agree to our{" "}
-            <span className="underline">Terms of Service</span> and{" "}
-            <span className="underline">Privacy Policy</span>.
-        </p>
     </div>
 
 }
