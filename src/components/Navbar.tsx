@@ -1,12 +1,11 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import {useRef} from "react";
 import Lottie from "lottie-react";
 import footballAnimation from "./ui/animations/football Goal.json";
 import categoryanimation from "./ui/animations/Design icon.json";
 import chatanimation from "./ui/animations/Chat.json";
-import Avatar from "./Avatar";
 
-export default function NavBar() {
+export default function NavBar({authComponent}:any) {
 
   const lottieRef = useRef<any>(null);
     return <div className="w-full px-[2vw] bg-black/20 backdrop-blur-md border-b border-white/10 h-[10vh] text-white flex justify-between items-center sticky top-0 z-50 shadow-xl">
@@ -57,6 +56,8 @@ export default function NavBar() {
                 Live Matches
             </a>
         </div>
-        <Avatar/>
+        <div>
+            {authComponent}
+        </div>
     </div>
 }
