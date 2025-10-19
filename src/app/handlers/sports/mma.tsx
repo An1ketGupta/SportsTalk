@@ -1,54 +1,19 @@
-"use client";
+import axios from 'axios'
 
-import Footer from "@/components/footer";
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import category from "../../../public/sportsCategory";
-import mmaMatchesHandler from "@/app/handlers/sports/mma";
+export default async function MMAMatchesHandler() {
+    const todaydate = new Date().toISOString().split("T")[0]
+    const response = await axios.get('https://v1.mma.api-sports.io/fights', {
+        params: { date: todaydate },
+        headers: {
+            'x-rapidapi-host': 'v1.mma.api-sports.io',
+            'x-rapidapi-key': '115c63a79ada64779433b7f133255804'
+        }
+    })
+    
+    const data = await response.data.response
+    const matchData = (Array.isArray(data) ? data : []);
 
-export default function LiveMatches() {
-  const [selectedCategory, setSelectedCategory] = useState("MMA");
-  const [matchData, setMatchData] = useState<any[]>([]);
-
-  useEffect(() => {
-    async function HandlerCaller() {
-      const response = await mmaMatchesHandler();
-      setMatchData(Array.isArray(response) ? response : []);
-    }
-    HandlerCaller();
-  }, []);
-
-  return (
-    <div className="w-full min-h-screen bg-[#0f0f0f] text-white flex flex-col">
-      {/* Header */}
-      <div className="sticky top-0 z-50 bg-black/40 backdrop-blur-md px-6 py-6 border-b border-white/10">
-        <h1 className="text-4xl font-extrabold italic tracking-tight">Live Matches</h1>
-        <p className="text-sm text-[#cfd2cc] mt-1 max-w-xl">
-          Follow live scores and join real-time discussions with fans worldwide.
-        </p>
-
-        {/* Categories */}
-        <div className="mt-5 flex flex-wrap gap-3">
-          {category.map((cat) => (
-            <Link
-              href={`./${cat.toLowerCase()}`}
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-200
-                ${
-                  selectedCategory === cat
-                    ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md"
-                    : "bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white"
-                }`}
-            >
-              {cat.replace("_", " ")}
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      {/* Matches */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
+    return (<div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
         {matchData.length > 0 ? (
           matchData.map((fight: any) => (
             <div
@@ -112,9 +77,5 @@ export default function LiveMatches() {
         ) : (
           <p className="text-gray-400">No matches available</p>
         )}
-      </div>
-
-      <Footer />
-    </div>
-  );
+      </div>)
 }
