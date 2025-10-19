@@ -25,7 +25,8 @@ export async function NFLMatchesHandler() {
       matchData.map((item) => {
         const { game, league, teams, scores } = item;
         return (
-          <div
+          <a
+            href={`../match/nf${game.id}`}
             key={game.id}
             className="group bg-[#181818] hover:bg-[#1f1f1f] border border-white/5 rounded-2xl p-6 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02] flex flex-col"
           >
@@ -89,7 +90,7 @@ export async function NFLMatchesHandler() {
                 {game.status.long || 'Scheduled'}
               </span>
             </div>
-          </div>
+          </a>
         );
       })
     )}

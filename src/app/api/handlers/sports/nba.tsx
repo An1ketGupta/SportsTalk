@@ -31,7 +31,8 @@ export default async function NBAMatchesHandler() {
         });
 
         return (
-          <div
+          <a
+            href={`../match/nb${game.id}`}
             key={game.id}
             className="border rounded-lg shadow p-4 flex flex-col gap-2 bg-gray-900"
           >
@@ -73,7 +74,7 @@ export default async function NBAMatchesHandler() {
             <p className="text-xs text-gray-500">
               Period: {game.periods.current}/{game.periods.total} | Lead Changes: {game.leadChanges} | Times Tied: {game.timesTied}
             </p>
-          </div>
+          </a>
         );
       })
     )}

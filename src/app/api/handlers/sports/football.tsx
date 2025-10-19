@@ -1,7 +1,6 @@
 import axios from 'axios';
 
 export default async function FootballMatchesHandler() {
-    const todaydate = new Date().toISOString().split("T")[0]
     const response = await axios.get('https://v3.football.api-sports.io/fixtures', {
         params: {
             live: "61-39-78-135-140"
@@ -23,8 +22,9 @@ export default async function FootballMatchesHandler() {
       </div>
     ) : (
       matchData.map((match) => (
-        <div
+        <a
           key={match.fixture.id}
+          href={`../match/fo${match.fixture.id}`}
           className="group bg-[#181818] hover:bg-[#1f1f1f] border border-white/5 rounded-2xl p-6 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02] flex flex-col"
         >
           {/* League Info */}
@@ -86,7 +86,7 @@ export default async function FootballMatchesHandler() {
               {match.fixture.status.short || 'Live'}
             </span>
           </div>
-        </div>
+        </a>
       ))
     )}
   </main>

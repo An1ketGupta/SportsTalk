@@ -34,7 +34,8 @@ export default async function HocketMatchesHandler() {
         });
 
         return (
-          <div
+          <a
+            href={`../match/ho${game.id}`}
             key={game.id}
             className="group bg-[#181818] hover:bg-[#1f1f1f] border border-white/5 rounded-2xl p-6 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02] flex flex-col"
           >
@@ -117,7 +118,7 @@ export default async function HocketMatchesHandler() {
                 {game.status.long || 'Live'}
               </span>
             </div>
-          </div>
+          </a>
         );
       })
     )}

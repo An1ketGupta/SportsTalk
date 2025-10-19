@@ -35,7 +35,8 @@ export default async function F1MatchesHandler() {
             });
 
             return (
-              <div
+              <a
+                href={`../match/f1${race.id}`}
                 key={race.id}
                 className="group bg-[#181818] hover:bg-[#1f1f1f] border border-white/5 rounded-2xl p-6 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02] flex flex-col"
               >
@@ -93,7 +94,7 @@ export default async function F1MatchesHandler() {
                     {race.status || 'Scheduled'}
                   </span>
                 </div>
-              </div>
+              </a>
             );
           })
         )}
