@@ -13,7 +13,7 @@ const io = new Server(httpserver , {
 io.on("connection" , (socket)=>{
     console.log(socket.id + " have joined the server.")
 
-    socket.on("joinroom" ,(roomid)=>{
+    socket.on("joinroom" ,(roomid:string)=>{
         socket.join(roomid)
         console.log("Joined the room: " + roomid)
     })

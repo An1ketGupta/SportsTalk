@@ -3,15 +3,15 @@
 import Footer from "@/components/footer";
 import { useState, useEffect, JSX } from "react";
 import category from "../../../public/sportsCategory";
-import HocketMatchesHandler from "../../handlers/sports/hockey";
-import MMAMatchesHandler from "../../handlers/sports/mma";
-import F1MatchesHandler from "../../handlers/sports/f1";
-import BasketballMatchesHandler from "../../handlers/sports/basketball";
-import TennisMatchesHandler from "../../handlers/sports/tennis";
-import NBAMatchesHandler from "../../handlers/sports/nba";
-import FootballMatchesHandler from "../../handlers/sports/football";
-import CricketMatchInfoHandler from "../../handlers/sports/cricket";
-import { NFLMatchesHandler } from "../../handlers/sports/nfl";
+import HocketMatchesHandler from "../../api/handlers/sports/hockey";
+import MMAMatchesHandler from "../../api/handlers/sports/mma";
+import F1MatchesHandler from "../../api/handlers/sports/f1";
+import BasketballMatchesHandler from "../../api/handlers/sports/basketball";
+import TennisMatchesHandler from "../../api/handlers/sports/tennis";
+import NBAMatchesHandler from "../../api/handlers/sports/nba";
+import FootballMatchesHandler from "../../api/handlers/sports/football";
+import CricketMatchHandler from "../../api/handlers/sports/cricket";
+import { NFLMatchesHandler } from "../../api/handlers/sports/nfl";
 import Link from "next/link";
 
 export default function LiveMatches({params} : any) {
@@ -41,7 +41,7 @@ export default function LiveMatches({params} : any) {
         }
         else if(selectedCategory === "cricket"){
           try {
-              response = await CricketMatchInfoHandler();
+              response = await CricketMatchHandler();
             } catch (err) {
               console.error("Error fetching matches:", err);
             }
@@ -104,41 +104,56 @@ export default function LiveMatches({params} : any) {
   }, [selectedCategory]);
 
   return (
-    <div className="w-full min-h-screen bg-[#0f0f0f] text-white flex flex-col">
+    <div className="min-h-screen w-full bg-gradient-to-b from-[#0b0b0b] to-black text-white flex flex-col">
       {/* Header */}
-      <div className="sticky top-0 z-50 bg-black/40 backdrop-blur-md px-6 py-6 border-b border-white/10">
-        <h1 className="text-4xl font-extrabold italic tracking-tight">Live Matches</h1>
-        <p className="text-sm text-[#cfd2cc] mt-1 max-w-xl">
-          Follow live scores and join real-time discussions with fans worldwide.
-        </p>
+      <div className="sticky top-0 z-40 border-b border-white/10 bg-black/50 backdrop-blur supports-[backdrop-filter]:bg-black/40">
+        <div className="max-w-7xl mx-auto px-6 py-6">
+          <h1 className="text-4xl font-extrabold italic tracking-tight">Live Matches</h1>
+          <p className="text-sm text-gray-300 mt-1 max-w-xl">
+            Follow live scores and join real-time discussions with fans worldwide.
+          </p>
 
-        {/* Categories */}
-        <div className="mt-5 flex flex-wrap gap-3">
-          {category.map((cat) => (
-            <Link
-              key={cat}
-              href={`/livematches/${cat.toLowerCase()}`}
-              className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-200
-                ${
-                  selectedCategory === cat.toLowerCase()
-                    ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md"
-                    : "bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white"
-                }`}
-            >
-              {cat.replace("_", " ")}
-            </Link>
-          ))}
+          {/* Categories */}
+          <div className="mt-5 -mx-6 px-6 overflow-x-auto scrollbar-hide">
+            <div className="flex gap-3 min-w-max">
+              {category.map((cat) => (
+                <Link
+                  key={cat}
+                  href={`/livematches/${cat.toLowerCase()}`}
+                  className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-200 border
+                    ${
+                      selectedCategory === cat.toLowerCase()
+                        ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md border-transparent"
+                        : "bg-gray-800/80 text-gray-300 hover:bg-gray-700 hover:text-white border-white/10"
+                    } focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/70`}
+                >
+                  {cat.replace("_", " ")}
+                </Link>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Matches */}
-      {loading ? (
-        <p>Loading {selectedCategory} games...</p>
-      ) : MatchesDiv ? (
-        <div>{MatchesDiv}</div>
-      ) : (
-        <p>No matches available.</p>
-      )}
+      <main className="flex-1">
+        <div className="max-w-7xl mx-auto w-full px-6 py-8">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-16 text-gray-300">
+              <div className="h-6 w-6 rounded-full border-2 border-gray-500 border-t-transparent animate-spin mb-3" />
+              <p className="text-sm">Loading {selectedCategory} games...</p>
+            </div>
+          ) : MatchesDiv ? (
+            <div className="space-y-6">
+              {MatchesDiv}
+            </div>
+          ) : (
+            <div className="py-16 text-center">
+              <p className="text-gray-400">No matches available.</p>
+            </div>
+          )}
+        </div>
+      </main>
 
       <Footer />
     </div>
