@@ -34,9 +34,7 @@ export default function LiveMatches({params} : any) {
         let response:JSX.Element = <></>;
         if(selectedCategory === "nfl"){
           try{
-              response = await NFLMatchesHandler({
-                id:""
-              });
+              response = await NFLMatchesHandler();
             } catch (err) {
               console.error("Error fetching matches:", err);
             }

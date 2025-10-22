@@ -110,3 +110,21 @@ export default async function FootballMatchesHandler() {
     </main>
   );
 }
+
+export async function FootballMatchByIdHandler({
+  id
+}:{
+  id:string
+}){
+  const response = await fetch(
+    `https://v3.football.api-sports.io/fixtures?id=${id}`,
+    {
+      method: "GET",
+      headers: {
+        "x-rapidapi-host": "v3.football.api-sports.io",
+        "x-rapidapi-key": "115c63a79ada64779433b7f133255804",
+      },
+      next: { revalidate: 30 }, // cache for 30 seconds
+    }
+  );
+}

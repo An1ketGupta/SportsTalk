@@ -20,8 +20,7 @@ export default function ChatBox({
     handleSendMessage:() => Promise<void>
     messagesEndRef:Ref<HTMLDivElement|null>
 }){
-    return <div className="flex flex-col h-[88vh] items-center px-4">
-      <div className="w-full max-w-2xl h-full flex flex-col border border-gray-800 rounded-2xl bg-black/60 shadow-xl">
+    return  <div className="w-full h-full flex flex-col border border-gray-800 rounded-2xl bg-black/60 shadow-xl">
         {/* Header */}
         <div className="p-4 border-b border-gray-800 flex items-center justify-between">
           <div className="text-lg font-semibold">Live Chat</div>
@@ -71,5 +70,4 @@ export default function ChatBox({
           </button>
         </div>
       </div>
-    </div>
 }
