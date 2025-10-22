@@ -1,20 +1,24 @@
-import axios from 'axios';
 export default async function F1MatchesHandler() {
-    const todayDate = new Date().toISOString().split("T")[0]
-    const response = await axios.get('https://v1.formula-1.api-sports.io/races', {
-        params: {
-            date: todayDate
-        },
-        headers: {
-            'x-rapidapi-host': 'v1.formula-1.api-sports.io',
-            'x-rapidapi-key': '115c63a79ada64779433b7f133255804'
-        }
-    })
+    const todayDate = new Date().toISOString().split("T")[0];
 
-    const data = await response.data.response
+    const response = await fetch(
+        `https://v1.formula-1.api-sports.io/races?date=${todayDate}`,
+        {
+            method: "GET",
+            headers: {
+                "x-rapidapi-host": "v1.formula-1.api-sports.io",
+                "x-rapidapi-key": "115c63a79ada64779433b7f133255804"
+            },
+            next: { revalidate: 30 } // cache for 30 seconds
+        }
+    );
+
+    const json = await response.json();
+    const data = json.response;
     const matchData = (Array.isArray(data) ? data : []);
 
-    return (<main className="flex-1 w-full px-4 sm:px-8 lg:px-12 py-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    return (
+      <main className="flex-1 w-full px-4 sm:px-8 lg:px-12 py-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {matchData.length === 0 ? (
           <div className="col-span-full text-center py-20">
             <div className="text-gray-400 text-lg font-medium">Loading F1 races...</div>
@@ -98,6 +102,6 @@ export default async function F1MatchesHandler() {
             );
           })
         )}
-      </main>)
-
+      </main>
+    );
 }

@@ -13,7 +13,7 @@ export default function ChatBox({
     handleSendMessage,
     messagesEndRef
 }:{
-    matchId:string|null,
+    matchId:string|null|undefined,
     messages:Message[],
     sendmessage:string,
     setSendMessage:Dispatch<SetStateAction<string>>
