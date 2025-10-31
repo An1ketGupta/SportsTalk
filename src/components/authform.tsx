@@ -1,4 +1,4 @@
-import SigninHandler from "@/app/api/handlers/auth/signinhandler";
+import SigninHandler, { signoutHandler } from "@/app/api/handlers/auth/authHandler";
 
 export default async function AuthForm() {
     return <div className="flex flex-col items-center justify-center h-[90vh] px-4">
@@ -29,6 +29,7 @@ export default async function AuthForm() {
             </button>
         </form>
 
+        <button onClick={signoutHandler}>Signout</button>
 
     </div>
 

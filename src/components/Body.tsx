@@ -1,8 +1,11 @@
 import categories from "@/public/categoryinfo.json";
 import SquareBox from "@/components/ui/squarebox";
 import SportsCatalogue from "@/components/SportPreview";
+import { auth } from "@/auth";
 
-export default function Body() {
+export default async function Body() {
+    const session = await auth()
+    const user = session?.user
     // The Catalogue Section for the sports categories
     return <div className="min-h-screen py-[8vh] sm:py-[12vh] px-[4vw] sm:px-[2vw]">
         <div>
@@ -68,7 +71,7 @@ export default function Body() {
                     </div>
                 </div>
             </div>
-            <div className="mt-8 lg:mt-12">
+            {!user?<div className="mt-8 lg:mt-12">
                 <SquareBox bg="#0f0f0f" height="auto" width="auto" paddingx="0vh">
                     <div className="px-4 sm:px-6 lg:px-10 py-6" >
                         <div className="flex justify-center leading-none font-bold italic my-4 text-lg sm:text-2xl md:text-2xl lg:text-3xl text-center">
@@ -87,9 +90,9 @@ export default function Body() {
                         </div>
                     </div>
                 </SquareBox>
-            </div>
+            </div>:""}
         </div>
-        <div className="mt-14 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold italic mb-2 flex justify-center text-center">
+        <div className="my-24 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold italic flex justify-center text-center">
             Explore Sports Categories
         </div>
         <div className="text-[#d2d2d2] text-base sm:text-lg md:text-xl mb-6 sm:mb-8 flex justify-center text-center max-w-4xl mx-auto px-4">
@@ -107,8 +110,8 @@ export default function Body() {
         </div>
 
         {/* Join Copmmunity Section */}
-        <div className="my-8 sm:my-10">
-            <SquareBox height="auto" width="auto" paddingx="4vw" paddingy="4vh" bg="#181818">
+        <div className="my-8 sm:mt-20">
+            {!user?<SquareBox height="auto" width="auto" paddingx="4vw" paddingy="4vh" bg="#181818">
                 <div className="text-2xl sm:text-3xl md:text-4xl italic text-[#cfd2cc] font-semibold my-3 text-center">
                     Join Community
                 </div>
@@ -126,7 +129,7 @@ export default function Body() {
                         </svg>
                     </a>
                 </div>
-            </SquareBox>
+            </SquareBox>:""}
         </div>
     </div>
 } 
