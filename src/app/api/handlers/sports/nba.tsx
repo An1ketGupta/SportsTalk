@@ -120,7 +120,19 @@ export async function NBAMatchByIdHandler({ id }: { id: string }) {
   })
   
   const json = await response.json()
+  console.log(json)
   const matchData = Array.isArray(json.response) ? json.response : []
+
+  // Fetch player statistics for this game
+  const playersRes = await fetch(`https://v2.nba.api-sports.io/players/statistics?game=${id}` , {
+    headers: {
+      "x-rapidapi-host": "v2.nba.api-sports.io",
+      "x-rapidapi-key": "115c63a79ada64779433b7f133255804",
+    },
+    next: { revalidate: 30 },
+  })
+  const playersJson = await playersRes.json()
+  const playerStats = Array.isArray(playersJson.response) ? playersJson.response : []
 
   if (matchData.length === 0) {
     return (
@@ -132,18 +144,6 @@ export async function NBAMatchByIdHandler({ id }: { id: string }) {
   }
 
   const game = matchData[0]
-  const startDate = new Date(game.date.start)
-  const formattedDate = startDate.toLocaleDateString("en-US", {
-    weekday: "short",
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  })
-  const formattedTime = startDate.toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-  })
-
   return (
     <div className="bg-[#1a1a1a] w-full border border-white/10 rounded-3xl p-8 shadow-2xl">
       {/* League Header */}
@@ -244,59 +244,6 @@ export async function NBAMatchByIdHandler({ id }: { id: string }) {
               </tr>
             </tbody>
           </table>
-        </div>
-      </div>
-
-      {/* Game Stats */}
-      <div className="bg-black/30 rounded-xl p-6 mb-6 border border-white/5">
-        <h3 className="text-lg font-bold text-white mb-4 text-center">Game Stats</h3>
-        <div className="grid grid-cols-3 gap-4 text-center">
-          <div>
-            <div className="text-gray-400 text-xs uppercase font-semibold mb-1">Period</div>
-            <div className="text-white font-bold text-lg">{game.periods.current}/{game.periods.total}</div>
-          </div>
-          <div>
-            <div className="text-gray-400 text-xs uppercase font-semibold mb-1">Lead Changes</div>
-            <div className="text-white font-bold text-lg">{game.leadChanges ?? 0}</div>
-          </div>
-          <div>
-            <div className="text-gray-400 text-xs uppercase font-semibold mb-1">Times Tied</div>
-            <div className="text-white font-bold text-lg">{game.timesTied ?? 0}</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Game Status */}
-      <div className="text-center mb-6">
-        <span className="inline-flex items-center px-6 py-3 rounded-full text-base font-bold bg-blue-900/30 text-blue-400 border-2 border-blue-400/30">
-          {game.status.long === "Finished" ? "🏁 Final" : game.status.long}
-        </span>
-      </div>
-
-      {/* Match Details */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Arena */}
-        <div className="bg-black/20 rounded-lg p-4 border border-white/5">
-          <div className="flex items-center gap-3">
-            <span className="text-3xl">🏟️</span>
-            <div>
-              <div className="text-gray-400 text-xs uppercase font-semibold mb-1">Arena</div>
-              <div className="text-white font-medium">{game.arena.name}</div>
-              <div className="text-gray-400 text-sm">{game.arena.city}, {game.arena.state}</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Date & Time */}
-        <div className="bg-black/20 rounded-lg p-4 border border-white/5">
-          <div className="flex items-center gap-3">
-            <span className="text-3xl">📅</span>
-            <div>
-              <div className="text-gray-400 text-xs uppercase font-semibold mb-1">Date & Time</div>
-              <div className="text-white font-medium">{formattedDate}</div>
-              <div className="text-gray-400 text-sm">{formattedTime} (UTC)</div>
-            </div>
-          </div>
         </div>
       </div>
   </div>

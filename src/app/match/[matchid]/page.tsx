@@ -3,7 +3,7 @@
 import { BasketballMatchByIdHandler } from "@/app/api/handlers/sports/basketball";
 import { CricketMatchByIdHandler } from "@/app/api/handlers/sports/cricket";
 import { F1MatchByIdHandler } from "@/app/api/handlers/sports/f1";
-import FootballMatchesHandler from "@/app/api/handlers/sports/football";
+import FootballMatchesHandler, { FootballMatchByIdHandler } from "@/app/api/handlers/sports/football";
 import { HockeyMatchByIdHandler } from "@/app/api/handlers/sports/hockey";
 import MMAMatchesHandler from "@/app/api/handlers/sports/mma";
 import { NBAMatchByIdHandler } from "@/app/api/handlers/sports/nba";
@@ -61,11 +61,10 @@ export default function Match({ params }: any) {
       setLoading(true);
       if (matchId) {
         let response: JSX.Element = <></>; 
-        // nf12323
+
         const helper = matchId.slice(0, 2)
         if (helper === "nf") {
           try {
-            // @ts-ignore
             response = await NFLMatchByIdHAndler({ id: matchId.slice(2, 8) });
           } catch (err) {
             console.error("Error fetching matches:", err);
@@ -80,9 +79,11 @@ export default function Match({ params }: any) {
             console.error("Error fetching matches:", err);
           }
         }
-        else if (helper === "ft") {
+        else if (helper === "fo") {
           try {
-            response = await FootballMatchesHandler();
+            response = await FootballMatchByIdHandler({
+              id:matchId.slice(2,9)
+            });
           } catch (err) {
             console.error("Error fetching matches:", err);
           }
@@ -159,15 +160,12 @@ export default function Match({ params }: any) {
         roomid: matchId,
         message: trimmed,
       },
-      () => {
-        console.log("Sent the message :", trimmed)
-      }
     )
     setSendMessage("")
   }
 
   return (
-    <div className="grid grid-cols-7 h-[90vh] p-8 gap-8">
+    <div className="grid grid-cols-7 h-auto p-8 gap-8">
       <div className="col-span-4">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-16 text-gray-300">

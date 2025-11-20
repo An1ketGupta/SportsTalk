@@ -140,7 +140,6 @@ export async function CricketMatchByIdHandler({ id }: { id: string }) {
 
     // Calculate Current Run Rate
     const runs = currentInnings.scoreDetails?.runs || 0;
-    const wickets = currentInnings.scoreDetails?.wickets || 0;
     const overs = currentInnings.scoreDetails?.overs || 0;
     const crr = overs > 0 ? (runs / overs).toFixed(2) : "0.00";
 

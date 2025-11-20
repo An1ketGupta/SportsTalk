@@ -113,9 +113,9 @@ export default async function FootballMatchesHandler() {
 
 export async function FootballMatchByIdHandler({
   id
-}:{
-  id:string
-}){
+}: {
+  id: string
+}) {
   const response = await fetch(
     `https://v3.football.api-sports.io/fixtures?id=${id}`,
     {
@@ -126,5 +126,137 @@ export async function FootballMatchByIdHandler({
       },
       next: { revalidate: 30 }, // cache for 30 seconds
     }
+  );
+  const matchData = await response.json();
+  const data = Array.isArray(matchData?.response) ? matchData.response[0] : null;
+
+  if (!data) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-gray-300">
+        <div className="h-6 w-6 rounded-full border-2 border-gray-500 border-t-transparent animate-spin mb-3" />
+        <p className="text-sm">Loading match...</p>
+      </div>
+    );
+  }
+
+  const home = data.teams?.home;
+  const away = data.teams?.away;
+  const goals = data.goals || { home: 0, away: 0 };
+  const status = data.fixture?.status || {};
+  const events = Array.isArray(data.events) ? data.events : [];
+  const lineups = Array.isArray(data.lineups) ? data.lineups : [];
+
+  const homeLineup = lineups.find((l: any) => l?.team?.id === home?.id);
+  const awayLineup = lineups.find((l: any) => l?.team?.id === away?.id);
+
+  return (
+    <div className="space-y-6">
+      {/* Score Header */}
+      <div className="bg-[#181818] border border-white/5 rounded-2xl p-6 shadow-lg">
+        <div className="flex items-center justify-between gap-6">
+          <div className="flex-1 flex flex-col items-center">
+            <img src={home?.logo} alt={home?.name} className="w-16 h-16 object-contain mb-2" />
+            <div className="text-sm text-gray-300 text-center">{home?.name}</div>
+          </div>
+          <div className="flex flex-col items-center min-w-[140px]">
+            <div className="text-4xl font-extrabold text-green-400">
+              {goals?.home ?? 0} - {goals?.away ?? 0}
+            </div>
+            <div className="mt-1 text-xs text-gray-400">
+              {status?.long} {status?.elapsed ? `• ${status.elapsed}'` : ""}
+            </div>
+          </div>
+          <div className="flex-1 flex flex-col items-center">
+            <img src={away?.logo} alt={away?.name} className="w-16 h-16 object-contain mb-2" />
+            <div className="text-sm text-gray-300 text-center">{away?.name}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Events */}
+      <div className="bg-[#181818] border border-white/5 rounded-2xl p-6 shadow-lg">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-white font-semibold">Events</h3>
+          <span className="text-xs text-gray-400">{events.length} events</span>
+        </div>
+        {events.length === 0 ? (
+          <div className="text-sm text-gray-400">No events yet.</div>
+        ) : (
+          <div className="space-y-3">
+            {events.map((ev: any, idx: number) => (
+              <div key={idx} className="flex items-center gap-3">
+                <div className="text-xs text-gray-400 w-10 text-right">{ev?.time?.elapsed}'</div>
+                <img src={ev?.team?.logo} alt={ev?.team?.name} className="w-5 h-5 object-contain opacity-80" />
+                <div className="flex-1 text-sm text-gray-200">
+                  <span className="text-white font-medium">{ev?.player?.name}</span>
+                  <span className="text-gray-400"> — {ev?.type}</span>
+                  {ev?.detail ? <span className="text-gray-500"> ({ev.detail})</span> : null}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Lineups */}
+      <div id="lineups" className="bg-[#181818] border border-white/5 rounded-2xl p-6 shadow-lg">
+        <h3 className="text-white font-semibold mb-4">Lineups</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Home Lineup */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <img src={home?.logo} alt={home?.name} className="w-6 h-6 object-contain" />
+                <span className="text-sm text-white font-medium">{home?.name}</span>
+              </div>
+              {homeLineup?.formation ? (
+                <span className="text-xs text-gray-400">{homeLineup.formation}</span>
+              ) : null}
+            </div>
+            <div className="rounded-xl border border-white/5">
+              <div className="p-3 border-b border-white/5 text-xs text-gray-400">Starting XI</div>
+              <ul className="max-h-80 overflow-auto divide-y divide-white/5 scrollbar-hide">
+                {(homeLineup?.startXI || []).map((p: any, i: number) => (
+                  <li key={i} className="p-3 text-sm text-gray-200 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs text-gray-400 w-6 text-right">{p?.player?.number}</span>
+                      <span className="text-white">{p?.player?.name}</span>
+                    </div>
+                    <span className="text-xs text-gray-400">{p?.player?.pos}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Away Lineup */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <img src={away?.logo} alt={away?.name} className="w-6 h-6 object-contain" />
+                <span className="text-sm text-white font-medium">{away?.name}</span>
+              </div>
+              {awayLineup?.formation ? (
+                <span className="text-xs text-gray-400">{awayLineup.formation}</span>
+              ) : null}
+            </div>
+            <div className="rounded-xl border border-white/5">
+              <div className="p-3 border-b border-white/5 text-xs text-gray-400">Starting XI</div>
+              <ul className="max-h-80 overflow-auto divide-y divide-white/5 scrollbar-hide">
+                {(awayLineup?.startXI || []).map((p: any, i: number) => (
+                  <li key={i} className="p-3 text-sm text-gray-200 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs text-gray-400 w-6 text-right">{p?.player?.number}</span>
+                      <span className="text-white">{p?.player?.name}</span>
+                    </div>
+                    <span className="text-xs text-gray-400">{p?.player?.pos}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

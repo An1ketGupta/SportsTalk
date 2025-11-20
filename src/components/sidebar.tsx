@@ -1,14 +1,15 @@
 'use client'
 
-import { MdHome, MdSearch, MdNotifications, MdPerson, MdGroups, MdPostAdd } from "react-icons/md";
+import { MdHome, MdSearch, MdNotifications, MdPerson, MdGroups, MdPostAdd, MdOutlineMessage, MdMessage } from "react-icons/md";
 import { Button } from "./ui/button";
 import sidebarData from "../public/sidebar.json";
 import { Dispatch, SetStateAction } from "react";
+import Link from "next/link";
 
 const iconMap: { [key: string]: any } = {
     "home": MdHome,
     "search": MdSearch,
-    "users": MdGroups,
+    "message": MdMessage,
     "bell": MdNotifications,
     "user": MdPerson,
 };
@@ -28,14 +29,14 @@ export default function Sidebar({
         {sidebarData.menuItems.map((item) => {
             const Icon = iconMap[item.icon];
             return (
-                <a href={item.path} key={item.path}>
+                <Link href={item.path} key={item.label}>
                     <Button className="w-auto px-3 h-14 hover:bg-[#181818] font-medium" size={"lg"}>
                         <div className="flex gap-3 items-center">
-                            <Icon size={'40px'} />
+                            <Icon size={'37px'} />
                             <div className=" transition ease-in-out transition-transform duration-100 hidden xl:block">{item.label}</div>
                         </div>
                     </Button>
-                </a>
+                </Link>
             );
         })}
 

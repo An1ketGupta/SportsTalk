@@ -29,7 +29,6 @@ export default function Post({
                         <a className="flex items-center gap-1 text-bold">
                             {post.user.name}
                             <GoCheckCircleFill /> 
-                            {/* //render this only when the user is verified */}
                         </a>
                         <div className="text-[#4b4d51]">@{post.user.username}</div>
                     </div>

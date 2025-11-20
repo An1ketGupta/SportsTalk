@@ -3,7 +3,7 @@
     {
       "icon": "home",
       "label": "Home",
-      "path": "/foryou"
+      "path": "/community"
     },
     {
       "icon": "search",
@@ -11,9 +11,9 @@
       "path": "/explore"
     },
     {
-      "icon": "users",
-      "label": "Groups",
-      "path": "/groups"
+      "icon": "message",
+      "label": "Messages",
+      "path": "/messages"
     },
     {
       "icon": "bell",
