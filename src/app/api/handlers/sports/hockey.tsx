@@ -25,12 +25,8 @@ export default async function HocketMatchesHandler() {
       <div className="grid auto-rows-fr gap-4 sm:gap-5 lg:gap-6 [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))]">
         {sortedGames.length === 0 ? (
           <div className="col-span-full text-center py-20">
-            <div className="text-gray-400 text-lg font-medium">
-              Loading Hockey games...
-            </div>
-            <p className="text-gray-500 text-sm mt-2">
-              Fetching live hockey scores and match data
-            </p>
+            <div className="text-gray-400 text-lg font-medium">No live games available</div>
+            <p className="text-gray-500 text-sm mt-2">No live hockey games right now</p>
           </div>
         ) : (
           sortedGames.map((game: any) => {
@@ -103,11 +99,11 @@ export async function HockeyMatchByIdHandler({ id }: { id: string }) {
     minute: "2-digit",
   })
 
-  // Parse period scores (format: "home - away")
+  // Parse period scores (format: "away-home")
   const parsePeriodScore = (periodStr: string | null, team: 'home' | 'away') => {
     if (!periodStr) return 0;
-    const scores = periodStr.split(' - ');
-    return team === 'home' ? parseInt(scores[0]) || 0 : parseInt(scores[1]) || 0;
+    const scores = periodStr.split('-');
+    return team === 'away' ? parseInt(scores[0]) || 0 : parseInt(scores[1]) || 0;
   };
 
   return (
@@ -142,116 +138,42 @@ export async function HockeyMatchByIdHandler({ id }: { id: string }) {
         <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl p-8 mb-6">
           <div className="flex items-center justify-between gap-8">
             {/* Away Team */}
-            <div className="flex-1">
-              <div className="flex items-center gap-6">
-                <img
-                  src={game.teams.away.logo}
-                  alt={game.teams.away.name}
-                  className="w-20 h-20 object-contain"
-                />
-                <div className="flex-1">
-                  <h2 className="text-2xl font-bold text-white mb-1">
-                    {game.teams.away.name}
-                  </h2>
-                  <p className="text-gray-500 text-sm">Away</p>
-                </div>
-                <div className="text-5xl font-black text-white">
-                  {game.scores.away ?? 0}
-                </div>
+            <div className="flex-1 text-center">
+              <img
+                src={game.teams.away.logo}
+                alt={game.teams.away.name}
+                className="w-24 h-24 mx-auto object-contain mb-4"
+              />
+              <h2 className="text-2xl font-bold text-white mb-2">
+                {game.teams.away.name}
+              </h2>
+              <p className="text-gray-500 text-sm mb-3">Away</p>
+              <div className="text-6xl font-black text-cyan-400">
+                {game.scores.away ?? 0}
               </div>
             </div>
-          </div>
 
-          <div className="my-6 border-t border-white/10"></div>
+            {/* VS Divider */}
+            <div className="flex flex-col items-center px-4">
+              <div className="text-gray-500 font-bold text-2xl">VS</div>
+              <div className="h-32 w-px bg-gradient-to-b from-transparent via-gray-600 to-transparent my-4"></div>
+            </div>
 
-          <div className="flex items-center justify-between gap-8">
             {/* Home Team */}
-            <div className="flex-1">
-              <div className="flex items-center gap-6">
-                <img
-                  src={game.teams.home.logo}
-                  alt={game.teams.home.name}
-                  className="w-20 h-20 object-contain"
-                />
-                <div className="flex-1">
-                  <h2 className="text-2xl font-bold text-white mb-1">
-                    {game.teams.home.name}
-                  </h2>
-                  <p className="text-gray-500 text-sm">Home</p>
-                </div>
-                <div className="text-5xl font-black text-white">
-                  {game.scores.home ?? 0}
-                </div>
+            <div className="flex-1 text-center">
+              <img
+                src={game.teams.home.logo}
+                alt={game.teams.home.name}
+                className="w-24 h-24 mx-auto object-contain mb-4"
+              />
+              <h2 className="text-2xl font-bold text-white mb-2">
+                {game.teams.home.name}
+              </h2>
+              <p className="text-gray-500 text-sm mb-3">Home</p>
+              <div className="text-6xl font-black text-cyan-400">
+                {game.scores.home ?? 0}
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* Period by Period Scores */}
-        <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl p-6 mb-6">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-white/10">
-                  <th className="py-3 px-4 text-left text-gray-400 font-semibold text-sm">Team</th>
-                  <th className="py-3 px-4 text-center text-gray-400 font-semibold text-sm">1</th>
-                  <th className="py-3 px-4 text-center text-gray-400 font-semibold text-sm">2</th>
-                  <th className="py-3 px-4 text-center text-gray-400 font-semibold text-sm">3</th>
-                  {game.periods.overtime && (
-                    <th className="py-3 px-4 text-center text-gray-400 font-semibold text-sm">OT</th>
-                  )}
-                  <th className="py-3 px-4 text-center text-cyan-400 font-bold text-sm">T</th>
-                </tr>
-              </thead>
-              <tbody>
-                {/* Away Team Row */}
-                <tr className="border-b border-white/5">
-                  <td className="py-4 px-4 text-white font-semibold">
-                    {game.teams.away.name}
-                  </td>
-                  <td className="py-4 px-4 text-center text-gray-300">
-                    {parsePeriodScore(game.periods.first, 'away')}
-                  </td>
-                  <td className="py-4 px-4 text-center text-gray-300">
-                    {parsePeriodScore(game.periods.second, 'away')}
-                  </td>
-                  <td className="py-4 px-4 text-center text-gray-300">
-                    {parsePeriodScore(game.periods.third, 'away')}
-                  </td>
-                  {game.periods.overtime && (
-                    <td className="py-4 px-4 text-center text-gray-300">
-                      {parsePeriodScore(game.periods.overtime, 'away')}
-                    </td>
-                  )}
-                  <td className="py-4 px-4 text-center text-cyan-400 font-bold text-lg">
-                    {game.scores.away ?? 0}
-                  </td>
-                </tr>
-                {/* Home Team Row */}
-                <tr>
-                  <td className="py-4 px-4 text-white font-semibold">
-                    {game.teams.home.name}
-                  </td>
-                  <td className="py-4 px-4 text-center text-gray-300">
-                    {parsePeriodScore(game.periods.first, 'home')}
-                  </td>
-                  <td className="py-4 px-4 text-center text-gray-300">
-                    {parsePeriodScore(game.periods.second, 'home')}
-                  </td>
-                  <td className="py-4 px-4 text-center text-gray-300">
-                    {parsePeriodScore(game.periods.third, 'home')}
-                  </td>
-                  {game.periods.overtime && (
-                    <td className="py-4 px-4 text-center text-gray-300">
-                      {parsePeriodScore(game.periods.overtime, 'home')}
-                    </td>
-                  )}
-                  <td className="py-4 px-4 text-center text-cyan-400 font-bold text-lg">
-                    {game.scores.home ?? 0}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
           </div>
         </div>
 

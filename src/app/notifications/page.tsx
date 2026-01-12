@@ -144,7 +144,7 @@ export default function NotificationsPage() {
         <Sidebar />
       </div>
 
-      <div className="max-w-[1000px] border-r border-white border-opacity-20 overflow-y-auto">
+      <div className="max-w-[1000px] min-w-[655px] border-r border-white border-opacity-20 overflow-y-auto">
         {/* Header */}
         <div className="sticky top-0 bg-black/80 backdrop-blur-md z-10">
           <div className="p-4 flex items-center justify-between">

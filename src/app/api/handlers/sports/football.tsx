@@ -24,12 +24,8 @@ export default async function FootballMatchesHandler() {
       <div className="grid auto-rows-fr gap-4 sm:gap-5 lg:gap-6 [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))]">
         {sortedMatches.length === 0 ? (
           <div className="col-span-full text-center py-20">
-            <div className="text-gray-400 text-lg font-medium">
-              Loading live matches...
-            </div>
-            <p className="text-gray-500 text-sm mt-2">
-              Fetching live football scores and match data
-            </p>
+            <div className="text-gray-400 text-lg font-medium">No live matches available</div>
+            <p className="text-gray-500 text-sm mt-2">No live football matches right now</p>
           </div>
         ) : (
           sortedMatches.map((match: any) => (

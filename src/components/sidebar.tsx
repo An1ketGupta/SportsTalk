@@ -47,7 +47,7 @@ export default function Sidebar({
         <Button onClick={()=>{
             if(setAddPost)
             setAddPost((c)=>!c)
-        }} className="w-auto bg-white text-black px-6 h-14 hover:bg-gray-300 text-lg font-medium">
+        }} className="w-auto bg-white text-black px-4 h-14 hover:bg-gray-300 text-lg font-medium">
             <div className="flex gap-3">
                 <MdPostAdd size={'28px'} />
                 <div className={`hidden ${isMessagesPage ? "" : "xl:block"}`}>Post</div>

@@ -24,11 +24,11 @@ export default async function F1MatchesHandler() {
                 return (
                         <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-6">
                 <div className="grid auto-rows-fr gap-4 sm:gap-5 lg:gap-6 [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))]">
-                        {sortedRaces.length === 0 ? (
-                            <div className="col-span-full text-center py-20">
-                                <div className="text-gray-400 text-lg font-medium">Loading F1 races...</div>
-                                <p className="text-gray-500 text-sm mt-2">Fetching race schedules and standings</p>
-                            </div>
+                                {sortedRaces.length === 0 ? (
+                                    <div className="col-span-full text-center py-20">
+                                        <div className="text-gray-400 text-lg font-medium">No upcoming F1 races</div>
+                                        <p className="text-gray-500 text-sm mt-2">No upcoming or live F1 races right now</p>
+                                    </div>
                         ) : (
                             sortedRaces.map((race: any) => {
                                 return (

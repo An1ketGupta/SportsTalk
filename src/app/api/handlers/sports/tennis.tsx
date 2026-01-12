@@ -23,40 +23,47 @@ export default async function TennisMatchesHandler() {
       <div className="grid auto-rows-fr gap-4 sm:gap-5 lg:gap-6 [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))]">
         {sortedMatches.length === 0 ? (
           <div className="col-span-full text-center py-20">
-            <div className="text-gray-400 text-lg font-medium">
-              Loading tennis matches...
-            </div>
-            <p className="text-gray-500 text-sm mt-2">
-              Fetching live tennis scores and match data
-            </p>
+            <div className="text-gray-400 text-lg font-medium">No live matches available</div>
+            <p className="text-gray-500 text-sm mt-2">No live tennis matches right now</p>
           </div>
         ) : (
-          sortedMatches.map((match: any) => (
-            <MatchCard
-              key={match.id}
-              matchId={match.id}
-              league={{
-                name: match.tournament?.name || "Tennis Match",
-                emoji: "🎾",
-                round: match.groundType || "Indoor",
-              }}
-              homeTeam={{
-                name: match.homeTeam?.shortName || match.homeTeam?.name || "Player 1",
-                logo: match.homeTeam?.image || "/api/placeholder",
-                goals: match.homeScore?.current ?? 0,
-              }}
-              awayTeam={{
-                name: match.awayTeam?.shortName || match.awayTeam?.name || "Player 2",
-                logo: match.awayTeam?.image || "/api/placeholder",
-                goals: match.awayScore?.current ?? 0,
-              }}
-              status={{
-                long: typeof match.status === 'string' ? match.status : 'Live',
-                short: typeof match.status === 'string' ? match.status : undefined,
-              }}
-              href={`../match/tn${match.id}`}
-            />
-          ))
+          sortedMatches.map((match: any) => {
+            // Generate player avatar URLs using country flag or initials
+            const getPlayerImage = (team: any) => {
+              if (team?.country?.alpha2) {
+                return `https://flagcdn.com/w80/${team.country.alpha2.toLowerCase()}.png`;
+              }
+              const name = team?.shortName || team?.name || "Player";
+              return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=1e293b&color=10b981&size=128&bold=true`;
+            };
+
+            return (
+              <MatchCard
+                key={match.id}
+                matchId={match.id}
+                league={{
+                  name: match.tournament?.name || "Tennis Match",
+                  emoji: "🎾",
+                  round: match.groundType || "Indoor",
+                }}
+                homeTeam={{
+                  name: match.homeTeam?.shortName || match.homeTeam?.name || "Player 1",
+                  logo: getPlayerImage(match.homeTeam),
+                  goals: match.homeScore?.current ?? 0,
+                }}
+                awayTeam={{
+                  name: match.awayTeam?.shortName || match.awayTeam?.name || "Player 2",
+                  logo: getPlayerImage(match.awayTeam),
+                  goals: match.awayScore?.current ?? 0,
+                }}
+                status={{
+                  long: typeof match.status === 'string' ? match.status : 'Live',
+                  short: typeof match.status === 'string' ? match.status : undefined,
+                }}
+                href={`../match/tn${match.id}`}
+              />
+            );
+          })
         )}
       </div>
     </main>
@@ -75,8 +82,26 @@ export async function TennisMatchByIdHandler({ id }: { id: string }) {
     next: { revalidate: 30 },
   });
 
+  // Fetch match statistics
+  const statsResponse = await fetch(`https://tennisapi1.p.rapidapi.com/api/tennis/event/${id}/statistics`, {
+    method: "GET",
+    headers: {
+      "x-rapidapi-key": "e60478613emsh5570a46ef93e082p1752e5jsndf6235d350ab",
+      "x-rapidapi-host": "tennisapi1.p.rapidapi.com",
+    },
+    next: { revalidate: 30 },
+  });
+
   const json = await response.json();
   const match = json.event;
+  
+  let statistics: any = null;
+  try {
+    const statsJson = await statsResponse.json();
+    statistics = statsJson.statistics;
+  } catch (e) {
+    // Statistics may not be available for all matches
+  }
 
   if (!match) {
     return (
@@ -101,24 +126,67 @@ export async function TennisMatchByIdHandler({ id }: { id: string }) {
     }
   }
 
+  // Calculate tiebreak info
+  const homeTiebreaks = match.homeScore?.period1TieBreak || match.homeScore?.period2TieBreak || match.homeScore?.period3TieBreak;
+  const awayTiebreaks = match.awayScore?.period1TieBreak || match.awayScore?.period2TieBreak || match.awayScore?.period3TieBreak;
+
   return (
     <div className="bg-[#1a1a1a] w-full border border-white/10 rounded-3xl p-8 shadow-2xl">
-      {/* Tournament Header */}
-      <div className="text-center mb-8">
+      {/* Header with Tournament and Status */}
+      <div className="flex items-center justify-between mb-6">
+        {/* Tournament Info */}
         <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-900/20 border border-emerald-400/30 rounded-full">
           <span className="text-2xl">🎾</span>
           <span className="text-emerald-400 font-bold text-lg">
             {match.tournament?.name || "Tennis Match"}
           </span>
         </div>
-        <div className="mt-3 flex justify-center gap-2">
-          <span className="text-xs px-3 py-1 rounded-full bg-gray-700 text-gray-300">
-            {match.groundType || "Indoor"}
-          </span>
+
+        {/* Status */}
+        <div className="flex items-center gap-3">
+          {match.startTimestamp && (
+            <div className="text-right">
+              <div className="text-gray-400 text-xs">
+                {new Date(match.startTimestamp * 1000).toLocaleDateString('en-US', { 
+                  weekday: 'short', 
+                  month: 'short', 
+                  day: 'numeric' 
+                })}
+              </div>
+              <div className="text-white font-semibold text-sm">
+                {new Date(match.startTimestamp * 1000).toLocaleTimeString('en-US', { 
+                  hour: '2-digit', 
+                  minute: '2-digit'
+                })}
+              </div>
+            </div>
+          )}
+          <div className="bg-black/30 rounded-xl px-4 py-2 border border-white/5">
+            <div className="text-emerald-400 font-bold text-sm">{match.status?.description || "Live"}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Venue & Round Info */}
+      <div className="bg-black/30 rounded-xl p-4 mb-6 border border-white/5 text-center">
+        <div className="flex items-center justify-center gap-4 flex-wrap">
+          {match.groundType && (
+            <div className="flex items-center gap-2">
+              <span className="text-xl">🏟️</span>
+              <span className="text-white font-semibold">{match.groundType}</span>
+            </div>
+          )}
           {match.roundInfo?.name && (
-            <span className="text-xs px-3 py-1 rounded-full bg-gray-700 text-gray-300">
-              {match.roundInfo.name}
-            </span>
+            <>
+              <span className="text-gray-500">•</span>
+              <span className="text-gray-400">{match.roundInfo.name}</span>
+            </>
+          )}
+          {match.tournament?.category?.name && (
+            <>
+              <span className="text-gray-500">•</span>
+              <span className="text-gray-400">{match.tournament.category.name}</span>
+            </>
           )}
         </div>
       </div>
@@ -277,38 +345,45 @@ export async function TennisMatchByIdHandler({ id }: { id: string }) {
         </span>
       </div>
 
-      {/* Match Details */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Tournament Info */}
-        <div className="bg-black/20 rounded-lg p-4 border border-white/5">
-          <div className="flex items-center gap-3">
-            <span className="text-3xl">🏆</span>
-            <div>
-              <div className="text-gray-400 text-xs uppercase font-semibold mb-1">Tournament</div>
-              <div className="text-white font-medium">
-                {match.tournament?.name || "Tennis Match"}
+      {/* Match Statistics */}
+      {statistics && statistics.length > 0 && (
+        <div className="bg-black/30 rounded-xl p-6 mb-6 border border-white/5">
+          <h3 className="text-lg font-bold text-white mb-4 text-center">Match Statistics</h3>
+          <div className="space-y-4">
+            {statistics[0]?.groups?.map((group: any, groupIdx: number) => (
+              <div key={groupIdx}>
+                <h4 className="text-emerald-400 font-semibold text-sm mb-3 uppercase tracking-wide">
+                  {group.groupName}
+                </h4>
+                <div className="space-y-3">
+                  {group.statisticsItems?.map((stat: any, statIdx: number) => (
+                    <div key={statIdx} className="flex items-center justify-between">
+                      <div className="flex-1 text-right pr-4">
+                        <span className={`font-bold ${
+                          Number(stat.home) > Number(stat.away) ? 'text-emerald-400' : 'text-gray-300'
+                        }`}>
+                          {stat.home}
+                        </span>
+                      </div>
+                      <div className="text-gray-400 text-sm text-center min-w-[120px]">
+                        {stat.name}
+                      </div>
+                      <div className="flex-1 text-left pl-4">
+                        <span className={`font-bold ${
+                          Number(stat.away) > Number(stat.home) ? 'text-emerald-400' : 'text-gray-300'
+                        }`}>
+                          {stat.away}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-              {match.season && (
-                <div className="text-gray-400 text-sm">Season {match.season.year}</div>
-              )}
-            </div>
+            ))}
           </div>
         </div>
+      )}
 
-        {/* Match Type */}
-        <div className="bg-black/20 rounded-lg p-4 border border-white/5">
-          <div className="flex items-center gap-3">
-            <span className="text-3xl">🎾</span>
-            <div>
-              <div className="text-gray-400 text-xs uppercase font-semibold mb-1">Match Type</div>
-              <div className="text-white font-medium">{match.groundType || "Indoor"}</div>
-              {match.roundInfo?.name && (
-                <div className="text-gray-400 text-sm">{match.roundInfo.name}</div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
