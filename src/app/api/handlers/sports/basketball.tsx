@@ -1,21 +1,13 @@
 import MatchCard from '@/components/MatchCard';
 import { sortByLiveStatus } from '@/lib/liveStatus';
+import { fetchSportsData } from "@/app/actions/sports";
 
 export default async function BasketballMatchesHandler() {
     const todayDate = new Date().toISOString().split("T")[0];
+    const url = `https://v1.basketball.api-sports.io/games?date=${todayDate}`;
+    const json = await fetchSportsData(url, "v1.basketball.api-sports.io");
 
-    const response = await fetch(`https://v1.basketball.api-sports.io/games?date=${todayDate}`, {
-        method: 'GET',
-        headers: {
-            "x-rapidapi-host": "v1.basketball.api-sports.io",
-            "x-rapidapi-key": process.env.RAPIDAPI_SPORTS_KEY!
-        },
-        next: {
-            revalidate: 30
-        }
-    });
-
-    const data = await response.json();
+    const data = json || {};
     const matchData = (Array.isArray(data.response) ? data.response : []);
     const sortedMatches = sortByLiveStatus(matchData, (match: any) => match?.status);
 
@@ -28,7 +20,7 @@ export default async function BasketballMatchesHandler() {
                         <p className="text-gray-500 text-sm mt-2">Check back later for upcoming games</p>
                     </div>
                 )}
-                {sortedMatches.map((match:any) => (
+                {sortedMatches.map((match: any) => (
                     <MatchCard
                         key={match.id}
                         matchId={match.id}
@@ -60,35 +52,19 @@ export default async function BasketballMatchesHandler() {
 
 
 export async function BasketballMatchByIdHandler({ id }: { id: string }) {
-    const response = await fetch(`https://v1.basketball.api-sports.io/games?id=${id}`, {
-        method: 'GET',
-        headers: {
-            "x-rapidapi-host": "v1.basketball.api-sports.io",
-            "x-rapidapi-key": process.env.RAPIDAPI_SPORTS_KEY!
-        },
-        next: {
-            revalidate: 30
-        }
-    });
+    const url = `https://v1.basketball.api-sports.io/games?id=${id}`;
+    const json = await fetchSportsData(url, "v1.basketball.api-sports.io");
 
     // Fetch game statistics
-    const statsResponse = await fetch(`https://v1.basketball.api-sports.io/statistics?game=${id}`, {
-        method: 'GET',
-        headers: {
-            "x-rapidapi-host": "v1.basketball.api-sports.io",
-            "x-rapidapi-key": process.env.RAPIDAPI_SPORTS_KEY!
-        },
-        next: {
-            revalidate: 30
-        }
-    });
-    
-    const data = await response.json();
+    const statsUrl = `https://v1.basketball.api-sports.io/statistics?game=${id}`;
+    const statsJson = await fetchSportsData(statsUrl, "v1.basketball.api-sports.io");
+
+    const data = json || {};
     const matchData = Array.isArray(data.response) ? data.response : [];
 
     let statistics: any[] = [];
     try {
-        const statsData = await statsResponse.json();
+        const statsData = statsJson || {};
         statistics = Array.isArray(statsData.response) ? statsData.response : [];
     } catch (e) {
         // Statistics may not be available
@@ -112,7 +88,7 @@ export async function BasketballMatchByIdHandler({ id }: { id: string }) {
 
     return (
         <div className="w-full space-y-4 p-4 md:p-6">
-            
+
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -122,13 +98,12 @@ export async function BasketballMatchByIdHandler({ id }: { id: string }) {
                         <p className="text-gray-500 text-sm">{match.league?.season ? `Season ${match.league.season}` : match.country?.name}</p>
                     </div>
                 </div>
-                <div className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
-                    isGameLive 
-                        ? 'bg-green-500/10 text-green-400 border border-green-500/20' 
-                        : isGameFinished 
-                            ? 'bg-gray-500/10 text-gray-400 border border-gray-500/20' 
+                <div className={`px-3 py-1.5 rounded-full text-xs font-semibold ${isGameLive
+                        ? 'bg-green-500/10 text-green-400 border border-green-500/20'
+                        : isGameFinished
+                            ? 'bg-gray-500/10 text-gray-400 border border-gray-500/20'
                             : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
-                }`}>
+                    }`}>
                     {isGameLive && <span className="inline-block w-1.5 h-1.5 bg-green-400 rounded-full mr-2 animate-pulse" />}
                     {isGameFinished ? "Final" : isGameLive ? match.status?.long : "Scheduled"}
                 </div>
@@ -162,10 +137,10 @@ export async function BasketballMatchByIdHandler({ id }: { id: string }) {
                     {/* Home Team */}
                     <div className="text-center">
                         {match.teams?.home?.logo && (
-                            <img 
-                                src={match.teams.home.logo} 
-                                alt={match.teams.home.name} 
-                                className="w-20 h-20 md:w-28 md:h-28 mx-auto object-contain mb-3" 
+                            <img
+                                src={match.teams.home.logo}
+                                alt={match.teams.home.name}
+                                className="w-20 h-20 md:w-28 md:h-28 mx-auto object-contain mb-3"
                             />
                         )}
                         <h2 className="text-white font-medium text-sm md:text-base mb-2">{match.teams?.home?.name || 'Home'}</h2>
@@ -184,10 +159,10 @@ export async function BasketballMatchByIdHandler({ id }: { id: string }) {
                     {/* Away Team */}
                     <div className="text-center">
                         {match.teams?.away?.logo && (
-                            <img 
-                                src={match.teams.away.logo} 
-                                alt={match.teams.away.name} 
-                                className="w-20 h-20 md:w-28 md:h-28 mx-auto object-contain mb-3" 
+                            <img
+                                src={match.teams.away.logo}
+                                alt={match.teams.away.name}
+                                className="w-20 h-20 md:w-28 md:h-28 mx-auto object-contain mb-3"
                             />
                         )}
                         <h2 className="text-white font-medium text-sm md:text-base mb-2">{match.teams?.away?.name || 'Away'}</h2>
@@ -203,7 +178,7 @@ export async function BasketballMatchByIdHandler({ id }: { id: string }) {
                 <div className="px-4 py-3 border-b border-white/5">
                     <h3 className="text-white text-sm font-medium">Score by Quarter</h3>
                 </div>
-                
+
                 <div className="overflow-x-auto">
                     <table className="w-full">
                         <thead>
@@ -263,7 +238,7 @@ export async function BasketballMatchByIdHandler({ id }: { id: string }) {
                             </div>
                         </div>
                     </div>
-                    
+
                     <div className="p-4 space-y-4">
                         {/* Field Goals */}
                         {(homeStats?.statistics?.fieldGoalsMade !== undefined || awayStats?.statistics?.fieldGoalsMade !== undefined) && (
@@ -398,7 +373,7 @@ export async function BasketballMatchByIdHandler({ id }: { id: string }) {
                     <div className="px-4 py-3 border-b border-white/5">
                         <h3 className="text-white text-sm font-medium">Match Info</h3>
                     </div>
-                    
+
                     <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-white/5">
                         {match.league?.name && (
                             <div className="p-4 text-center">

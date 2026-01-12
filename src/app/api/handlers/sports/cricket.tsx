@@ -3,30 +3,26 @@
 import React from 'react';
 import MatchCard from '@/components/MatchCard';
 import { sortByLiveStatus } from '@/lib/liveStatus';
+import { fetchCricketData } from "@/app/actions/sports";
 
 export default async function CricketMatchesHandler() {
-    const response = await fetch('https://Cricbuzz-Official-Cricket-API.proxy-production.allthingsdev.co/matches/live', {
-        method: 'GET',
-        headers: {
-            'x-apihub-key': process.env.CRICKET_API_KEY!,
-            'x-apihub-host': "Cricbuzz-Official-Cricket-API.allthingsdev.co",
-            'x-apihub-endpoint': "e0cb5c72-38e1-435e-8bf0-6b38fbe923b7",
-        },
-        next: {
-            revalidate: 30
-        }
-    });
+    const url = 'https://Cricbuzz-Official-Cricket-API.proxy-production.allthingsdev.co/matches/live';
+    const json = await fetchCricketData(
+        url,
+        "Cricbuzz-Official-Cricket-API.allthingsdev.co",
+        "e0cb5c72-38e1-435e-8bf0-6b38fbe923b7"
+    );
 
-    const data = await response.json();
+    const data = json || {};
     const response2 = data.typeMatches;
-    const matches:any = [];
+    const matches: any = [];
 
     if (Array.isArray(response2)) {
         response2.forEach((matchTypeObj) => {
             if (matchTypeObj.seriesMatches) {
-                matchTypeObj.seriesMatches.forEach((seriesWrapper:any) => {
+                matchTypeObj.seriesMatches.forEach((seriesWrapper: any) => {
                     if (seriesWrapper?.seriesAdWrapper?.matches) {
-                        seriesWrapper.seriesAdWrapper.matches.forEach((match:any) => {
+                        seriesWrapper.seriesAdWrapper.matches.forEach((match: any) => {
                             matches.push(match);
                         });
                     }
@@ -46,7 +42,7 @@ export default async function CricketMatchesHandler() {
                         <p className="text-gray-500 text-sm mt-2">No live cricket matches right now</p>
                     </div>
                 ) : (
-                    sortedMatches.map((match:any) => {
+                    sortedMatches.map((match: any) => {
                         const info = match.matchInfo;
                         const venue = info.venueInfo;
                         const startDate = new Date(Number(info.startDate));
@@ -61,11 +57,11 @@ export default async function CricketMatchesHandler() {
                         const wickets = (innings: any) => innings?.wickets ?? 0;
                         const overs = (innings: any) => innings?.overs ? `${innings.overs} ov` : '';
 
-                        const team1Logo = info.team1.imageId 
+                        const team1Logo = info.team1.imageId
                             ? `https://static.cricbuzz.com/a/img/v1/i1/c${info.team1.imageId}/i.jpg`
                             : `https://ui-avatars.com/api/?name=${encodeURIComponent(info.team1.teamSName || info.team1.teamName)}&background=1e293b&color=fff&size=128`;
-                        
-                        const team2Logo = info.team2.imageId 
+
+                        const team2Logo = info.team2.imageId
                             ? `https://static.cricbuzz.com/a/img/v1/i1/c${info.team2.imageId}/i.jpg`
                             : `https://ui-avatars.com/api/?name=${encodeURIComponent(info.team2.teamSName || info.team2.teamName)}&background=1e293b&color=fff&size=128`;
 
@@ -107,34 +103,25 @@ export default async function CricketMatchesHandler() {
 
 export async function CricketMatchByIdHandler({ id }: { id: string }) {
     // Fetch match details
-    const matchResponse = await fetch(`https://Cricbuzz-Official-Cricket-API.proxy-production.allthingsdev.co/match/${id}`, {
-        method: 'GET',
-        headers: {
-            'x-apihub-key': process.env.CRICKET_API_KEY!,
-            'x-apihub-host': "Cricbuzz-Official-Cricket-API.allthingsdev.co",
-            'x-apihub-endpoint': "ac951751-d311-4d23-8f18-353e75432353",
-        },
-        next: { revalidate: 30 }
-    });
+    const matchUrl = `https://Cricbuzz-Official-Cricket-API.proxy-production.allthingsdev.co/match/${id}`;
+    const matchData = await fetchCricketData(
+        matchUrl,
+        "Cricbuzz-Official-Cricket-API.allthingsdev.co",
+        "ac951751-d311-4d23-8f18-353e75432353"
+    ) || {}; // Handle null fallback
 
     // Fetch live matches to get score data
-    const liveResponse = await fetch('https://Cricbuzz-Official-Cricket-API.proxy-production.allthingsdev.co/matches/live', {
-        method: 'GET',
-        headers: {
-            'x-apihub-key': process.env.CRICKET_API_KEY!,
-            'x-apihub-host': "Cricbuzz-Official-Cricket-API.allthingsdev.co",
-            'x-apihub-endpoint': "e0cb5c72-38e1-435e-8bf0-6b38fbe923b7",
-        },
-        next: { revalidate: 30 }
-    });
+    const liveUrl = 'https://Cricbuzz-Official-Cricket-API.proxy-production.allthingsdev.co/matches/live';
+    const liveData = await fetchCricketData(
+        liveUrl,
+        "Cricbuzz-Official-Cricket-API.allthingsdev.co",
+        "e0cb5c72-38e1-435e-8bf0-6b38fbe923b7"
+    ) || {};
 
-    const matchData = await matchResponse.json();
-    const liveData = await liveResponse.json();
-    
     // Find this match in live matches to get the score
     let matchScore: any = null;
     const typeMatches = liveData.typeMatches || [];
-    
+
     for (const typeMatch of typeMatches) {
         if (typeMatch.seriesMatches) {
             for (const seriesWrapper of typeMatch.seriesMatches) {
@@ -151,7 +138,7 @@ export async function CricketMatchByIdHandler({ id }: { id: string }) {
 
     // The single match endpoint returns lowercase keys
     const info = matchData;
-    
+
     // Get team scores from matchScore (from live endpoint)
     const team1Score = matchScore?.team1Score?.inngs1;
     const team2Score = matchScore?.team2Score?.inngs1;
@@ -159,15 +146,15 @@ export async function CricketMatchByIdHandler({ id }: { id: string }) {
     const team2Score2 = matchScore?.team2Score?.inngs2;
 
     // Get team logos
-    const team1Logo = info.team1?.imageid 
+    const team1Logo = info.team1?.imageid
         ? `https://static.cricbuzz.com/a/img/v1/i1/c${info.team1.imageid}/i.jpg`
         : `https://ui-avatars.com/api/?name=${encodeURIComponent(info.team1?.teamsname || info.team1?.teamname || 'T1')}&background=1e293b&color=22c55e&size=128&bold=true`;
-    
-    const team2Logo = info.team2?.imageid 
+
+    const team2Logo = info.team2?.imageid
         ? `https://static.cricbuzz.com/a/img/v1/i1/c${info.team2.imageid}/i.jpg`
         : `https://ui-avatars.com/api/?name=${encodeURIComponent(info.team2?.teamsname || info.team2?.teamname || 'T2')}&background=1e293b&color=22c55e&size=128&bold=true`;
 
-    return <CricketMatchUI 
+    return <CricketMatchUI
         info={info}
         team1Score={team1Score}
         team2Score={team2Score}
@@ -223,7 +210,7 @@ function CricketMatchUI({
 
     return (
         <div className="w-full space-y-4 p-4 md:p-6">
-            
+
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -233,13 +220,12 @@ function CricketMatchUI({
                         <p className="text-gray-500 text-sm">{info.matchdesc || info.matchDesc}</p>
                     </div>
                 </div>
-                <div className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
-                    isLive 
-                        ? 'bg-green-500/10 text-green-400 border border-green-500/20' 
-                        : isComplete 
-                            ? 'bg-gray-500/10 text-gray-400 border border-gray-500/20' 
+                <div className={`px-3 py-1.5 rounded-full text-xs font-semibold ${isLive
+                        ? 'bg-green-500/10 text-green-400 border border-green-500/20'
+                        : isComplete
+                            ? 'bg-gray-500/10 text-gray-400 border border-gray-500/20'
                             : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
-                }`}>
+                    }`}>
                     {isLive && <span className="inline-block w-1.5 h-1.5 bg-green-400 rounded-full mr-2 animate-pulse" />}
                     {isComplete ? "Completed" : isLive ? "Live" : "Scheduled"}
                 </div>
@@ -256,15 +242,15 @@ function CricketMatchUI({
                 <div className="grid grid-cols-3 items-center">
                     {/* Team 1 */}
                     <div className="text-center">
-                        <img 
-                            src={team1Logo} 
-                            alt={info.team1?.teamname || info.team1?.teamName} 
-                            className="w-16 h-16 md:w-24 md:h-24 mx-auto object-contain mb-3 rounded-full bg-black/20" 
+                        <img
+                            src={team1Logo}
+                            alt={info.team1?.teamname || info.team1?.teamName}
+                            className="w-16 h-16 md:w-24 md:h-24 mx-auto object-contain mb-3 rounded-full bg-black/20"
                         />
                         <h2 className="text-white font-medium text-sm md:text-base mb-1">
                             {info.team1?.teamsname || info.team1?.teamSName || info.team1?.teamname || info.team1?.teamName}
                         </h2>
-                        
+
                         {t1Score ? (
                             <div className="mt-2">
                                 <p className="text-4xl md:text-5xl font-bold text-white tabular-nums">
@@ -294,15 +280,15 @@ function CricketMatchUI({
 
                     {/* Team 2 */}
                     <div className="text-center">
-                        <img 
-                            src={team2Logo} 
-                            alt={info.team2?.teamname || info.team2?.teamName} 
-                            className="w-16 h-16 md:w-24 md:h-24 mx-auto object-contain mb-3 rounded-full bg-black/20" 
+                        <img
+                            src={team2Logo}
+                            alt={info.team2?.teamname || info.team2?.teamName}
+                            className="w-16 h-16 md:w-24 md:h-24 mx-auto object-contain mb-3 rounded-full bg-black/20"
                         />
                         <h2 className="text-white font-medium text-sm md:text-base mb-1">
                             {info.team2?.teamsname || info.team2?.teamSName || info.team2?.teamname || info.team2?.teamName}
                         </h2>
-                        
+
                         {t2Score ? (
                             <div className="mt-2">
                                 <p className="text-4xl md:text-5xl font-bold text-white tabular-nums">

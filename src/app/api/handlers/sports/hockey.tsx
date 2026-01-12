@@ -1,22 +1,13 @@
 import MatchCard from '@/components/MatchCard';
 import { sortByLiveStatus } from '@/lib/liveStatus';
+import { fetchSportsData } from "@/app/actions/sports";
 
 export default async function HocketMatchesHandler() {
   const todaydate = new Date().toISOString().split("T")[0]
+  const url = `https://v1.hockey.api-sports.io/games?date=${todaydate}`;
+  const json = await fetchSportsData(url, "v1.hockey.api-sports.io");
 
-  const response = await fetch(
-    `https://v1.hockey.api-sports.io/games?date=${todaydate}`,
-    {
-      headers: {
-        "x-rapidapi-host": "v1.hockey.api-sports.io",
-        "x-rapidapi-key": process.env.RAPIDAPI_SPORTS_KEY!,
-      },
-      next: { revalidate: 30 },
-    }
-  )
-
-  const json = await response.json()
-  const data = json.response
+  const data = json ? json.response : []
   const matchData = Array.isArray(data) ? data : []
   const sortedGames = sortByLiveStatus(matchData, (game: any) => game?.status)
 
@@ -64,19 +55,9 @@ export default async function HocketMatchesHandler() {
 }
 
 export async function HockeyMatchByIdHandler({ id }: { id: string }) {
-  const response = await fetch(
-    `https://v1.hockey.api-sports.io/games?id=${id}`,
-    {
-      headers: {
-        "x-rapidapi-host": "v1.hockey.api-sports.io",
-        "x-rapidapi-key": process.env.RAPIDAPI_SPORTS_KEY!,
-      },
-      next: { revalidate: 30 },
-    }
-  )
-
-  const json = await response.json()
-  const matchData = Array.isArray(json.response) ? json.response : []
+  const url = `https://v1.hockey.api-sports.io/games?id=${id}`;
+  const json = await fetchSportsData(url, "v1.hockey.api-sports.io");
+  const matchData = json && Array.isArray(json.response) ? json.response : []
 
   if (matchData.length === 0) {
     return (
@@ -88,13 +69,13 @@ export async function HockeyMatchByIdHandler({ id }: { id: string }) {
 
   const game = matchData[0]
   const gameDate = new Date(game.date)
-  
+
   const isGameLive = game.status?.short && !["FT", "NS", "AOT", "POST"].includes(game.status.short);
   const isGameFinished = game.status?.short === "FT" || game.status?.short === "AOT" || game.status?.long?.toLowerCase().includes("finished");
 
   return (
     <div className="w-full space-y-4 p-4 md:p-6">
-      
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -104,13 +85,12 @@ export async function HockeyMatchByIdHandler({ id }: { id: string }) {
             <p className="text-gray-500 text-sm">{game.country?.name}</p>
           </div>
         </div>
-        <div className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
-          isGameLive 
-            ? 'bg-green-500/10 text-green-400 border border-green-500/20' 
-            : isGameFinished 
-              ? 'bg-gray-500/10 text-gray-400 border border-gray-500/20' 
+        <div className={`px-3 py-1.5 rounded-full text-xs font-semibold ${isGameLive
+            ? 'bg-green-500/10 text-green-400 border border-green-500/20'
+            : isGameFinished
+              ? 'bg-gray-500/10 text-gray-400 border border-gray-500/20'
               : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
-        }`}>
+          }`}>
           {isGameLive && <span className="inline-block w-1.5 h-1.5 bg-green-400 rounded-full mr-2 animate-pulse" />}
           {isGameFinished ? (game.periods?.overtime ? "Final / OT" : "Final") : isGameLive ? game.status?.long : "Scheduled"}
         </div>
@@ -137,10 +117,10 @@ export async function HockeyMatchByIdHandler({ id }: { id: string }) {
         <div className="grid grid-cols-3 items-center">
           {/* Home Team */}
           <div className="text-center">
-            <img 
-              src={game.teams?.home?.logo} 
-              alt={game.teams?.home?.name} 
-              className="w-20 h-20 md:w-28 md:h-28 mx-auto object-contain mb-3" 
+            <img
+              src={game.teams?.home?.logo}
+              alt={game.teams?.home?.name}
+              className="w-20 h-20 md:w-28 md:h-28 mx-auto object-contain mb-3"
             />
             <h2 className="text-white font-medium text-sm md:text-base mb-2">{game.teams?.home?.name || 'Home'}</h2>
             <p className="text-5xl md:text-7xl font-bold text-white tabular-nums">
@@ -157,10 +137,10 @@ export async function HockeyMatchByIdHandler({ id }: { id: string }) {
 
           {/* Away Team */}
           <div className="text-center">
-            <img 
-              src={game.teams?.away?.logo} 
-              alt={game.teams?.away?.name} 
-              className="w-20 h-20 md:w-28 md:h-28 mx-auto object-contain mb-3" 
+            <img
+              src={game.teams?.away?.logo}
+              alt={game.teams?.away?.name}
+              className="w-20 h-20 md:w-28 md:h-28 mx-auto object-contain mb-3"
             />
             <h2 className="text-white font-medium text-sm md:text-base mb-2">{game.teams?.away?.name || 'Away'}</h2>
             <p className="text-5xl md:text-7xl font-bold text-white tabular-nums">
@@ -176,7 +156,7 @@ export async function HockeyMatchByIdHandler({ id }: { id: string }) {
           <div className="px-4 py-3 border-b border-white/5">
             <h3 className="text-white text-sm font-medium">Period Scores</h3>
           </div>
-          
+
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
@@ -233,7 +213,7 @@ export async function HockeyMatchByIdHandler({ id }: { id: string }) {
             </div>
           </div>
         </div>
-        
+
         <div className="p-4 space-y-4">
           {[
             { label: 'Goals', home: game.scores?.home ?? 0, away: game.scores?.away ?? 0 },
@@ -247,13 +227,13 @@ export async function HockeyMatchByIdHandler({ id }: { id: string }) {
           ].map((stat, idx) => {
             const total = (stat.home || 0) + (stat.away || 0) || 1;
             const homePercent = ((stat.home || 0) / total) * 100;
-            const homeWins = stat.label === 'Penalties' || stat.label === 'Penalty Minutes' 
-              ? stat.home < stat.away 
+            const homeWins = stat.label === 'Penalties' || stat.label === 'Penalty Minutes'
+              ? stat.home < stat.away
               : stat.home > stat.away;
             const awayWins = stat.label === 'Penalties' || stat.label === 'Penalty Minutes'
               ? stat.away < stat.home
               : stat.away > stat.home;
-            
+
             return (
               <div key={idx}>
                 <div className="flex items-center justify-between text-sm mb-1.5">

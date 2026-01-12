@@ -1,21 +1,12 @@
 import MatchCard from "@/components/MatchCard";
 import { sortByLiveStatus } from "@/lib/liveStatus";
+import { fetchSportsData } from "@/app/actions/sports";
 
 export default async function FootballMatchesHandler() {
-  const response = await fetch(
-    "https://v3.football.api-sports.io/fixtures?live=61-39-78-135-140",
-    {
-      method: "GET",
-      headers: {
-        "x-rapidapi-host": "v3.football.api-sports.io",
-        "x-rapidapi-key": process.env.RAPIDAPI_SPORTS_KEY!,
-      },
-      next: { revalidate: 30 }, // cache for 30 seconds
-    }
-  );
+  const url = "https://v3.football.api-sports.io/fixtures?live=61-39-78-135-140";
+  const json = await fetchSportsData(url, "v3.football.api-sports.io");
 
-  const json = await response.json();
-  const data = json.response;
+  const data = json ? json.response : [];
   const matchData = Array.isArray(data) ? data : [];
   const sortedMatches = sortByLiveStatus(matchData, (match: any) => match?.fixture?.status);
 
@@ -67,19 +58,9 @@ export async function FootballMatchByIdHandler({
 }: {
   id: string
 }) {
-  const response = await fetch(
-    `https://v3.football.api-sports.io/fixtures?id=${id}`,
-    {
-      method: "GET",
-      headers: {
-        "x-rapidapi-host": "v3.football.api-sports.io",
-        "x-rapidapi-key": process.env.RAPIDAPI_SPORTS_KEY!,
-      },
-      next: { revalidate: 30 }, // cache for 30 seconds
-    }
-  );
-  const matchData = await response.json();
-  const data = Array.isArray(matchData?.response) ? matchData.response[0] : null;
+  const url = `https://v3.football.api-sports.io/fixtures?id=${id}`;
+  const matchData = await fetchSportsData(url, "v3.football.api-sports.io");
+  const data = matchData && Array.isArray(matchData?.response) ? matchData.response[0] : null;
 
   if (!data) {
     return (
@@ -109,7 +90,7 @@ export async function FootballMatchByIdHandler({
 
   return (
     <div className="w-full space-y-4 p-4 md:p-6">
-      
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -119,13 +100,12 @@ export async function FootballMatchByIdHandler({
             <p className="text-gray-500 text-sm">{data.league?.round}</p>
           </div>
         </div>
-        <div className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
-          isGameLive 
-            ? 'bg-green-500/10 text-green-400 border border-green-500/20' 
-            : isGameFinished 
-              ? 'bg-gray-500/10 text-gray-400 border border-gray-500/20' 
+        <div className={`px-3 py-1.5 rounded-full text-xs font-semibold ${isGameLive
+            ? 'bg-green-500/10 text-green-400 border border-green-500/20'
+            : isGameFinished
+              ? 'bg-gray-500/10 text-gray-400 border border-gray-500/20'
               : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
-        }`}>
+          }`}>
           {isGameLive && <span className="inline-block w-1.5 h-1.5 bg-green-400 rounded-full mr-2 animate-pulse" />}
           {isGameFinished ? "Full Time" : isGameLive ? `${status?.elapsed}'` : status?.long || "Scheduled"}
         </div>
@@ -150,10 +130,10 @@ export async function FootballMatchByIdHandler({
         <div className="grid grid-cols-3 items-center">
           {/* Home Team */}
           <div className="text-center">
-            <img 
-              src={home?.logo} 
-              alt={home?.name} 
-              className="w-20 h-20 md:w-28 md:h-28 mx-auto object-contain mb-3" 
+            <img
+              src={home?.logo}
+              alt={home?.name}
+              className="w-20 h-20 md:w-28 md:h-28 mx-auto object-contain mb-3"
             />
             <h2 className="text-white font-medium text-sm md:text-base mb-2">{home?.name}</h2>
             <p className="text-5xl md:text-7xl font-bold text-white tabular-nums">
@@ -170,10 +150,10 @@ export async function FootballMatchByIdHandler({
 
           {/* Away Team */}
           <div className="text-center">
-            <img 
-              src={away?.logo} 
-              alt={away?.name} 
-              className="w-20 h-20 md:w-28 md:h-28 mx-auto object-contain mb-3" 
+            <img
+              src={away?.logo}
+              alt={away?.name}
+              className="w-20 h-20 md:w-28 md:h-28 mx-auto object-contain mb-3"
             />
             <h2 className="text-white font-medium text-sm md:text-base mb-2">{away?.name}</h2>
             <p className="text-5xl md:text-7xl font-bold text-white tabular-nums">
@@ -199,7 +179,7 @@ export async function FootballMatchByIdHandler({
               </div>
             </div>
           </div>
-          
+
           <div className="p-4 space-y-4">
             {homeStats.statistics.slice(0, 8).map((stat: any, idx: number) => {
               const awayStat = awayStats.statistics[idx];
@@ -238,12 +218,12 @@ export async function FootballMatchByIdHandler({
             <h3 className="text-white text-sm font-medium">Match Events</h3>
             <span className="text-gray-500 text-xs">{events.length} events</span>
           </div>
-          
+
           <div className="divide-y divide-white/5 max-h-80 overflow-y-auto scrollbar-hide">
             {events.map((ev: any, idx: number) => {
               const isGoal = ev?.type === 'Goal';
               const isCard = ev?.type === 'Card';
-              
+
               return (
                 <div key={idx} className="px-4 py-3 hover:bg-white/[0.02] transition-colors">
                   <div className="flex items-start gap-3">
@@ -276,7 +256,7 @@ export async function FootballMatchByIdHandler({
           <div className="px-4 py-3 border-b border-white/5">
             <h3 className="text-white text-sm font-medium">Lineups</h3>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-white/5">
             {/* Home Lineup */}
             <div className="p-4">

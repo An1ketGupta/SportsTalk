@@ -1,22 +1,13 @@
 import MatchCard from '@/components/MatchCard';
 import { sortByLiveStatus } from '@/lib/liveStatus';
+import { fetchSportsData } from "@/app/actions/sports";
 
 export default async function MMAMatchesHandler() {
   const todaydate = new Date().toISOString().split("T")[0]
+  const url = `https://v1.mma.api-sports.io/fights?date=${todaydate}`;
+  const json = await fetchSportsData(url, "v1.mma.api-sports.io");
 
-  const response = await fetch(
-    `https://v1.mma.api-sports.io/fights?date=${todaydate}`,
-    {
-      headers: {
-        "x-rapidapi-host": "v1.mma.api-sports.io",
-        "x-rapidapi-key": process.env.RAPIDAPI_SPORTS_KEY!,
-      },
-      next: { revalidate: 30 },
-    }
-  )
-
-  const json = await response.json()
-  const data = json.response
+  const data = json ? json.response : []
   const matchData = Array.isArray(data) ? data : []
   const sortedFights = sortByLiveStatus(matchData, (fight: any) => fight?.status)
 

@@ -1,22 +1,13 @@
 import MatchCard from '@/components/MatchCard';
 import { sortByLiveStatus } from '@/lib/liveStatus';
+import { fetchSportsData } from "@/app/actions/sports";
 
 export default async function NBAMatchesHandler() {
   const todaydate = new Date().toISOString().split("T")[0]
+  const url = `https://v2.nba.api-sports.io/games?date=${todaydate}`;
+  const json = await fetchSportsData(url, "v2.nba.api-sports.io");
 
-  const response = await fetch(
-    `https://v2.nba.api-sports.io/games?date=${todaydate}`,
-    {
-      headers: {
-        "x-rapidapi-host": "v2.nba.api-sports.io",
-        "x-rapidapi-key": process.env.RAPIDAPI_SPORTS_KEY!,
-      },
-      next: { revalidate: 30 },
-    }
-  )
-
-  const json = await response.json()
-  const data = json.response
+  const data = json ? json.response : []
   const matchData = Array.isArray(data) ? data : []
   const sortedGames = sortByLiveStatus(matchData, (game: any) => game?.status)
 
@@ -64,28 +55,16 @@ export default async function NBAMatchesHandler() {
 }
 
 export async function NBAMatchByIdHandler({ id }: { id: string }) {
-  const response = await fetch(`https://v2.nba.api-sports.io/games?id=${id}`, {
-      headers: {
-        "x-rapidapi-host": "v2.nba.api-sports.io",
-        "x-rapidapi-key": process.env.RAPIDAPI_SPORTS_KEY!,
-      },
-      next: { revalidate: 30 },
-  })
-  
-  const json = await response.json()
-  console.log(json)
-  const matchData = Array.isArray(json.response) ? json.response : []
+  const url = `https://v2.nba.api-sports.io/games?id=${id}`;
+  const json = await fetchSportsData(url, "v2.nba.api-sports.io");
+
+  // console.log(json)
+  const matchData = json && Array.isArray(json.response) ? json.response : []
 
   // Fetch player statistics for this game
-  const playersRes = await fetch(`https://v2.nba.api-sports.io/players/statistics?game=${id}` , {
-    headers: {
-      "x-rapidapi-host": "v2.nba.api-sports.io",
-      "x-rapidapi-key": process.env.RAPIDAPI_SPORTS_KEY!,
-    },
-    next: { revalidate: 30 },
-  })
-  const playersJson = await playersRes.json()
-  const playerStats = Array.isArray(playersJson.response) ? playersJson.response : []
+  const playersUrl = `https://v2.nba.api-sports.io/players/statistics?game=${id}`;
+  const playersJson = await fetchSportsData(playersUrl, "v2.nba.api-sports.io");
+  const playerStats = playersJson && Array.isArray(playersJson.response) ? playersJson.response : []
 
   if (matchData.length === 0) {
     return (
@@ -102,7 +81,7 @@ export async function NBAMatchByIdHandler({ id }: { id: string }) {
 
   return (
     <div className="w-full space-y-4 p-4 md:p-6">
-      
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -112,13 +91,12 @@ export async function NBAMatchByIdHandler({ id }: { id: string }) {
             <p className="text-gray-500 text-sm">Season {game.season}</p>
           </div>
         </div>
-        <div className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
-          isGameLive 
-            ? 'bg-green-500/10 text-green-400 border border-green-500/20' 
-            : isGameFinished 
-              ? 'bg-gray-500/10 text-gray-400 border border-gray-500/20' 
+        <div className={`px-3 py-1.5 rounded-full text-xs font-semibold ${isGameLive
+            ? 'bg-green-500/10 text-green-400 border border-green-500/20'
+            : isGameFinished
+              ? 'bg-gray-500/10 text-gray-400 border border-gray-500/20'
               : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
-        }`}>
+          }`}>
           {isGameLive && <span className="inline-block w-1.5 h-1.5 bg-green-400 rounded-full mr-2 animate-pulse" />}
           {isGameFinished ? "Final" : game.status?.long || "Scheduled"}
         </div>
@@ -141,10 +119,10 @@ export async function NBAMatchByIdHandler({ id }: { id: string }) {
         <div className="grid grid-cols-3 items-center">
           {/* Visitors Team */}
           <div className="text-center">
-            <img 
-              src={game.teams.visitors.logo} 
-              alt={game.teams.visitors.name} 
-              className="w-20 h-20 md:w-28 md:h-28 mx-auto object-contain mb-3" 
+            <img
+              src={game.teams.visitors.logo}
+              alt={game.teams.visitors.name}
+              className="w-20 h-20 md:w-28 md:h-28 mx-auto object-contain mb-3"
             />
             <h2 className="text-white font-medium text-sm md:text-base mb-2">{game.teams.visitors.nickname}</h2>
             <p className="text-5xl md:text-7xl font-bold text-white tabular-nums">
@@ -161,10 +139,10 @@ export async function NBAMatchByIdHandler({ id }: { id: string }) {
 
           {/* Home Team */}
           <div className="text-center">
-            <img 
-              src={game.teams.home.logo} 
-              alt={game.teams.home.name} 
-              className="w-20 h-20 md:w-28 md:h-28 mx-auto object-contain mb-3" 
+            <img
+              src={game.teams.home.logo}
+              alt={game.teams.home.name}
+              className="w-20 h-20 md:w-28 md:h-28 mx-auto object-contain mb-3"
             />
             <h2 className="text-white font-medium text-sm md:text-base mb-2">{game.teams.home.nickname}</h2>
             <p className="text-5xl md:text-7xl font-bold text-white tabular-nums">
@@ -238,7 +216,7 @@ export async function NBAMatchByIdHandler({ id }: { id: string }) {
           <div className="px-4 py-3 border-b border-white/5">
             <h3 className="text-white text-sm font-medium">Top Performers</h3>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-white/5">
             {/* Visitors Top Performers */}
             <div className="p-4">

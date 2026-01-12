@@ -1,22 +1,13 @@
 import MatchCard from "@/components/MatchCard";
 import { sortByLiveStatus } from "@/lib/liveStatus";
+import { fetchSportsData } from "@/app/actions/sports";
 
 export async function NFLMatchesHandler() {
   const todaydate = new Date().toISOString().split("T")[0];
-  // @ts-ignore
   const url = `https://v1.american-football.api-sports.io/games?date=${todaydate}`;
 
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      "x-rapidapi-host": "v1.american-football.api-sports.io",
-      "x-rapidapi-key": process.env.RAPIDAPI_SPORTS_KEY!,
-    },
-    next: { revalidate: 30 },
-  });
-
-  const json = await response.json();
-  const matchData = Array.isArray(json.response) ? json.response : [];
+  const json = await fetchSportsData(url, "v1.american-football.api-sports.io");
+  const matchData = json && Array.isArray(json.response) ? json.response : [];
   const sortedGames = sortByLiveStatus(matchData, (item: any) => item?.game?.status);
   return (
     <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-6">
@@ -70,44 +61,19 @@ export async function NFLMatchByIdHAndler({
   id: string
 }) {
   const url = `https://v1.american-football.api-sports.io/games?id=${id}`
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      "x-rapidapi-host": "v1.american-football.api-sports.io",
-      "x-rapidapi-key": process.env.RAPIDAPI_SPORTS_KEY!,
-    },
-    next: { revalidate: 30 },
-  });
+  const json = await fetchSportsData(url, "v1.american-football.api-sports.io");
 
   // Fetch game statistics
   const statsUrl = `https://v1.american-football.api-sports.io/games/statistics?id=${id}`;
-  const statsResponse = await fetch(statsUrl, {
-    method: "GET",
-    headers: {
-      "x-rapidapi-host": "v1.american-football.api-sports.io",
-      "x-rapidapi-key": process.env.RAPIDAPI_SPORTS_KEY!,
-    },
-    next: { revalidate: 30 },
-  });
+  const statsJson = await fetchSportsData(statsUrl, "v1.american-football.api-sports.io");
 
   // Fetch game events (scoring plays)
   const eventsUrl = `https://v1.american-football.api-sports.io/games/events?id=${id}`;
-  const eventsResponse = await fetch(eventsUrl, {
-    method: "GET",
-    headers: {
-      "x-rapidapi-host": "v1.american-football.api-sports.io",
-      "x-rapidapi-key": process.env.RAPIDAPI_SPORTS_KEY!,
-    },
-    next: { revalidate: 30 },
-  });
+  const eventsJson = await fetchSportsData(eventsUrl, "v1.american-football.api-sports.io");
 
-  const json = await response.json();
-  const statsJson = await statsResponse.json();
-  const eventsJson = await eventsResponse.json();
-
-  const matchData = Array.isArray(json.response) ? json.response : [];
-  const statsData = Array.isArray(statsJson.response) ? statsJson.response : [];
-  const eventsData = Array.isArray(eventsJson.response) ? eventsJson.response : [];
+  const matchData = json && Array.isArray(json.response) ? json.response : [];
+  const statsData = statsJson && Array.isArray(statsJson.response) ? statsJson.response : [];
+  const eventsData = eventsJson && Array.isArray(eventsJson.response) ? eventsJson.response : [];
 
   if (matchData.length === 0) {
     return (
@@ -140,7 +106,7 @@ export async function NFLMatchByIdHAndler({
 
   return (
     <div className="w-full space-y-4 p-4 md:p-6">
-      
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -150,13 +116,12 @@ export async function NFLMatchByIdHAndler({
             <p className="text-gray-500 text-sm">Week {game.week} • {league.season}</p>
           </div>
         </div>
-        <div className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
-          isGameLive 
-            ? 'bg-green-500/10 text-green-400 border border-green-500/20' 
-            : isGameFinished 
-              ? 'bg-gray-500/10 text-gray-400 border border-gray-500/20' 
+        <div className={`px-3 py-1.5 rounded-full text-xs font-semibold ${isGameLive
+            ? 'bg-green-500/10 text-green-400 border border-green-500/20'
+            : isGameFinished
+              ? 'bg-gray-500/10 text-gray-400 border border-gray-500/20'
               : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
-        }`}>
+          }`}>
           {isGameLive && <span className="inline-block w-1.5 h-1.5 bg-green-400 rounded-full mr-2 animate-pulse" />}
           {isGameFinished ? "Final" : isGameLive ? "Live" : game.status.short || "Scheduled"}
         </div>
@@ -179,10 +144,10 @@ export async function NFLMatchByIdHAndler({
         <div className="grid grid-cols-3 items-center">
           {/* Home Team */}
           <div className="text-center">
-            <img 
-              src={teams.home.logo} 
-              alt={teams.home.name} 
-              className="w-20 h-20 md:w-28 md:h-28 mx-auto object-contain mb-3" 
+            <img
+              src={teams.home.logo}
+              alt={teams.home.name}
+              className="w-20 h-20 md:w-28 md:h-28 mx-auto object-contain mb-3"
             />
             <h2 className="text-white font-medium text-sm md:text-base mb-2">{teams.home.name}</h2>
             <p className="text-5xl md:text-7xl font-bold text-white tabular-nums">
@@ -199,10 +164,10 @@ export async function NFLMatchByIdHAndler({
 
           {/* Away Team */}
           <div className="text-center">
-            <img 
-              src={teams.away.logo} 
-              alt={teams.away.name} 
-              className="w-20 h-20 md:w-28 md:h-28 mx-auto object-contain mb-3" 
+            <img
+              src={teams.away.logo}
+              alt={teams.away.name}
+              className="w-20 h-20 md:w-28 md:h-28 mx-auto object-contain mb-3"
             />
             <h2 className="text-white font-medium text-sm md:text-base mb-2">{teams.away.name}</h2>
             <p className="text-5xl md:text-7xl font-bold text-white tabular-nums">
@@ -280,7 +245,7 @@ export async function NFLMatchByIdHAndler({
               </div>
             </div>
           </div>
-          
+
           <div className="p-4 space-y-4">
             {[
               { name: "Total Yards", key: "Total Yards" },
@@ -327,7 +292,7 @@ export async function NFLMatchByIdHAndler({
             <h3 className="text-white text-sm font-medium">Scoring Plays</h3>
             <span className="text-gray-500 text-xs">{eventsData.length} plays</span>
           </div>
-          
+
           <div className="divide-y divide-white/5 max-h-80 overflow-y-auto scrollbar-hide">
             {eventsData.map((event: any, idx: number) => {
               const isHomeTeam = event.team?.id === teams.home.id;

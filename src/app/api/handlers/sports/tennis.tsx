@@ -1,20 +1,12 @@
 import MatchCard from '@/components/MatchCard';
 import { sortByLiveStatus } from '@/lib/liveStatus';
+import { fetchTennisData } from "@/app/actions/sports";
 
 export default async function TennisMatchesHandler() {
   const url = "https://tennisapi1.p.rapidapi.com/api/tennis/events/live";
+  const json = await fetchTennisData(url);
 
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      "x-rapidapi-key": process.env.RAPIDAPI_TENNIS_KEY!,
-      "x-rapidapi-host": "tennisapi1.p.rapidapi.com",
-    },
-    next: { revalidate: 30 },
-  });
-
-  const json = await response.json();
-  const events = json.events;
+  const events = json ? json.events : [];
   const matchData = Array.isArray(events) ? events : [];
   const sortedMatches = sortByLiveStatus(matchData, (match: any) => match?.status);
 
@@ -72,33 +64,18 @@ export default async function TennisMatchesHandler() {
 
 export async function TennisMatchByIdHandler({ id }: { id: string }) {
   const url = `https://tennisapi1.p.rapidapi.com/api/tennis/event/${id}`;
-  
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      "x-rapidapi-key": process.env.RAPIDAPI_TENNIS_KEY!,
-      "x-rapidapi-host": "tennisapi1.p.rapidapi.com",
-    },
-    next: { revalidate: 30 },
-  });
+  const json = await fetchTennisData(url);
 
   // Fetch match statistics
-  const statsResponse = await fetch(`https://tennisapi1.p.rapidapi.com/api/tennis/event/${id}/statistics`, {
-    method: "GET",
-    headers: {
-      "x-rapidapi-key": process.env.RAPIDAPI_TENNIS_KEY!,
-      "x-rapidapi-host": "tennisapi1.p.rapidapi.com",
-    },
-    next: { revalidate: 30 },
-  });
+  const statsUrl = `https://tennisapi1.p.rapidapi.com/api/tennis/event/${id}/statistics`;
+  const statsJson = await fetchTennisData(statsUrl);
 
-  const json = await response.json();
-  const match = json.event;
-  
+  const match = json ? json.event : null;
+
   let statistics: any = null;
   try {
-    const statsJson = await statsResponse.json();
-    statistics = statsJson.statistics;
+    const sJson = statsJson || {};
+    statistics = sJson.statistics;
   } catch (e) {
     // Statistics may not be available for all matches
   }
@@ -130,15 +107,15 @@ export async function TennisMatchByIdHandler({ id }: { id: string }) {
   const homeTiebreaks = match.homeScore?.period1TieBreak || match.homeScore?.period2TieBreak || match.homeScore?.period3TieBreak;
   const awayTiebreaks = match.awayScore?.period1TieBreak || match.awayScore?.period2TieBreak || match.awayScore?.period3TieBreak;
 
-  const isLive = match.status?.description?.toLowerCase().includes('live') || 
-                 match.status?.description?.toLowerCase().includes('set') ||
-                 match.status?.description?.toLowerCase().includes('game');
+  const isLive = match.status?.description?.toLowerCase().includes('live') ||
+    match.status?.description?.toLowerCase().includes('set') ||
+    match.status?.description?.toLowerCase().includes('game');
   const isFinished = match.status?.description?.toLowerCase().includes('ended') ||
-                     match.status?.description?.toLowerCase().includes('finished');
+    match.status?.description?.toLowerCase().includes('finished');
 
   return (
     <div className="w-full space-y-4 p-4 md:p-6">
-      
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -148,13 +125,12 @@ export async function TennisMatchByIdHandler({ id }: { id: string }) {
             <p className="text-gray-500 text-sm">{match.roundInfo?.name || match.tournament?.category?.name}</p>
           </div>
         </div>
-        <div className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
-          isLive 
-            ? 'bg-green-500/10 text-green-400 border border-green-500/20' 
-            : isFinished 
-              ? 'bg-gray-500/10 text-gray-400 border border-gray-500/20' 
+        <div className={`px-3 py-1.5 rounded-full text-xs font-semibold ${isLive
+            ? 'bg-green-500/10 text-green-400 border border-green-500/20'
+            : isFinished
+              ? 'bg-gray-500/10 text-gray-400 border border-gray-500/20'
               : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
-        }`}>
+          }`}>
           {isLive && <span className="inline-block w-1.5 h-1.5 bg-green-400 rounded-full mr-2 animate-pulse" />}
           {match.status?.description || "Scheduled"}
         </div>
@@ -234,7 +210,7 @@ export async function TennisMatchByIdHandler({ id }: { id: string }) {
           <div className="px-4 py-3 border-b border-white/5">
             <h3 className="text-white text-sm font-medium">Set Scores</h3>
           </div>
-          
+
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
@@ -279,7 +255,7 @@ export async function TennisMatchByIdHandler({ id }: { id: string }) {
           <div className="px-4 py-3 border-b border-white/5">
             <h3 className="text-white text-sm font-medium">Current Game</h3>
           </div>
-          
+
           <div className="p-6">
             <div className="flex justify-center items-center gap-12">
               <div className="text-center">
@@ -302,7 +278,7 @@ export async function TennisMatchByIdHandler({ id }: { id: string }) {
           <div className="px-4 py-3 border-b border-white/5">
             <h3 className="text-white text-sm font-medium">Match Statistics</h3>
           </div>
-          
+
           <div className="p-4 space-y-6">
             {statistics[0]?.groups?.map((group: any, groupIdx: number) => (
               <div key={groupIdx}>
@@ -315,7 +291,7 @@ export async function TennisMatchByIdHandler({ id }: { id: string }) {
                     const awayVal = Number(stat.away) || 0;
                     const total = homeVal + awayVal || 1;
                     const homePercent = (homeVal / total) * 100;
-                    
+
                     return (
                       <div key={statIdx}>
                         <div className="flex items-center justify-between text-sm mb-1.5">
