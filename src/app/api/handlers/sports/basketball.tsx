@@ -1,3 +1,5 @@
+import MatchCard from '@/components/MatchCard';
+
 export default async function BasketballMatchesHandler() {
     const todayDate = new Date().toISOString().split("T")[0];
 
@@ -16,75 +18,40 @@ export default async function BasketballMatchesHandler() {
     const matchData = (Array.isArray(data.response) ? data.response : []);
 
     return (
-        <div className="flex-1 w-full px-4 sm:px-8 lg:px-12 py-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {matchData.length === 0 && (
-                <div className="col-span-full text-center py-20">
-                    <div className="text-gray-400 text-lg font-medium">No live matches available</div>
-                    <p className="text-gray-500 text-sm mt-2">Check back later for upcoming games</p>
-                </div>
-            )}
-            {matchData.map((match:any) => (
-                <a
-                    href={`../match/bb${match.id}`}
-                    key={match.id}
-                    className="group bg-[#181818] hover:bg-[#1f1f1f] border border-white/5 rounded-2xl p-6 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02] flex flex-col"
-                >
-                    <div className="text-center mb-4">
-                        <div className="text-sm font-medium text-blue-400 mb-1">
-                            🏀 {match.league?.name || 'Basketball League'}
-                        </div>
-                        <div className="text-xs text-gray-500">
-                            {match.date ? new Date(match.date).toLocaleDateString('en-US', {
-                                weekday: 'short',
-                                month: 'short',
-                                day: 'numeric'
-                            }) : 'Date TBA'}
-                        </div>
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-6">
+            <div className="grid auto-rows-fr gap-4 sm:gap-5 lg:gap-6 [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))]">
+                {matchData.length === 0 && (
+                    <div className="col-span-full text-center py-20">
+                        <div className="text-gray-400 text-lg font-medium">No live matches available</div>
+                        <p className="text-gray-500 text-sm mt-2">Check back later for upcoming games</p>
                     </div>
-
-                    <div className="flex justify-between items-center mb-4">
-                        <div className="flex flex-col items-center flex-1">
-                            {match.teams?.home?.logo && (
-                                <img
-                                    src={match.teams.home.logo}
-                                    alt={match.teams.home.name}
-                                    className="w-14 h-14 mb-2 object-contain"
-                                />
-                            )}
-                            <div className="text-sm font-semibold text-center text-white mb-1">
-                                {match.teams?.home?.name || 'Home Team'}
-                            </div>
-                            <div className="text-2xl font-bold text-blue-400">
-                                {match.scores?.home?.total ?? 0}
-                            </div>
-                        </div>
-
-                        <div className="text-gray-400 font-bold text-lg px-3">VS</div>
-
-                        <div className="flex flex-col items-center flex-1">
-                            {match.teams?.away?.logo && (
-                                <img
-                                    src={match.teams.away.logo}
-                                    alt={match.teams.away.name}
-                                    className="w-14 h-14 mb-2 object-contain"
-                                />
-                            )}
-                            <div className="text-sm font-semibold text-center text-white mb-1">
-                                {match.teams?.away?.name || 'Away Team'}
-                            </div>
-                            <div className="text-2xl font-bold text-blue-400">
-                                {match.scores?.away?.total ?? 0}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="text-center mt-auto">
-                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-800 text-gray-300">
-                            {match.status?.short || 'Live'}
-                        </span>
-                    </div>
-                </a>
-            ))}
+                )}
+                {matchData.map((match:any) => (
+                    <MatchCard
+                        key={match.id}
+                        matchId={match.id}
+                        league={{
+                            name: match.league?.name || 'Basketball League',
+                            emoji: "🏀",
+                        }}
+                        homeTeam={{
+                            name: match.teams?.home?.name || 'Home Team',
+                            logo: match.teams?.home?.logo || "/api/placeholder",
+                            goals: match.scores?.home?.total ?? 0,
+                        }}
+                        awayTeam={{
+                            name: match.teams?.away?.name || 'Away Team',
+                            logo: match.teams?.away?.logo || "/api/placeholder",
+                            goals: match.scores?.away?.total ?? 0,
+                        }}
+                        status={{
+                            long: typeof match.status?.long === 'string' ? match.status.long : 'Scheduled',
+                            short: typeof match.status?.short === 'string' ? match.status.short : undefined,
+                        }}
+                        href={`../match/bb${match.id}`}
+                    />
+                ))}
+            </div>
         </div>
     );
 }

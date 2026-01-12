@@ -1,5 +1,4 @@
 import SearchBar from "./ui/searchbar";
-import TagsBox from "./ui/tagbox";
 import WhoToFollow from "./whotofollow";
 import TrendingSports from "./TrendingSports";
 

@@ -73,7 +73,6 @@ export default function MyProfilePage() {
             <button className="px-3 py-4 text-neutral-400 hover:text-white">Highlights</button>
             <button className="px-3 py-4 text-neutral-400 hover:text-white">Articles</button>
             <button className="px-3 py-4 text-neutral-400 hover:text-white">Media</button>
-            <button className="px-3 py-4 text-neutral-400 hover:text-white">Likes</button>
           </div>
         </div>
 

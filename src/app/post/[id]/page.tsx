@@ -1,4 +1,4 @@
-"use client";
+'use client'
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -6,32 +6,7 @@ import Sidebar from "@/components/sidebar";
 import RightSection from "@/components/rightsection";
 import Link from "next/link";
 import { GoCheckCircleFill } from "react-icons/go";
-import { FaHeart, FaRegHeart, FaRegComment, FaShare, FaArrowLeft } from "react-icons/fa";
-
-interface PostAuthor {
-  id: string;
-  name: string | null;
-  image: string | null;
-  username: string;
-}
-
-interface Comment {
-  id: string;
-  content: string;
-  createdAt: string;
-  author: PostAuthor;
-}
-
-interface Post {
-  id: string;
-  content: string;
-  createdAt: string;
-  mediaUrl?: string | null;
-  likeCount: number;
-  commentCount: number;
-  isLiked: boolean;
-  author: PostAuthor;
-}
+import { FaHeart, FaRegHeart, FaShare, FaArrowLeft } from "react-icons/fa";
 
 function formatTimeAgo(date: Date) {
   const diff = Date.now() - date.getTime();
@@ -48,8 +23,8 @@ function formatTimeAgo(date: Date) {
 
 export default function PostDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
-  const [post, setPost] = useState<Post | null>(null);
-  const [comments, setComments] = useState<Comment[]>([]);
+  const [post, setPost] = useState<any>(null);
+  const [comments, setComments] = useState<any[]>([]);
   const [commentText, setCommentText] = useState("");
   const [loading, setLoading] = useState(true);
   const [loadingComments, setLoadingComments] = useState(false);
@@ -60,7 +35,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
   const [commentCount, setCommentCount] = useState(0);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [postId, setPostId] = useState<string>("");
+  const [postId, setPostId] = useState("");
 
   useEffect(() => {
     async function getParams() {
@@ -194,8 +169,10 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
     return (
       <div className="w-full h-[90vh] flex">
         <Sidebar />
-        <div className="flex-1 flex items-center justify-center border-r border-white border-opacity-20">
-          <div className="h-8 w-8 border-4 border-gray-700 border-t-blue-500 rounded-full animate-spin" />
+        <div className="border-r max-w-[88vh] border-white border-opacity-20 overflow-y-auto scrollbar-hide flex-1">
+          <div className="flex items-center justify-center py-20">
+            <div className="h-8 w-8 border-4 border-gray-700 border-t-blue-500 rounded-full animate-spin" />
+          </div>
         </div>
         <RightSection />
       </div>
@@ -206,9 +183,11 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
     return (
       <div className="w-full h-[90vh] flex">
         <Sidebar />
-        <div className="flex-1 flex items-center justify-center border-r border-white border-opacity-20">
-          <div className="text-center text-gray-400">
-            <p className="text-xl font-semibold">Post not found</p>
+        <div className="border-r max-w-[88vh] border-white border-opacity-20 overflow-y-auto scrollbar-hide flex-1">
+          <div className="flex items-center justify-center py-20">
+            <div className="text-center text-gray-400">
+              <p className="text-xl font-semibold">Post not found</p>
+            </div>
           </div>
         </div>
         <RightSection />
@@ -222,7 +201,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
     <div className="w-full h-[90vh] flex">
       <Sidebar />
 
-      <div className="max-w-[600px] border-r border-white border-opacity-20 overflow-y-auto flex-1">
+      <div className="border-r max-w-[88vh] border-white border-opacity-20 overflow-y-auto scrollbar-hide flex-1">
         {/* Header */}
         <div className="sticky top-0 bg-black/80 backdrop-blur-md z-10 border-b border-gray-800">
           <div className="flex items-center gap-4 p-4">

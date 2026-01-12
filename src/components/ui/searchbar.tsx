@@ -14,7 +14,7 @@ export default function SearchBar() {
   };
 
   return (
-    <div className="text-white my-2">
+    <div className="text-white my-2 mr-10">
       <div className="relative">
         <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 w-5 h-5" />
         <input

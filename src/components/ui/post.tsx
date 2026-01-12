@@ -1,9 +1,9 @@
-"use client";
+'use client'
 import Link from "next/link";
 import { useState } from "react";
 import SquareBox from "./squarebox";
 import { GoCheckCircleFill } from "react-icons/go";
-import { FaHeart, FaRegHeart, FaRegComment, FaRetweet, FaShare, FaTrash } from "react-icons/fa";
+import { FaHeart, FaRegHeart, FaRegComment, FaShare, FaTrash } from "react-icons/fa";
 
 export type FeedPost = {
   id: string;
@@ -46,26 +46,19 @@ export default function Post({ post, onDelete }: { post: FeedPost; onDelete?: ()
   const [isLoadingComments, setIsLoadingComments] = useState(false);
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   
-  const createdAt =
-    typeof post.createdAt === "string"
-      ? new Date(post.createdAt)
-      : post.createdAt;
+  const createdAt = typeof post.createdAt === "string" ? new Date(post.createdAt) : post.createdAt;
 
   const handleLike = async () => {
     try {
       const previousLiked = isLiked;
       const previousCount = likeCount;
       
-      // Optimistic update
       setIsLiked(!isLiked);
       setLikeCount(isLiked ? likeCount - 1 : likeCount + 1);
 
-      const res = await fetch(`/api/posts/${post.id}/like`, {
-        method: "POST",
-      });
+      const res = await fetch(`/api/posts/${post.id}/like`, { method: "POST" });
 
       if (!res.ok) {
-        // Revert on error
         setIsLiked(previousLiked);
         setLikeCount(previousCount);
         throw new Error("Failed to toggle like");

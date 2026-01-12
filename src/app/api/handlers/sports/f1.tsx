@@ -1,3 +1,5 @@
+import MatchCard from '@/components/MatchCard';
+
 export default async function F1MatchesHandler() {
     const todayDate = new Date().toISOString().split("T")[0];
 
@@ -17,95 +19,47 @@ export default async function F1MatchesHandler() {
     const data = json.response;
     const matchData = (Array.isArray(data) ? data : []);
 
-    return (
-      <main className="flex-1 w-full px-4 sm:px-8 lg:px-12 py-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {matchData.length === 0 ? (
-          <div className="col-span-full text-center py-20">
-            <div className="text-gray-400 text-lg font-medium">Loading F1 races...</div>
-            <p className="text-gray-500 text-sm mt-2">Fetching race schedules and standings</p>
-          </div>
-        ) : (
-          matchData.map((race: any) => {
-            const date = new Date(race.date);
-            const formattedDate = date.toLocaleDateString("en-US", {
-              weekday: "short",
-              year: "numeric",
-              month: "short",
-              day: "numeric",
-            });
-            const formattedTime = date.toLocaleTimeString("en-US", {
-              hour: "2-digit",
-              minute: "2-digit",
-            });
-
-            return (
-              <a
-                href={`../match/f1${race.id}`}
-                key={race.id}
-                className="group bg-[#181818] hover:bg-[#1f1f1f] border border-white/5 rounded-2xl p-6 shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-[1.02] flex flex-col"
-              >
-                {/* Race Header */}
-                <div className="text-center mb-4">
-                  <div className="text-sm font-medium text-red-400 mb-1">
-                    🏎️ {race.competition.name || 'F1 Race'}
-                  </div>
-                </div>
-
-                {/* Circuit Info */}
-                <div className="flex items-center justify-center gap-3 mb-4">
-                  {race.circuit.image && (
-                    <img 
-                      src={race.circuit.image} 
-                      alt={race.circuit.name} 
-                      className="w-12 h-12 object-contain" 
-                    />
-                  )}
-                  <div className="text-center">
-                    <span className="font-semibold text-white text-sm">{race.circuit.name}</span>
-                  </div>
-                </div>
-
-                {/* Race Details */}
-                <div className="space-y-3 mb-4">
-                  {/* Laps & Distance */}
-                  <div className="bg-gray-800/50 rounded-lg p-3">
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-gray-300">🏁 Laps:</span>
-                      <span className="text-white font-semibold">{race.laps.total}</span>
+                return (
+                        <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-6">
+                <div className="grid auto-rows-fr gap-4 sm:gap-5 lg:gap-6 [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))]">
+                        {matchData.length === 0 ? (
+                            <div className="col-span-full text-center py-20">
+                                <div className="text-gray-400 text-lg font-medium">Loading F1 races...</div>
+                                <p className="text-gray-500 text-sm mt-2">Fetching race schedules and standings</p>
+                            </div>
+                        ) : (
+                            matchData.map((race: any) => {
+                                return (
+                                    <MatchCard
+                                        key={race.id}
+                                        matchId={race.id}
+                                        league={{
+                                            name: race.competition.name || 'F1 Race',
+                                            emoji: "🏎️",
+                                        }}
+                                        homeTeam={{
+                                            name: race.circuit.name,
+                                            logo: race.circuit.image || "/api/placeholder",
+                                            goals: race.laps.total ?? 0,
+                                        }}
+                                        awayTeam={{
+                                            name: race.distance || "N/A",
+                                            logo: race.circuit.image || "/api/placeholder",
+                                            goals: 0,
+                                        }}
+                                        status={{
+                                            long: typeof race.status === 'string' ? race.status : 'Scheduled',
+                                            short: typeof race.status === 'string' ? race.status : undefined,
+                                        }}
+                                        href={`../match/f1${race.id}`}
+                                    />
+                                );
+                            })
+                        )}
                     </div>
-                    <div className="flex justify-between items-center text-sm mt-1">
-                      <span className="text-gray-300">Distance:</span>
-                      <span className="text-white font-semibold">{race.distance}</span>
-                    </div>
-                  </div>
-
-                  {/* Location */}
-                  <div className="text-xs text-gray-400 flex items-center gap-2">
-                    <span>📍</span>
-                    <span>{race.competition.location.city}, {race.competition.location.country}</span>
-                  </div>
-
-                  {/* Date & Time */}
-                  <div className="text-xs text-gray-400 flex items-center gap-2">
-                    <span>🗓</span>
-                    <span>{formattedDate} – {formattedTime} (UTC)</span>
-                  </div>
-                </div>
-
-                {/* Status */}
-                <div className="text-center mt-auto">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-900/30 text-red-400 border border-red-400/20">
-                    {race.status || 'Scheduled'}
-                  </span>
-                </div>
-              </a>
-            );
-          })
-        )}
-      </main>
-    );
+            </main>
+        );
 }
-
 
 export async function F1MatchByIdHandler({ id }: { id: string }) {
   const response = await fetch(

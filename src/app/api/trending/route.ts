@@ -1,15 +1,13 @@
 import prisma from "@/lib/db";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
-export async function GET(req: NextRequest) {
+export const revalidate = 1800; // 30 minutes
+
+export async function GET() {
   try {
     const postsWithTags = await prisma.post.findMany({
-      where: {
-        sport: { not: null },
-      },
-      select: {
-        sport: true,
-      },
+      where: { sport: { not: null } },
+      select: { sport: true },
     });
 
     const tagCounts = new Map<string, number>();
@@ -26,14 +24,13 @@ export async function GET(req: NextRequest) {
     const trends = Array.from(tagCounts.entries())
       .map(([tag, postCount]) => ({ tag, postCount }))
       .sort((a, b) => b.postCount - a.postCount)
-      .slice(0, 5); // Top 10 trending tags
+      .slice(0, 5);
 
-    return NextResponse.json({ trends });
+    return NextResponse.json({ trends }, {
+      headers: { 'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=3600' },
+    });
   } catch (error) {
     console.error("Trending API error:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

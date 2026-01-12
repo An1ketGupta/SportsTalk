@@ -10,6 +10,23 @@ const USER_WEIGHTS = {
   RECENCY: 0.1,              // Recently active users
 };
 
+// In-memory cache for suggested users (30 minutes TTL)
+const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
+const suggestedUsersCache = new Map<string, { data: any; timestamp: number }>();
+
+// Clean up expired cache entries periodically
+function cleanupCache() {
+  const now = Date.now();
+  for (const [key, value] of suggestedUsersCache.entries()) {
+    if (now - value.timestamp > CACHE_TTL_MS) {
+      suggestedUsersCache.delete(key);
+    }
+  }
+}
+
+// Run cleanup every 5 minutes
+setInterval(cleanupCache, 5 * 60 * 1000);
+
 interface ScoredUser {
   id: string;
   name: string | null;
@@ -30,6 +47,16 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const limit = parseInt(searchParams.get("limit") ?? "5");
+    const skipCache = searchParams.get("refresh") === "true";
+
+    // Check cache for authenticated users
+    if (currentUserId && !skipCache) {
+      const cacheKey = `${currentUserId}-${limit}`;
+      const cached = suggestedUsersCache.get(cacheKey);
+      if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+        return NextResponse.json(cached.data);
+      }
+    }
 
     if (currentUserId) {
       // Get IDs of users the current user is already following
@@ -167,7 +194,7 @@ export async function GET(req: NextRequest) {
       // Sort by score and return top suggestions
       scoredUsers.sort((a, b) => b.score - a.score);
 
-      return NextResponse.json({
+      const responseData = {
         users: scoredUsers.slice(0, limit).map((u) => ({
           id: u.id,
           name: u.name,
@@ -178,7 +205,16 @@ export async function GET(req: NextRequest) {
           postCount: u.postCount,
           reason: u.reason,
         })),
+      };
+
+      // Cache the result for 30 minutes
+      const cacheKey = `${currentUserId}-${limit}`;
+      suggestedUsersCache.set(cacheKey, {
+        data: responseData,
+        timestamp: Date.now(),
       });
+
+      return NextResponse.json(responseData);
     } else {
       // For non-authenticated users, show popular and active users
       const suggestedUsers = await prisma.user.findMany({
@@ -221,5 +257,14 @@ export async function GET(req: NextRequest) {
       { error: "Internal Server Error" },
       { status: 500 }
     );
+  }
+}
+
+// Export a function to invalidate cache for a user (can be called after follow/unfollow)
+export function invalidateSuggestedUsersCache(userId: string) {
+  for (const [key] of suggestedUsersCache.entries()) {
+    if (key.startsWith(userId)) {
+      suggestedUsersCache.delete(key);
+    }
   }
 }

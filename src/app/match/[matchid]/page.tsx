@@ -159,25 +159,37 @@ export default function Match({ params }: any) {
   }
 
   return (
-    <div className="grid grid-cols-7 h-auto p-8 gap-8">
-      <div className="col-span-4">
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-16 text-gray-300">
-            <div className="h-6 w-6 rounded-full border-2 border-gray-500 border-t-transparent animate-spin mb-3" />
-            <p className="text-sm">Loading games...</p>
+    <div className="min-h-screen bg-black">
+      {/* Main Content Grid */}
+      <div className="max-w-[1800px] mx-auto p-4 sm:p-6 lg:p-8">
+        <div className="grid grid-cols-1 lg:grid-cols-7 gap-6 lg:gap-8">
+          {/* Match Details Section */}
+          <div className="lg:col-span-4">
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-20 bg-[#181818] rounded-2xl border border-white/5">
+                <div className="h-8 w-8 rounded-full border-3 border-blue-500 border-t-transparent animate-spin mb-4" />
+                <p className="text-sm text-gray-400">Loading match details...</p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {MatchesDiv}
+              </div>
+            )}
           </div>
-        ) :
-          <div>
-            {MatchesDiv}
+
+          {/* Chat Section */}
+          <div className="lg:col-span-3">
+            <div className="sticky top-6">
+              <ChatBox
+                matchId={matchId}
+                messages={messages}
+                sendmessage={sendmessage}
+                setSendMessage={setSendMessage}
+                handleSendMessage={handleSendMessage}
+              />
+            </div>
           </div>
-        }
-      </div>
-      <div className="col-span-3">
-        <ChatBox matchId={matchId}
-          messages={messages}
-          sendmessage={sendmessage}
-          setSendMessage={setSendMessage}
-          handleSendMessage={handleSendMessage} />
+        </div>
       </div>
     </div>
   );

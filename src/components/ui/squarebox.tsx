@@ -29,7 +29,7 @@ export default function SquareBox({
             paddingBottom: paddingy,
             paddingTop: paddingy
         }}
-        className={`text-white  flex flex-col justify-center items-center py-2 border-white border border-opacity-20 ${rounded ? `rounded-${rounded}` : 'rounded-3xl'}`}
+        className={`text-white  flex flex-col justify-center items-center py-2 border-t border-b border-white border-opacity-20 ${rounded ? `rounded-${rounded}` : 'rounded-3xl'}`}
     >
       {children}
     </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import SearchBar from "@/components/ui/searchbar";
 import Sidebar from "@/components/sidebar";
 import Userpagenavbar from "@/components/ui/ProfilePageNavbar";
@@ -30,6 +30,7 @@ interface UserProfile {
 
 export default function Userpage() {
   const params = useParams();
+  const router = useRouter();
   const userId = params?.userid?.[0] as string;
   
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -39,7 +40,6 @@ export default function Userpage() {
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
-  const [activeTab, setActiveTab] = useState<"posts" | "likes">("posts");
   
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
@@ -195,9 +195,16 @@ export default function Userpage() {
             />
           </div>
 
-          {/* Follow Button */}
+          {/* Action Button */}
           <div className="absolute bottom-4 right-4">
-            {!user.isOwnProfile && (
+            {user.isOwnProfile ? (
+              <button
+                onClick={() => router.push("/me")}
+                className="px-6 py-2 rounded-full font-semibold transition-colors bg-transparent border border-gray-600 text-white hover:bg-white/10"
+              >
+                Edit profile
+              </button>
+            ) : (
               <button
                 onClick={handleFollow}
                 className={`px-6 py-2 rounded-full font-semibold transition-colors ${
@@ -248,24 +255,19 @@ export default function Userpage() {
         {/* Tabs */}
         <div className="flex border-b border-gray-800">
           <button
-            onClick={() => setActiveTab("posts")}
-            className={`flex-1 py-4 text-center font-semibold transition-colors ${
-              activeTab === "posts"
-                ? "text-white border-b-2 border-blue-500"
-                : "text-gray-500 hover:bg-gray-900"
-            }`}
+            className="flex-1 py-4 text-center font-semibold text-white border-b-2 border-blue-500"
           >
             Posts
           </button>
           <button
-            onClick={() => setActiveTab("likes")}
-            className={`flex-1 py-4 text-center font-semibold transition-colors ${
-              activeTab === "likes"
-                ? "text-white border-b-2 border-blue-500"
-                : "text-gray-500 hover:bg-gray-900"
-            }`}
+            className="flex-1 py-4 text-center font-semibold text-gray-500 hover:bg-gray-900"
           >
-            Likes
+            Replies
+          </button>
+          <button
+            className="flex-1 py-4 text-center font-semibold text-gray-500 hover:bg-gray-900"
+          >
+            Media
           </button>
         </div>
 
@@ -273,9 +275,7 @@ export default function Userpage() {
         <div className="px-2 py-2 space-y-3">
           {posts.length === 0 && !loading ? (
             <div className="text-center text-gray-500 py-10">
-              {activeTab === "posts"
-                ? "No posts yet"
-                : "No liked posts yet"}
+              No posts yet
             </div>
           ) : (
             posts.map((post) => (
