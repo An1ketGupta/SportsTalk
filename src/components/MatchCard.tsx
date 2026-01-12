@@ -1,4 +1,5 @@
 import React from "react";
+import { isLiveStatus } from "@/lib/liveStatus";
 
 interface MatchCardProps {
   matchId: string | number;
@@ -35,7 +36,7 @@ export default function MatchCard({
   venue,
   href,
 }: MatchCardProps) {
-  const isLive = status?.short === "1H" || status?.short === "2H" || status?.short === "ET" || status?.short === "P";
+  const isLive = isLiveStatus(status);
 
   return (
     <a
@@ -101,12 +102,9 @@ export default function MatchCard({
       </div>
 
       {/* Footer Info */}
-      <div className="pt-4 border-t border-white/10 flex items-center justify-between text-xs text-gray-400">
+      <div className="pt-4 gap-4 border-t border-white/10 flex items-center justify-between text-xs text-gray-400">
         <span className="font-medium">{typeof status?.long === 'string' ? status.long : 'Scheduled'}</span>
         {venue && <span className="text-gray-500">{venue}</span>}
-        <span className="text-blue-400/60 font-semibold group-hover:text-blue-400 transition-colors">
-          View Details →
-        </span>
       </div>
     </a>
   );

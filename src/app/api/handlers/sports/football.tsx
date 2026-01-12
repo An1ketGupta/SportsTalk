@@ -1,4 +1,5 @@
 import MatchCard from "@/components/MatchCard";
+import { sortByLiveStatus } from "@/lib/liveStatus";
 
 export default async function FootballMatchesHandler() {
   const response = await fetch(
@@ -16,11 +17,12 @@ export default async function FootballMatchesHandler() {
   const json = await response.json();
   const data = json.response;
   const matchData = Array.isArray(data) ? data : [];
+  const sortedMatches = sortByLiveStatus(matchData, (match: any) => match?.fixture?.status);
 
   return (
     <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-6">
       <div className="grid auto-rows-fr gap-4 sm:gap-5 lg:gap-6 [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))]">
-        {matchData.length === 0 ? (
+        {sortedMatches.length === 0 ? (
           <div className="col-span-full text-center py-20">
             <div className="text-gray-400 text-lg font-medium">
               Loading live matches...
@@ -30,7 +32,7 @@ export default async function FootballMatchesHandler() {
             </p>
           </div>
         ) : (
-          matchData.map((match: any) => (
+          sortedMatches.map((match: any) => (
             <MatchCard
               key={match.fixture.id}
               matchId={match.fixture.id}

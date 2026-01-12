@@ -1,4 +1,5 @@
 import MatchCard from '@/components/MatchCard';
+import { sortByLiveStatus } from '@/lib/liveStatus';
 
 export default async function MMAMatchesHandler() {
   const todaydate = new Date().toISOString().split("T")[0]
@@ -17,11 +18,12 @@ export default async function MMAMatchesHandler() {
   const json = await response.json()
   const data = json.response
   const matchData = Array.isArray(data) ? data : []
+  const sortedFights = sortByLiveStatus(matchData, (fight: any) => fight?.status)
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-6">
       <div className="grid auto-rows-fr gap-4 sm:gap-5 lg:gap-6 [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))]">
-        {matchData.length === 0 ? (
+        {sortedFights.length === 0 ? (
           <div className="col-span-full text-center py-20">
             <div className="text-gray-400 text-lg font-medium">Loading MMA fights...</div>
             <p className="text-gray-500 text-sm mt-2">
@@ -29,7 +31,7 @@ export default async function MMAMatchesHandler() {
             </p>
           </div>
         ) : (
-          matchData.map((fight: any) => (
+          sortedFights.map((fight: any) => (
             <MatchCard
               key={fight.id}
               matchId={fight.id}

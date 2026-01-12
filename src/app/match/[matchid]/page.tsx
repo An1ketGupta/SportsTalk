@@ -3,7 +3,7 @@
 import { BasketballMatchByIdHandler } from "@/app/api/handlers/sports/basketball";
 import { CricketMatchByIdHandler } from "@/app/api/handlers/sports/cricket";
 import { F1MatchByIdHandler } from "@/app/api/handlers/sports/f1";
-import FootballMatchesHandler, { FootballMatchByIdHandler } from "@/app/api/handlers/sports/football";
+import { FootballMatchByIdHandler } from "@/app/api/handlers/sports/football";
 import { HockeyMatchByIdHandler } from "@/app/api/handlers/sports/hockey";
 import MMAMatchesHandler from "@/app/api/handlers/sports/mma";
 import { NBAMatchByIdHandler } from "@/app/api/handlers/sports/nba";

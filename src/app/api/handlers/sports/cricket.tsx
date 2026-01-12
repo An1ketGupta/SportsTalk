@@ -1,5 +1,6 @@
 import React from 'react';
 import MatchCard from '@/components/MatchCard';
+import { sortByLiveStatus } from '@/lib/liveStatus';
 
 export default async function CricketMatchesHandler() {
     const response = await fetch('https://Cricbuzz-Official-Cricket-API.proxy-production.allthingsdev.co/matches/live', {
@@ -32,134 +33,67 @@ export default async function CricketMatchesHandler() {
         });
     }
 
+    const sortedMatches = sortByLiveStatus(matches, (match: any) => match?.matchInfo?.status || match?.matchInfo?.state);
+
     return (
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-6">
             <div className="grid auto-rows-fr gap-4 sm:gap-5 lg:gap-6 [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))]">
-                {matches.length === 0 ? (
+                {sortedMatches.length === 0 ? (
                     <div className="col-span-full text-center py-20">
                         <div className="text-gray-400 text-lg font-medium">Loading cricket matches...</div>
                         <p className="text-gray-500 text-sm mt-2">Fetching live scores and match data</p>
                     </div>
                 ) : (
-                    matches.map((match:any) => {
-                    const info = match.matchInfo;
-                    const venue = info.venueInfo;
-                    const startDate = new Date(Number(info.startDate));
+                    sortedMatches.map((match:any) => {
+                        const info = match.matchInfo;
+                        const venue = info.venueInfo;
+                        const startDate = new Date(Number(info.startDate));
 
-                    const team1Innings = match.matchScore?.team1Score?.inngs1;
-                    const team2Innings = match.matchScore?.team2Score?.inngs1;
+                        const team1Innings = match.matchScore?.team1Score?.inngs1;
+                        const team2Innings = match.matchScore?.team2Score?.inngs1;
 
-                    const formatScore = (innings: any) => {
-                        if (!innings) return '—';
-                        const runs = innings.runs ?? 0;
-                        const wickets = innings.wickets ?? 0;
-                        const overs = innings.overs ? ` (${innings.overs} ov)` : '';
-                        return `${runs}/${wickets}${overs}`;
-                    };
+                        const runsOnly = (innings: any) => innings?.runs ?? 0;
+                        const wickets = (innings: any) => innings?.wickets ?? 0;
+                        const overs = (innings: any) => innings?.overs ? `${innings.overs} ov` : '';
 
-                    const team1Score = formatScore(team1Innings);
-                    const team2Score = formatScore(team2Innings);
+                        const team1Logo = info.team1.imageId 
+                            ? `https://static.cricbuzz.com/a/img/v1/i1/c${info.team1.imageId}/i.jpg`
+                            : `https://ui-avatars.com/api/?name=${encodeURIComponent(info.team1.teamSName || info.team1.teamName)}&background=1e293b&color=fff&size=128`;
+                        
+                        const team2Logo = info.team2.imageId 
+                            ? `https://static.cricbuzz.com/a/img/v1/i1/c${info.team2.imageId}/i.jpg`
+                            : `https://ui-avatars.com/api/?name=${encodeURIComponent(info.team2.teamSName || info.team2.teamName)}&background=1e293b&color=fff&size=128`;
 
-                    const team1Logo = info.team1.imageId 
-                        ? `https://static.cricbuzz.com/a/img/v1/i1/c${info.team1.imageId}/i.jpg`
-                        : `https://ui-avatars.com/api/?name=${encodeURIComponent(info.team1.teamSName || info.team1.teamName)}&background=1e293b&color=fff&size=128`;
-                    
-                    const team2Logo = info.team2.imageId 
-                        ? `https://static.cricbuzz.com/a/img/v1/i1/c${info.team2.imageId}/i.jpg`
-                        : `https://ui-avatars.com/api/?name=${encodeURIComponent(info.team2.teamSName || info.team2.teamName)}&background=1e293b&color=fff&size=128`;
+                        const statusText = typeof info.status === 'string' ? info.status : 'Live';
+                        const statusLong = `${statusText}${team1Innings || team2Innings ? ' • ' : ''}${team1Innings ? `${team1Innings.runs}/${wickets(team1Innings)}${overs(team1Innings) ? ` (${overs(team1Innings)})` : ''}` : ''}${team2Innings ? ` vs ${team2Innings.runs}/${wickets(team2Innings)}${overs(team2Innings) ? ` (${overs(team2Innings)})` : ''}` : ''}`;
 
-                    const statusText = typeof info.status === 'string' ? info.status : 'Live';
-                    const statusTone = statusText.toLowerCase().includes('live')
-                        ? 'bg-emerald-500/10 text-emerald-300 border-emerald-400/30'
-                        : statusText.toLowerCase().includes('won') || statusText.toLowerCase().includes('result')
-                        ? 'bg-blue-500/10 text-blue-200 border-blue-400/30'
-                        : 'bg-amber-500/10 text-amber-200 border-amber-400/30';
-
-                    const formattedDate = startDate.toLocaleString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        hour: 'numeric',
-                        minute: '2-digit',
-                    });
-
-                    return (
-                        <a
-                            key={info.matchId}
-                            href={`../match/cr${info.matchId}`}
-                            className="group relative overflow-hidden rounded-2xl border border-white/5 bg-gradient-to-br from-[#0e1320] via-[#0c1424] to-[#0b101b] p-5 shadow-lg transition transform hover:-translate-y-1 hover:shadow-2xl"
-                        >
-                            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-[radial-gradient(circle_at_20%_20%,rgba(16,185,129,0.12),transparent_35%),radial-gradient(circle_at_80%_0%,rgba(59,130,246,0.12),transparent_35%)]" />
-
-                            <div className="relative flex items-start justify-between gap-3">
-                                <div className="flex items-center gap-2 text-sm text-gray-300">
-                                    <span className="text-lg">🏏</span>
-                                    <span className="font-semibold line-clamp-1">{info.seriesName || 'Cricket Match'}</span>
-                                </div>
-                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${statusTone}`}>
-                                    {statusText}
-                                </span>
-                            </div>
-
-                            <div className="relative mt-4 bg-white/5 rounded-xl border border-white/5 p-4">
-                                <div className="flex flex-col gap-3">
-                                    <div className="flex items-center justify-between gap-3">
-                                        <div className="flex items-center gap-3 min-w-0">
-                                            <img src={team1Logo} alt={info.team1.teamName} className="h-9 w-9 rounded-full border border-white/10 object-cover" />
-                                            <div className="min-w-0">
-                                                <div className="text-white font-semibold truncate">{info.team1.teamName}</div>
-                                                <div className="text-gray-400 text-xs">{info.team1.teamSName || info.team1.teamName}</div>
-                                            </div>
-                                        </div>
-                                        <div className="text-right">
-                                            <div className="text-lg font-black text-emerald-300">{team1Score}</div>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-center justify-between gap-3">
-                                        <div className="flex items-center gap-3 min-w-0">
-                                            <img src={team2Logo} alt={info.team2.teamName} className="h-9 w-9 rounded-full border border-white/10 object-cover" />
-                                            <div className="min-w-0">
-                                                <div className="text-white font-semibold truncate">{info.team2.teamName}</div>
-                                                <div className="text-gray-400 text-xs">{info.team2.teamSName || info.team2.teamName}</div>
-                                            </div>
-                                        </div>
-                                        <div className="text-right">
-                                            <div className="text-lg font-black text-blue-200">{team2Score}</div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="mt-3 pt-3 border-t border-white/10 space-y-1">
-                                    <p className="text-sm text-emerald-200 font-semibold">{statusText}</p>
-                                    <p className="text-xs text-gray-300">{info.matchDesc || 'Match details'}</p>
-                                </div>
-
-                                {statusText && (
-                                    <div className="mt-3 rounded-lg border border-amber-400/20 bg-amber-500/10 px-3 py-2 text-amber-50 text-xs leading-relaxed line-clamp-3">
-                                        {statusText}
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="relative mt-4 border-t border-white/5 pt-3 flex flex-wrap items-start justify-between gap-4 text-xs text-gray-400">
-                                <div className="flex items-start gap-2 min-w-0 w-full sm:w-auto">
-                                    <span className="text-lg">📍</span>
-                                    <div className="leading-tight">
-                                        <div className="text-white font-semibold text-sm truncate">{venue?.ground ?? 'Venue TBA'}</div>
-                                        {venue?.city && <div className="text-gray-400">{venue.city}</div>}
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-2 shrink-0">
-                                    <span className="text-lg">⏰</span>
-                                    <div className="leading-tight text-right">
-                                        <div className="text-white text-sm font-semibold">{formattedDate}</div>
-                                        <div className="text-blue-200 font-semibold">View details →</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    );
-                })
+                        return (
+                            <MatchCard
+                                key={info.matchId}
+                                matchId={info.matchId}
+                                league={{
+                                    name: info.seriesName || 'Cricket Match',
+                                    emoji: '🏏',
+                                }}
+                                homeTeam={{
+                                    name: info.team1.teamName,
+                                    logo: team1Logo,
+                                    goals: runsOnly(team1Innings),
+                                }}
+                                awayTeam={{
+                                    name: info.team2.teamName,
+                                    logo: team2Logo,
+                                    goals: runsOnly(team2Innings),
+                                }}
+                                status={{
+                                    long: statusLong,
+                                    short: statusText,
+                                }}
+                                venue={`${venue?.ground ?? 'Venue TBA'}${venue?.city ? `, ${venue.city}` : ''}`}
+                                href={`../match/cr${info.matchId}`}
+                            />
+                        );
+                    })
                 )}
             </div>
         </div>

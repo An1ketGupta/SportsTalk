@@ -1,4 +1,5 @@
 import MatchCard from "@/components/MatchCard";
+import { sortByLiveStatus } from "@/lib/liveStatus";
 
 export async function NFLMatchesHandler() {
   const todaydate = new Date().toISOString().split("T")[0];
@@ -16,10 +17,11 @@ export async function NFLMatchesHandler() {
 
   const json = await response.json();
   const matchData = Array.isArray(json.response) ? json.response : [];
+  const sortedGames = sortByLiveStatus(matchData, (item: any) => item?.game?.status);
   return (
     <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-6">
       <div className="grid auto-rows-fr gap-4 sm:gap-5 lg:gap-6 [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))]">
-        {matchData.length === 0 ? (
+        {sortedGames.length === 0 ? (
           <div className="col-span-full text-center py-20">
             <div className="text-gray-400 text-lg font-medium">
               Loading NFL games...
@@ -29,7 +31,7 @@ export async function NFLMatchesHandler() {
             </p>
           </div>
         ) : (
-          matchData.map((item: any) => {
+          sortedGames.map((item: any) => {
             const { game, league, teams, scores } = item;
 
             return (

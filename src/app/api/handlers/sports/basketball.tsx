@@ -1,4 +1,5 @@
 import MatchCard from '@/components/MatchCard';
+import { sortByLiveStatus } from '@/lib/liveStatus';
 
 export default async function BasketballMatchesHandler() {
     const todayDate = new Date().toISOString().split("T")[0];
@@ -16,17 +17,18 @@ export default async function BasketballMatchesHandler() {
 
     const data = await response.json();
     const matchData = (Array.isArray(data.response) ? data.response : []);
+    const sortedMatches = sortByLiveStatus(matchData, (match: any) => match?.status);
 
     return (
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-10 py-6">
             <div className="grid auto-rows-fr gap-4 sm:gap-5 lg:gap-6 [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))]">
-                {matchData.length === 0 && (
+                {sortedMatches.length === 0 && (
                     <div className="col-span-full text-center py-20">
                         <div className="text-gray-400 text-lg font-medium">No live matches available</div>
                         <p className="text-gray-500 text-sm mt-2">Check back later for upcoming games</p>
                     </div>
                 )}
-                {matchData.map((match:any) => (
+                {sortedMatches.map((match:any) => (
                     <MatchCard
                         key={match.id}
                         matchId={match.id}
