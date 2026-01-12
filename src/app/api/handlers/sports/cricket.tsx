@@ -8,7 +8,7 @@ export default async function CricketMatchesHandler() {
     const response = await fetch('https://Cricbuzz-Official-Cricket-API.proxy-production.allthingsdev.co/matches/live', {
         method: 'GET',
         headers: {
-            'x-apihub-key': "XZmTq6fV04Hz3jKAhkSKbKxuWGDzdczt6yMTRHTM11HTmAKqci",
+            'x-apihub-key': process.env.CRICKET_API_KEY!,
             'x-apihub-host': "Cricbuzz-Official-Cricket-API.allthingsdev.co",
             'x-apihub-endpoint': "e0cb5c72-38e1-435e-8bf0-6b38fbe923b7",
         },
@@ -110,7 +110,7 @@ export async function CricketMatchByIdHandler({ id }: { id: string }) {
     const matchResponse = await fetch(`https://Cricbuzz-Official-Cricket-API.proxy-production.allthingsdev.co/match/${id}`, {
         method: 'GET',
         headers: {
-            'x-apihub-key': "XZmTq6fV04Hz3jKAhkSKbKxuWGDzdczt6yMTRHTM11HTmAKqci",
+            'x-apihub-key': process.env.CRICKET_API_KEY!,
             'x-apihub-host': "Cricbuzz-Official-Cricket-API.allthingsdev.co",
             'x-apihub-endpoint': "ac951751-d311-4d23-8f18-353e75432353",
         },
@@ -121,7 +121,7 @@ export async function CricketMatchByIdHandler({ id }: { id: string }) {
     const liveResponse = await fetch('https://Cricbuzz-Official-Cricket-API.proxy-production.allthingsdev.co/matches/live', {
         method: 'GET',
         headers: {
-            'x-apihub-key': "XZmTq6fV04Hz3jKAhkSKbKxuWGDzdczt6yMTRHTM11HTmAKqci",
+            'x-apihub-key': process.env.CRICKET_API_KEY!,
             'x-apihub-host': "Cricbuzz-Official-Cricket-API.allthingsdev.co",
             'x-apihub-endpoint': "e0cb5c72-38e1-435e-8bf0-6b38fbe923b7",
         },

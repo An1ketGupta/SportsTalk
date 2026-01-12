@@ -67,7 +67,7 @@ export async function NBAMatchByIdHandler({ id }: { id: string }) {
   const response = await fetch(`https://v2.nba.api-sports.io/games?id=${id}`, {
       headers: {
         "x-rapidapi-host": "v2.nba.api-sports.io",
-        "x-rapidapi-key": "115c63a79ada64779433b7f133255804",
+        "x-rapidapi-key": process.env.RAPIDAPI_SPORTS_KEY!,
       },
       next: { revalidate: 30 },
   })
@@ -80,7 +80,7 @@ export async function NBAMatchByIdHandler({ id }: { id: string }) {
   const playersRes = await fetch(`https://v2.nba.api-sports.io/players/statistics?game=${id}` , {
     headers: {
       "x-rapidapi-host": "v2.nba.api-sports.io",
-      "x-rapidapi-key": "115c63a79ada64779433b7f133255804",
+      "x-rapidapi-key": process.env.RAPIDAPI_SPORTS_KEY!,
     },
     next: { revalidate: 30 },
   })

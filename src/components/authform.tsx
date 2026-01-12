@@ -12,13 +12,10 @@ export default async function AuthForm() {
                         </svg>
                     </div>
                     <h1 className="text-3xl font-bold text-white mb-2">SportsTwitter</h1>
-                    <p className="text-gray-500 text-sm">
-                        Join the conversation with sports fans worldwide
-                    </p>
                 </div>
 
                 {/* Auth Card */}
-                <div className="bg-[#111] border border-white/10 rounded-2xl p-6">
+                <div className="rounded-2xl p-6">
                     <h2 className="text-white text-lg font-semibold text-center mb-6">Sign in to continue</h2>
                     
                     <form action={SigninHandler} className="space-y-3">

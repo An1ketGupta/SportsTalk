@@ -1,11 +1,12 @@
 'use client'
 
-import { MdHome, MdSearch, MdNotifications, MdPerson, MdPostAdd, MdMessage } from "react-icons/md";
+import { MdHome, MdSearch, MdNotifications, MdPerson, MdPostAdd, MdMessage, MdLogout } from "react-icons/md";
 import { Button } from "./ui/button";
 import sidebarData from "../public/sidebar.json";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 
 const iconMap: { [key: string]: any } = {
     "home": MdHome,
@@ -22,6 +23,19 @@ export default function Sidebar({
 }) {
     const pathname = usePathname();
     const isMessagesPage = pathname?.startsWith("/messages");
+    const [showProfileMenu, setShowProfileMenu] = useState(false);
+    const profileMenuRef = useRef<HTMLDivElement>(null);
+
+    // Close menu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+                setShowProfileMenu(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
     return <div className={`flex flex-col items-end xl:items-start w-auto gap-6 pt-4 border-r border-white border-opacity-20 pr-3 pl-3 ${isMessagesPage ? "xl:pl-3 xl:pr-3" : "xl:pl-[16vh] xl:pr-10"} h-[90vh]`}>
         <Button className="hover:bg-[#181818] w-auto h-14 rounded-full">
@@ -32,6 +46,49 @@ export default function Sidebar({
 
         {sidebarData.menuItems.map((item) => {
             const Icon = iconMap[item.icon];
+            
+            // Special handling for Profile button
+            if (item.icon === "user") {
+                return (
+                    <div key={item.label} className="relative" ref={profileMenuRef}>
+                        <Button 
+                            onClick={() => setShowProfileMenu(!showProfileMenu)}
+                            className="w-auto px-3 h-14 hover:bg-[#181818] font-medium"
+                            size={"lg"}
+                        >
+                            <div className="flex gap-3 items-center">
+                                <Icon size={'37px'} />
+                                <div className={`transition ease-in-out transition-transform duration-100 hidden ${isMessagesPage ? "" : "xl:block"}`}>{item.label}</div>
+                            </div>
+                        </Button>
+                        
+                        {/* Profile Dropdown Menu */}
+                        {showProfileMenu && (
+                            <div className="absolute left-0 xl:left-auto xl:right-0 bottom-full mb-2 w-48 bg-[#111] border border-white/10 rounded-xl shadow-xl overflow-hidden z-50">
+                                <Link 
+                                    href="/me" 
+                                    onClick={() => setShowProfileMenu(false)}
+                                    className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-white"
+                                >
+                                    <MdPerson size={20} />
+                                    <span>My Profile</span>
+                                </Link>
+                                <button 
+                                    onClick={() => {
+                                        setShowProfileMenu(false);
+                                        signOut({ callbackUrl: "/" });
+                                    }}
+                                    className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-red-400 w-full text-left border-t border-white/5"
+                                >
+                                    <MdLogout size={20} />
+                                    <span>Logout</span>
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                );
+            }
+            
             return (
                 <Link href={item.path} key={item.label}>
                     <Button className="w-auto px-3 h-14 hover:bg-[#181818] font-medium" size={"lg"}>

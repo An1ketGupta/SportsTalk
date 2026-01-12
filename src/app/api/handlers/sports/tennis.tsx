@@ -7,7 +7,7 @@ export default async function TennisMatchesHandler() {
   const response = await fetch(url, {
     method: "GET",
     headers: {
-      "x-rapidapi-key": "e60478613emsh5570a46ef93e082p1752e5jsndf6235d350ab",
+      "x-rapidapi-key": process.env.RAPIDAPI_TENNIS_KEY!,
       "x-rapidapi-host": "tennisapi1.p.rapidapi.com",
     },
     next: { revalidate: 30 },
