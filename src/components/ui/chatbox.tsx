@@ -1,4 +1,4 @@
-import { Dispatch, Ref, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useEffect, useRef } from "react";
 
 type Message = {
   text: string;
@@ -11,15 +11,22 @@ export default function ChatBox({
     sendmessage,
     setSendMessage,
     handleSendMessage,
-    messagesEndRef
 }:{
     matchId:string|null|undefined,
     messages:Message[],
     sendmessage:string,
     setSendMessage:Dispatch<SetStateAction<string>>
     handleSendMessage:() => Promise<void>
-    messagesEndRef:Ref<HTMLDivElement|null>
 }){
+    const messagesContainerRef = useRef<HTMLDivElement>(null);
+
+    // Auto-scroll only within the chat container when new messages arrive
+    useEffect(() => {
+      if (messagesContainerRef.current) {
+        messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+      }
+    }, [messages]);
+
     return  <div className="w-full h-full flex flex-col border border-gray-800 rounded-2xl bg-black/60 shadow-xl">
         {/* Header */}
         <div className="p-4 border-b border-gray-800 flex items-center justify-between">
@@ -28,7 +35,7 @@ export default function ChatBox({
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-hide">
+        <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-hide">
           {messages.length === 0 && (
             <p className="text-gray-500 text-sm text-center">No messages yet. Start the chat!</p>
           )}
@@ -48,7 +55,6 @@ export default function ChatBox({
               </div>
             )
           })}
-          <div ref={messagesEndRef} />
         </div>
 
         {/* Input */}

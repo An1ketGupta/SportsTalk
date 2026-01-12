@@ -19,7 +19,6 @@ export default function Match({ params }: any) {
   const [matchId, setMatchId] = useState<string | null>()
   const [messages, setmessages] = useState<Array<{ text: string; type: "sent" | "received" }>>([])
   const [sendmessage, setSendMessage] = useState<string>("")
-  const messagesEndRef = useRef<HTMLDivElement | null>(null)
   const [MatchesDiv, setMatchesDiv] = useState<JSX.Element | null>(null);
 
   // Creating the socket client useEffect
@@ -48,11 +47,6 @@ export default function Match({ params }: any) {
       }
     }
   }, [matchId])
-
-  // scroll useEffect
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages])
 
 
   // Scorecard useEffect
@@ -181,7 +175,6 @@ export default function Match({ params }: any) {
       <div className="col-span-3">
         <ChatBox matchId={matchId}
           messages={messages}
-          messagesEndRef={messagesEndRef}
           sendmessage={sendmessage}
           setSendMessage={setSendMessage}
           handleSendMessage={handleSendMessage} />

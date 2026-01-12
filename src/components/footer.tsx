@@ -3,11 +3,10 @@ import { Mail, Bell, Heart } from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="bg-black  from-gray-900 to-gray-800 text-gray-200 px-10 py-6">
+    <footer className="bg-black border-t-[0.5px] border-gray-600 pt-20 text-gray-200 px-10 py-6">
       <div className="grid grid-cols-1 md:grid-cols-5 gap-10 max-w-7xl mx-auto">
         <div className="md:col-span-2">
           <div className="flex items-center gap-2 mb-4">
-            <span className="text-2xl">🏆</span>
             <span className="font-bold text-xl">SportsTalk</span>
           </div>
           <p className="text-gray-400">
@@ -76,17 +75,6 @@ export default function Footer() {
             </ul>
           </div>
         </div>
-      </div>
-
-      {/* Bottom Section */}
-      <div className="border-t border-gray-700 mt-10 pt-6 text-sm text-gray-500 flex flex-col md:flex-row justify-between items-center">
-        <p>© 2025 SportsTalk. Bringing sports fans together through shared passion.</p>
-        <p className="flex items-center gap-4 mt-3 md:mt-0">
-          <span className="flex items-center gap-1 text-green-400">
-            ● Live
-          </span>
-          <span>Community Active</span>
-        </p>
       </div>
     </footer>
   );

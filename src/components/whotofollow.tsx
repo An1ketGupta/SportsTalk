@@ -1,79 +1,195 @@
 // components/WhoToFollow.tsx
-import { FC } from "react";
-import Image from "next/image";
+"use client";
+import { FC, useEffect, useState } from "react";
+import Link from "next/link";
+import { GoCheckCircleFill } from "react-icons/go";
+import { FiRefreshCw } from "react-icons/fi";
 
 interface User {
-  name: string;
-  handle: string;
-  verified?: boolean;
-  avatar: string;
+  id: string;
+  name: string | null;
+  username: string;
+  image: string | null;
+  bio: string | null;
+  followerCount: number;
+  postCount: number;
+  isFollowing?: boolean;
+  reason?: string | null;
 }
 
-const users: User[] = [
-  {
-    name: "Ayush Singh",
-    handle: "@Ayush_cg",
-    avatar: "/avatars/ayush.png", // replace with actual path
-  },
-  {
-    name: "Prince Gupta",
-    handle: "@codemastercppYT",
-    verified: true,
-    avatar: "/avatars/prince.png",
-  },
-  {
-    name: "abhinav",
-    handle: "@AbhinavXJ",
-    verified: true,
-    avatar: "/avatars/abhinav.png",
-  },
-];
-
 const WhoToFollow: FC = () => {
-  return (
-    <div className="bg-black border border-gray-800 rounded-2xl p-4 w-80">
-      <h2 className="text-white text-lg font-bold mb-4">Who to follow</h2>
-      <div className="space-y-4">
-        {users.map((user, index) => (
-          <div
-            key={index}
-            className="flex items-center justify-between hover:bg-gray-900 p-2 rounded-xl cursor-pointer"
-          >
-            {/* Avatar */}
-            <div className="flex items-center space-x-3">
-              <Image
-                src={user.avatar}
-                alt={user.name}
-                width={40}
-                height={40}
-                className="rounded-full"
-              />
-              <div className="flex flex-col">
-                <span className="text-white font-semibold flex items-center gap-1">
-                  {user.name}
-                  {user.verified && (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="currentColor"
-                      viewBox="0 0 24 24"
-                      className="w-4 h-4 text-sky-500"
-                    >
-                      <path d="M22.5 12c0-.6-.3-1.1-.8-1.4l-1.8-1 .3-2c.1-.6-.2-1.2-.8-1.5l-2-1c-.3-.2-.7-.2-1 0l-1.7 1-1.7-1c-.3-.2-.7-.2-1 0l-2 1c-.5.3-.8.9-.8 1.5l.3 2-1.8 1c-.5.3-.8.8-.8 1.4s.3 1.1.8 1.4l1.8 1-.3 2c-.1.6.2 1.2.8 1.5l2 1c.3.2.7.2 1 0l1.7-1 1.7 1c.3.2.7.2 1 0l2-1c.5-.3.8-.9.8-1.5l-.3-2 1.8-1c.5-.3.8-.8.8-1.4zm-12.6 3.7L8 14.8l-1.3 1.3-1.4-1.4L8 12l3.3 3.3-1.4 1.4zm6.8 0l-4-4 1.4-1.4 2.6 2.6 4.6-4.6 1.4 1.4-6 6z" />
-                    </svg>
-                  )}
-                </span>
-                <span className="text-gray-500 text-sm">{user.handle}</span>
-              </div>
-            </div>
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [followingStates, setFollowingStates] = useState<Record<string, boolean>>({});
 
-            {/* Follow Button */}
-            <button className="bg-white text-black font-semibold px-4 py-1 rounded-full hover:bg-gray-300 transition">
-              Follow
-            </button>
+  useEffect(() => {
+    loadSuggestedUsers();
+  }, []);
+
+  const loadSuggestedUsers = async (isRefresh = false) => {
+    try {
+      if (isRefresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+      const res = await fetch("/api/users/suggested");
+      if (!res.ok) throw new Error("Failed to load users");
+      const data = await res.json();
+      setUsers(data.users ?? []);
+    } catch (error) {
+      console.error("Load users error:", error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  const handleFollow = async (userId: string) => {
+    try {
+      const previousState = followingStates[userId] ?? false;
+      
+      // Optimistic update
+      setFollowingStates({
+        ...followingStates,
+        [userId]: !previousState,
+      });
+
+      const res = await fetch(`/api/users/${userId}/follow`, {
+        method: "POST",
+      });
+
+      if (!res.ok) {
+        // Revert on error
+        setFollowingStates({
+          ...followingStates,
+          [userId]: previousState,
+        });
+        throw new Error("Failed to toggle follow");
+      }
+
+      const data = await res.json();
+      setFollowingStates({
+        ...followingStates,
+        [userId]: data.isFollowing,
+      });
+
+      // Update user's follower count
+      setUsers(
+        users.map((u) =>
+          u.id === userId ? { ...u, followerCount: data.followerCount } : u
+        )
+      );
+      
+      // If user followed, refresh suggestions after a short delay
+      if (data.isFollowing) {
+        setTimeout(() => loadSuggestedUsers(true), 1000);
+      }
+    } catch (error) {
+      console.error("Follow error:", error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-black border border-gray-800 rounded-2xl p-4 w-80 mt-4">
+        <h2 className="text-white text-lg font-bold mb-4">Who to follow</h2>
+        <div className="flex justify-center py-4 text-gray-500">
+          <FiRefreshCw className="w-5 h-5 animate-spin" />
+        </div>
+      </div>
+    );
+  }
+
+  if (users.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="bg-black border border-gray-800 rounded-2xl p-4 w-80 mt-4">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-white text-lg font-bold">Who to follow</h2>
+        <button
+          onClick={() => loadSuggestedUsers(true)}
+          disabled={refreshing}
+          className="p-1.5 hover:bg-gray-800 rounded-full transition-colors"
+          title="Refresh suggestions"
+        >
+          <FiRefreshCw className={`w-4 h-4 text-gray-500 ${refreshing ? "animate-spin" : ""}`} />
+        </button>
+      </div>
+      <div className="space-y-3">
+        {users.map((user) => (
+          <div
+            key={user.id}
+            className="hover:bg-gray-800/50 p-2 rounded-xl transition-colors"
+          >
+            <div className="flex items-center justify-between">
+              {/* Avatar and Info */}
+              <Link
+                href={`/user/${user.id}`}
+                className="flex items-center space-x-3 flex-1 min-w-0"
+              >
+                <img
+                  src={user.image ?? "/default-avatar.png"}
+                  alt={user.name ?? user.username}
+                  className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+                />
+                <div className="flex flex-col overflow-hidden min-w-0">
+                  <span className="text-white font-semibold flex items-center gap-1 truncate">
+                    {user.name ?? user.username}
+                    <GoCheckCircleFill className="text-blue-500 flex-shrink-0" />
+                  </span>
+                  <span className="text-gray-500 text-sm truncate">
+                    @{user.username}
+                  </span>
+                </div>
+              </Link>
+
+              {/* Follow Button */}
+              <button
+                onClick={() => handleFollow(user.id)}
+                className={`font-semibold px-4 py-1.5 rounded-full transition-colors flex-shrink-0 text-sm ${
+                  followingStates[user.id]
+                    ? "bg-transparent border border-gray-600 text-white hover:bg-red-600/10 hover:border-red-600 hover:text-red-600"
+                    : "bg-white text-black hover:bg-gray-200"
+                }`}
+              >
+                {followingStates[user.id] ? "Following" : "Follow"}
+              </button>
+            </div>
+            
+            {/* Recommendation Reason */}
+            {user.reason && (
+              <div className="ml-[52px] mt-1">
+                <span className="text-gray-500 text-xs flex items-center gap-1">
+                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
+                  </svg>
+                  {user.reason}
+                </span>
+              </div>
+            )}
+            
+            {/* Stats */}
+            {(user.followerCount > 0 || user.postCount > 0) && (
+              <div className="ml-[52px] mt-1 flex gap-3 text-xs text-gray-600">
+                {user.followerCount > 0 && (
+                  <span>{user.followerCount} follower{user.followerCount !== 1 ? "s" : ""}</span>
+                )}
+                {user.postCount > 0 && (
+                  <span>{user.postCount} post{user.postCount !== 1 ? "s" : ""}</span>
+                )}
+              </div>
+            )}
           </div>
         ))}
       </div>
-      <button className="text-sky-500 text-sm mt-4 hover:underline">
+      <button
+        onClick={() => loadSuggestedUsers(true)}
+        className="text-blue-500 text-sm mt-4 hover:underline w-full text-left"
+      >
         Show more
       </button>
     </div>

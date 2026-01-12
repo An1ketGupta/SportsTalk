@@ -35,6 +35,10 @@ model User {
   // Chat (future)
   messagesSent   Message[]   @relation("sentMessages")
   messagesReceived Message[] @relation("receivedMessages")
+
+  // Notifications
+  notificationsReceived Notification[] @relation("notificationsReceived")
+  notificationsSent     Notification[] @relation("notificationsSent")
 }
 
 model Account {
@@ -147,4 +151,22 @@ model SportsScore {
   scoreB      Int?
   status      String?   // e.g. "LIVE", "FINISHED"
   updatedAt   DateTime  @default(now())
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  type        String   // "like", "comment", "follow"
+  read        Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  // The user who receives the notification
+  user        User     @relation("notificationsReceived", fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+
+  // The user who triggered the notification
+  actor       User     @relation("notificationsSent", fields: [actorId], references: [id], onDelete: Cascade)
+  actorId     String
+
+  // Optional reference to related post
+  postId      String?
 }
