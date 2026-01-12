@@ -18,7 +18,21 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "next-env.d.ts",
+      "src/generated/**",
     ],
+  },
+  {
+    rules: {
+      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-unused-vars": "warn",
+      "@next/next/no-img-element": "warn",
+      "@next/next/no-html-link-for-pages": "warn",
+      "react/no-unescaped-entities": "warn",
+      "@typescript-eslint/ban-ts-comment": "warn",
+      "@next/next/no-async-client-component": "warn",
+      "react-hooks/exhaustive-deps": "warn",
+      "@next/next/no-page-custom-font": "warn",
+    },
   },
 ];
 

@@ -433,7 +433,7 @@ export default function MePage() {
         </div>
 
         {/* Content based on active tab */}
-        <div className="px-2 py-2 space-y-3">
+        <div className="divide-y divide-gray-800">
           {/* Posts Tab */}
           {activeTab === "posts" && (
             <>
@@ -463,7 +463,7 @@ export default function MePage() {
                 </div>
               ) : (
                 replies.map((reply) => (
-                  <div key={reply.id} className="border-b border-gray-800 pb-3">
+                  <div key={reply.id} className="border-b border-gray-800">
                     {/* Reply context - the original post */}
                     <div className="text-xs text-gray-500 px-4 py-2 flex items-center gap-1">
                       <span>Replying to</span>
