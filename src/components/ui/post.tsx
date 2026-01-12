@@ -164,20 +164,11 @@ export default function Post({ post, onDelete }: { post: FeedPost; onDelete?: ()
       paddingy="3vh"
       rounded="0vh"
     >
-      {/* Recommendation Reason */}
-      {post.recommendationReason && (
-        <div className="flex items-center gap-2 text-xs text-gray-500 mb-2 ml-14">
-          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
-          </svg>
-          <span>{post.recommendationReason}</span>
-        </div>
-      )}
       <div className="grid grid-cols-12 gap-3 w-full">
         <div className="col-span-1 flex justify-center">
-          <Link href={`/user/${post.author.id}`}>
+          <Link href={`/user/${post.author.id}`} onClick={(e) => e.stopPropagation()}>
             <img
-              className="w-11 h-11 rounded-full object-cover"
+              className="w-11 h-11 rounded-full object-cover hover:opacity-80 transition-opacity"
               src={post.author.image ?? "/default-avatar.png"}
               alt={post.author.name ?? post.author.username}
             />
@@ -186,48 +177,46 @@ export default function Post({ post, onDelete }: { post: FeedPost; onDelete?: ()
         <div className="col-span-11 pl-1 space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm">
-              <div className="flex items-center gap-1 font-semibold">
+              <Link href={`/user/${post.author.id}`} onClick={(e) => e.stopPropagation()} className="flex items-center gap-1 font-semibold hover:underline">
                 <span>{post.author.name ?? post.author.username}</span>
                 <GoCheckCircleFill className="text-blue-500" />
-              </div>
+              </Link>
               <span className="text-[#4b4d51]">@{post.author.username}</span>
               <span className="text-[#4b4d51] text-xs">· {formatTimeAgo(createdAt)}</span>
             </div>
           </div>
 
-          <div className="text-[15px] leading-relaxed whitespace-pre-line">
-            {post.content}
-          </div>
-
-          {/* Sport Tag */}
-          {post.sport && (
-            <span className="inline-block bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full text-xs">
-              #{post.sport}
-            </span>
-          )}
+          <Link href={`/post/${post.id}`} className="block">
+            <div className="text-[15px] leading-relaxed whitespace-pre-line">
+              {post.content}
+            </div>
+          </Link>
 
           {post.mediaUrl && (
-            <img
-              className="rounded-3xl mt-2 w-full object-cover max-h-96"
-              src={post.mediaUrl}
-              alt="Post media"
-            />
+            <Link href={`/post/${post.id}`}>
+              <img
+                className="rounded-3xl mt-2 w-full object-cover max-h-96 hover:opacity-95 transition-opacity cursor-pointer"
+                src={post.mediaUrl}
+                alt="Post media"
+              />
+            </Link>
           )}
 
           {/* Action Buttons */}
           <div className="flex gap-8 text-sm text-[#71767b] mt-3">
-            <button
-              onClick={loadComments}
+            <Link 
+              href={`/post/${post.id}`} 
+              onClick={(e) => e.stopPropagation()} 
               className="flex items-center gap-2 hover:text-blue-500 transition-colors group"
             >
               <div className="p-2 rounded-full group-hover:bg-blue-500/10 transition-colors">
                 <FaRegComment className="w-4 h-4" />
               </div>
               <span>{commentCount}</span>
-            </button>
+            </Link>
 
             <button
-              onClick={handleLike}
+              onClick={(e) => { e.stopPropagation(); handleLike(); }}
               className={`flex items-center gap-2 transition-colors group ${
                 isLiked ? "text-red-500" : "hover:text-red-500"
               }`}
@@ -243,7 +232,7 @@ export default function Post({ post, onDelete }: { post: FeedPost; onDelete?: ()
             </button>
 
             <button
-              onClick={handleShare}
+              onClick={(e) => { e.stopPropagation(); handleShare(); }}
               className="flex items-center gap-2 hover:text-green-500 transition-colors group"
             >
               <div className="p-2 rounded-full group-hover:bg-green-500/10 transition-colors">

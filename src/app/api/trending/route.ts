@@ -1,32 +1,32 @@
 import prisma from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 
-// Get trending sports based on post count
 export async function GET(req: NextRequest) {
   try {
-    // Group posts by sport and count them
-    const sportCounts = await prisma.post.groupBy({
-      by: ["sport"],
+    const postsWithTags = await prisma.post.findMany({
       where: {
         sport: { not: null },
       },
-      _count: {
+      select: {
         sport: true,
       },
-      orderBy: {
-        _count: {
-          sport: "desc",
-        },
-      },
-      take: 5,
     });
 
-    const trends = sportCounts
-      .filter((item) => item.sport !== null)
-      .map((item) => ({
-        sport: item.sport!,
-        postCount: item._count.sport,
-      }));
+    const tagCounts = new Map<string, number>();
+    
+    postsWithTags.forEach((post) => {
+      if (post.sport) {
+        const tags = post.sport.split(',').map(t => t.trim()).filter(Boolean);
+        tags.forEach((tag) => {
+          tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
+        });
+      }
+    });
+
+    const trends = Array.from(tagCounts.entries())
+      .map(([tag, postCount]) => ({ tag, postCount }))
+      .sort((a, b) => b.postCount - a.postCount)
+      .slice(0, 5); // Top 10 trending tags
 
     return NextResponse.json({ trends });
   } catch (error) {

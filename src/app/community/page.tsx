@@ -5,10 +5,11 @@ import Sidebar from "../../components/sidebar";
 import TweetBox from "@/components/ui/tweetbox";
 import RightSection from "@/components/rightsection";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState, useCallback } from "react";
-import { FiRefreshCw, FiFilter, FiX, FiTrendingUp, FiUsers, FiStar } from "react-icons/fi";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { useSearchParams } from "next/navigation";
+import { FiRefreshCw, FiFilter, FiX, FiUsers, FiStar } from "react-icons/fi";
 
-type Tab = "foryou" | "following" | "trending";
+type Tab = "foryou" | "following";
 
 const SPORTS_CATEGORIES = [
   "All",
@@ -23,7 +24,10 @@ const SPORTS_CATEGORIES = [
   "Rugby",
 ];
 
+const POSTS_PER_PAGE = 20;
+
 export default function CommunityPage() {
+  const searchParams = useSearchParams();
   const [showTweetBox, setTweetBox] = useState(false);
   const [activeTab, setActiveTab] = useState<Tab>("foryou");
   const [posts, setPosts] = useState<FeedPost[]>([]);
@@ -36,6 +40,20 @@ export default function CommunityPage() {
   const [showFilterMenu, setShowFilterMenu] = useState<boolean>(false);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loadingMore, setLoadingMore] = useState<boolean>(false);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  // Read sport filter from URL params
+  useEffect(() => {
+    const sportParam = searchParams.get("sport");
+    if (sportParam) {
+      const formattedSport = sportParam.charAt(0).toUpperCase() + sportParam.slice(1).toLowerCase();
+      if (SPORTS_CATEGORIES.includes(formattedSport)) {
+        setSelectedSport(formattedSport);
+      } else {
+        setSelectedSport(sportParam); // Use as-is if not in predefined list
+      }
+    }
+  }, [searchParams]);
 
   const loadFeed = useCallback(async (tab: Tab, showRefreshing = false, cursor?: string) => {
     try {
@@ -49,20 +67,15 @@ export default function CommunityPage() {
       
       let endpoint: string;
       const params = new URLSearchParams();
+      params.set("limit", POSTS_PER_PAGE.toString());
       
       if (tab === "foryou") {
-        // Use the new recommendation API for "For You"
         endpoint = "/api/feed/recommendations";
-        if (cursor) params.set("cursor", cursor);
-      } else if (tab === "trending") {
-        // Use recommendations sorted by engagement
-        endpoint = "/api/feed/recommendations";
-        params.set("sort", "trending");
         if (cursor) params.set("cursor", cursor);
       } else {
-        // Following feed
         endpoint = "/api/feed";
         params.set("type", "following");
+        if (cursor) params.set("cursor", cursor);
       }
       
       const res = await fetch(`${endpoint}?${params.toString()}`, {
@@ -73,8 +86,11 @@ export default function CommunityPage() {
       const data = await res.json();
       
       if (cursor) {
-        // Append to existing posts
-        setPosts(prev => [...prev, ...(data.posts ?? [])]);
+        setPosts(prev => {
+          const existingIds = new Set(prev.map(p => p.id));
+          const newPosts = (data.posts ?? []).filter((p: FeedPost) => !existingIds.has(p.id));
+          return [...prev, ...newPosts];
+        });
       } else {
         setPosts(data.posts ?? []);
       }
@@ -97,21 +113,33 @@ export default function CommunityPage() {
     }
   }, []);
 
-  const handleLoadMore = () => {
-    if (nextCursor && !loadingMore) {
-      loadFeed(activeTab, false, nextCursor);
-    }
-  };
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && nextCursor && !loadingMore && !loading) {
+          loadFeed(activeTab, false, nextCursor);
+        }
+      },
+      { threshold: 0.1 }
+    );
 
-  // Apply filter whenever posts or selectedSport changes
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [nextCursor, loadingMore, loading, activeTab, loadFeed]);
+
   useEffect(() => {
     if (selectedSport === "All") {
       setFilteredPosts(posts);
     } else {
       setFilteredPosts(
-        posts.filter(
-          (p) => p.sport?.toLowerCase() === selectedSport.toLowerCase()
-        )
+        posts.filter((p) => {
+          if (!p.sport) return false;
+          const postTags = p.sport.split(',').map(t => t.trim().toLowerCase());
+          return postTags.includes(selectedSport.toLowerCase());
+        })
       );
     }
   }, [posts, selectedSport]);
@@ -136,8 +164,6 @@ export default function CommunityPage() {
   useEffect(() => {
     if (activeTab === "following") {
       loadFeed("following");
-    } else if (activeTab === "trending") {
-      loadFeed("trending");
     } else {
       loadFeed("foryou");
     }
@@ -145,12 +171,10 @@ export default function CommunityPage() {
 
   return (
     <div className="w-full h-[90vh] flex">
-      {/* Sidebar */}
       <div>
         <Sidebar setAddPost={setTweetBox} />
       </div>
 
-      {/* Main Content */}
       <div className="border-r max-w-[88vh] border-white border-opacity-20 overflow-y-auto scrollbar-hide flex-1">
         <div className="sticky top-0 bg-black/20 backdrop-blur-md border-none flex items-center z-10">
           <Button
@@ -176,91 +200,16 @@ export default function CommunityPage() {
             <FiUsers className="w-4 h-4" />
             Following
           </Button>
-
-          <Button
-            onClick={() => setActiveTab("trending")}
-            className={`${
-              activeTab === "trending"
-                ? "bg-[#dfe6e9] text-black"
-                : "bg-black/20 text-white"
-            } w-full hover:bg-[#dfe6e9] hover:text-black rounded-sm flex items-center justify-center gap-1`}
-          >
-            <FiTrendingUp className="w-4 h-4" />
-            Trending
-          </Button>
-
-          {/* Filter Button */}
-          <div className="relative">
-            <button
-              onClick={() => setShowFilterMenu(!showFilterMenu)}
-              className={`p-3 hover:bg-gray-800 transition-colors rounded-full mr-1 ${
-                selectedSport !== "All" ? "text-blue-500" : ""
-              }`}
-              title="Filter by sport"
-            >
-              <FiFilter className="w-5 h-5" />
-            </button>
-            {showFilterMenu && (
-              <div className="absolute top-full right-0 mt-2 bg-gray-900 border border-gray-700 rounded-lg shadow-xl z-20 w-48">
-                {SPORTS_CATEGORIES.map((sport) => (
-                  <button
-                    key={sport}
-                    onClick={() => {
-                      setSelectedSport(sport);
-                      setShowFilterMenu(false);
-                    }}
-                    className={`block w-full text-left px-4 py-2 hover:bg-gray-800 transition-colors text-sm ${
-                      selectedSport === sport ? "bg-blue-500/20 text-blue-400" : "text-white"
-                    }`}
-                  >
-                    {sport}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <button
-            onClick={handleRefresh}
-            disabled={refreshing}
-            className="p-3 hover:bg-gray-800 transition-colors rounded-full mr-2"
-            title="Refresh feed"
-          >
-            <FiRefreshCw
-              className={`w-5 h-5 ${refreshing ? "animate-spin" : ""}`}
-            />
-          </button>
         </div>
-
-        {/* Active Filter Display */}
-        {selectedSport !== "All" && (
-          <div className="mx-2 mt-2 flex items-center gap-2">
-            <div className="inline-flex items-center gap-2 bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-sm">
-              <span>Filtered: #{selectedSport}</span>
-              <button
-                onClick={() => setSelectedSport("All")}
-                className="hover:bg-blue-500/30 rounded-full p-0.5"
-              >
-                <FiX className="w-3 h-3" />
-              </button>
-            </div>
-            <span className="text-gray-500 text-sm">
-              {filteredPosts.length} post{filteredPosts.length !== 1 ? "s" : ""}
-            </span>
-          </div>
-        )}
 
         <div className="mx-2 mt-2">
           {showTweetBox && <TweetBox onPostCreated={handlePostCreated} />}
         </div>
 
-        <div className="w-full px-2 pb-6 space-y-3 mt-2">
+        <div className="w-full px-2 pb-6 mt-2">
           {loading && (
-            <div className="flex justify-center py-6 text-sm text-gray-400">
-              <div className="flex items-center gap-2">
-                <FiRefreshCw className="w-4 h-4 animate-spin" />
-                Loading {activeTab === "foryou" ? "personalized recommendations" : activeTab === "trending" ? "trending posts" : "Following feed"}...
-              </div>
+            <div className="flex justify-center py-6">
+              <div className="w-8 h-8 border-4 border-gray-700 border-t-blue-500 rounded-full animate-spin"></div>
             </div>
           )}
 
@@ -274,20 +223,6 @@ export default function CommunityPage() {
               </p>
               <p className="text-sm mt-1">
                 Be the first to share what&apos;s happening in sports.
-              </p>
-            </div>
-          )}
-
-          {!loading && filteredPosts.length === 0 && activeTab === "trending" && (
-            <div className="flex flex-col items-center justify-center py-10 text-center text-gray-400">
-              <FiTrendingUp className="w-12 h-12 mb-4 text-gray-600" />
-              <p className="font-semibold text-lg">
-                {selectedSport !== "All"
-                  ? `No trending ${selectedSport} posts`
-                  : "No trending posts yet"}
-              </p>
-              <p className="text-sm mt-1">
-                Check back later to see what&apos;s hot in sports.
               </p>
             </div>
           )}
@@ -320,28 +255,17 @@ export default function CommunityPage() {
               />
             ))}
 
-          {/* Load More Button */}
-          {!loading && filteredPosts.length > 0 && nextCursor && (
-            <div className="flex justify-center py-4">
-              <Button
-                onClick={handleLoadMore}
-                disabled={loadingMore}
-                className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-full"
-              >
-                {loadingMore ? (
-                  <span className="flex items-center gap-2">
-                    <FiRefreshCw className="w-4 h-4 animate-spin" />
-                    Loading...
-                  </span>
-                ) : (
-                  "Load More"
-                )}
-              </Button>
-            </div>
-          )}
+          {/* Infinite Scroll Sentinel */}
+          <div ref={loadMoreRef} className="py-4">
+            {loadingMore && (
+              <div className="flex justify-center">
+                <div className="w-8 h-8 border-4 border-gray-700 border-t-blue-500 rounded-full animate-spin"></div>
+              </div>
+            )}
+          </div>
 
           {/* End of Feed Message */}
-          {!loading && filteredPosts.length > 0 && !nextCursor && (
+          {!loading && filteredPosts.length > 0 && !nextCursor && !loadingMore && (
             <div className="flex justify-center py-4 text-gray-500 text-sm">
               You&apos;ve reached the end of the feed
             </div>

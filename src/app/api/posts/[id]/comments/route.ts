@@ -12,16 +12,27 @@ type Params = {
 export async function GET(req: NextRequest, { params }: Params) {
   try {
     const { id: postId } = await params;
+    const { searchParams } = new URL(req.url);
+    const page = parseInt(searchParams.get("page") ?? "1");
+    const limit = parseInt(searchParams.get("limit") ?? "10");
+    const skip = (page - 1) * limit;
 
-    const comments = await prisma.comment.findMany({
-      where: { postId },
-      include: {
-        author: true,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+    const [comments, totalCount] = await Promise.all([
+      prisma.comment.findMany({
+        where: { postId },
+        include: {
+          author: true,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: limit,
+        skip: skip,
+      }),
+      prisma.comment.count({
+        where: { postId },
+      }),
+    ]);
 
     return NextResponse.json({
       comments: comments.map((comment) => ({
@@ -35,6 +46,8 @@ export async function GET(req: NextRequest, { params }: Params) {
           username: comment.author.email?.split("@")[0] ?? "user",
         },
       })),
+      hasMore: skip + comments.length < totalCount,
+      total: totalCount,
     });
   } catch (error) {
     console.error("Get comments error:", error);

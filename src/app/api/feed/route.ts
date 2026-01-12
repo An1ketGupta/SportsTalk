@@ -9,11 +9,13 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const type = searchParams.get("type") === "following" ? "following" : "foryou";
+    const limit = parseInt(searchParams.get("limit") ?? "20");
+    const cursor = searchParams.get("cursor");
 
     if (!user?.id) {
       // For unauthenticated users, only For You feed makes sense
       if (type === "following") {
-        return NextResponse.json({ posts: [], followingCount: 0 });
+        return NextResponse.json({ posts: [], followingCount: 0, nextCursor: null });
       }
     }
 
@@ -26,13 +28,15 @@ export async function GET(req: NextRequest) {
       const followingIds = followingRelations.map((f) => f.followingId);
 
       if (followingIds.length === 0) {
-        return NextResponse.json({ posts: [], followingCount: 0 });
+        return NextResponse.json({ posts: [], followingCount: 0, nextCursor: null });
       }
 
       const posts = await prisma.post.findMany({
         where: {
           authorId: { in: followingIds },
+          ...(cursor ? { createdAt: { lt: new Date(cursor) } } : {}),
         },
+        take: limit + 1, // Fetch one extra to check if there are more
         include: {
           author: true,
           likes: {
@@ -48,8 +52,12 @@ export async function GET(req: NextRequest) {
         },
       });
 
+      const hasMore = posts.length > limit;
+      const postsToReturn = hasMore ? posts.slice(0, limit) : posts;
+      const nextCursor = hasMore ? postsToReturn[postsToReturn.length - 1].createdAt.toISOString() : null;
+
       return NextResponse.json({
-        posts: posts.map((p) => ({
+        posts: postsToReturn.map((p) => ({
           id: p.id,
           content: p.content,
           createdAt: p.createdAt,
@@ -66,11 +74,14 @@ export async function GET(req: NextRequest) {
           isLiked: p.likes.length > 0,
         })),
         followingCount: followingIds.length,
+        nextCursor,
       });
     }
 
     // For You feed = all posts from all users
     const posts = await prisma.post.findMany({
+      where: cursor ? { createdAt: { lt: new Date(cursor) } } : undefined,
+      take: limit + 1,
       include: {
         author: true,
         likes: {
@@ -86,8 +97,12 @@ export async function GET(req: NextRequest) {
       },
     });
 
+    const hasMore = posts.length > limit;
+    const postsToReturn = hasMore ? posts.slice(0, limit) : posts;
+    const nextCursor = hasMore ? postsToReturn[postsToReturn.length - 1].createdAt.toISOString() : null;
+
     return NextResponse.json({
-      posts: posts.map((p) => ({
+      posts: postsToReturn.map((p) => ({
         id: p.id,
         content: p.content,
         createdAt: p.createdAt,
@@ -103,6 +118,7 @@ export async function GET(req: NextRequest) {
         commentCount: p._count.comments,
         isLiked: p.likes.length > 0,
       })),
+      nextCursor,
     });
   } catch (error) {
     console.error("Feed API error:", error);

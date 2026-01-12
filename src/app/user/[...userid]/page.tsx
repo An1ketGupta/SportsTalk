@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams } from "next/navigation";
 import SearchBar from "@/components/ui/searchbar";
 import Sidebar from "@/components/sidebar";
@@ -9,7 +9,9 @@ import WhoToFollow from "@/components/whotofollow";
 import TrendingSports from "@/components/TrendingSports";
 import Post, { FeedPost } from "@/components/ui/post";
 import { GoCheckCircleFill } from "react-icons/go";
-import { FiCalendar, FiMapPin } from "react-icons/fi";
+import { FiCalendar } from "react-icons/fi";
+
+const POSTS_PER_PAGE = 10;
 
 interface UserProfile {
   id: string;
@@ -33,32 +35,74 @@ export default function Userpage() {
   const [user, setUser] = useState<UserProfile | null>(null);
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
   const [activeTab, setActiveTab] = useState<"posts" | "likes">("posts");
+  
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  const loadUserProfile = useCallback(async (cursor?: string) => {
+    try {
+      if (cursor) {
+        setLoadingMore(true);
+      } else {
+        setLoading(true);
+      }
+      
+      const params = new URLSearchParams();
+      params.set("limit", POSTS_PER_PAGE.toString());
+      if (cursor) params.set("cursor", cursor);
+      
+      const res = await fetch(`/api/users/${userId}?${params.toString()}`);
+      if (!res.ok) throw new Error("Failed to load user");
+      const data = await res.json();
+      
+      if (!cursor) {
+        setUser(data.user);
+        setPosts(data.posts ?? []);
+        setIsFollowing(data.user.isFollowing);
+        setFollowerCount(data.user.followerCount);
+      } else {
+        setPosts(prev => {
+          const existingIds = new Set(prev.map(p => p.id));
+          const newPosts = (data.posts ?? []).filter((p: FeedPost) => !existingIds.has(p.id));
+          return [...prev, ...newPosts];
+        });
+      }
+      setNextCursor(data.nextCursor ?? null);
+    } catch (error) {
+      console.error("Load user error:", error);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  }, [userId]);
 
   useEffect(() => {
     if (userId) {
       loadUserProfile();
     }
-  }, [userId]);
+  }, [userId, loadUserProfile]);
 
-  const loadUserProfile = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch(`/api/users/${userId}`);
-      if (!res.ok) throw new Error("Failed to load user");
-      const data = await res.json();
-      setUser(data.user);
-      setPosts(data.posts ?? []);
-      setIsFollowing(data.user.isFollowing);
-      setFollowerCount(data.user.followerCount);
-    } catch (error) {
-      console.error("Load user error:", error);
-    } finally {
-      setLoading(false);
+  // Infinite scroll with Intersection Observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && nextCursor && !loadingMore && !loading) {
+          loadUserProfile(nextCursor);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
     }
-  };
+
+    return () => observer.disconnect();
+  }, [nextCursor, loadingMore, loading, loadUserProfile]);
 
   const handleFollow = async () => {
     try {
@@ -227,7 +271,7 @@ export default function Userpage() {
 
         {/* Posts */}
         <div className="px-2 py-2 space-y-3">
-          {posts.length === 0 ? (
+          {posts.length === 0 && !loading ? (
             <div className="text-center text-gray-500 py-10">
               {activeTab === "posts"
                 ? "No posts yet"
@@ -241,6 +285,22 @@ export default function Userpage() {
                 onDelete={() => handlePostDeleted(post.id)}
               />
             ))
+          )}
+          
+          {/* Infinite Scroll Sentinel */}
+          <div ref={loadMoreRef} className="py-4">
+            {loadingMore && (
+              <div className="flex justify-center">
+                <div className="w-8 h-8 border-4 border-gray-700 border-t-blue-500 rounded-full animate-spin"></div>
+              </div>
+            )}
+          </div>
+
+          {/* End of Posts Message */}
+          {!loading && posts.length > 0 && !nextCursor && !loadingMore && (
+            <div className="flex justify-center py-4 text-gray-500 text-sm">
+              No more posts
+            </div>
           )}
         </div>
       </div>

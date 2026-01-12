@@ -8,33 +8,20 @@ type Params = {
   }>;
 };
 
-// Get user profile with posts
+// Get user profile with posts (paginated)
 export async function GET(req: NextRequest, { params }: Params) {
   try {
     const session = await auth();
     const currentUserId = session?.user?.id;
 
     const { userId } = await params;
+    const { searchParams } = new URL(req.url);
+    const limit = parseInt(searchParams.get("limit") ?? "10");
+    const cursor = searchParams.get("cursor");
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: {
-        posts: {
-          include: {
-            likes: {
-              where: currentUserId
-                ? { userId: currentUserId }
-                : undefined,
-              select: { userId: true },
-            },
-            _count: {
-              select: { likes: true, comments: true },
-            },
-          },
-          orderBy: {
-            createdAt: "desc",
-          },
-        },
         _count: {
           select: {
             followers: true,
@@ -48,6 +35,31 @@ export async function GET(req: NextRequest, { params }: Params) {
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
+
+    // Fetch posts separately with pagination
+    const posts = await prisma.post.findMany({
+      where: {
+        authorId: userId,
+        ...(cursor ? { createdAt: { lt: new Date(cursor) } } : {}),
+      },
+      take: limit + 1,
+      include: {
+        likes: {
+          where: currentUserId ? { userId: currentUserId } : undefined,
+          select: { userId: true },
+        },
+        _count: {
+          select: { likes: true, comments: true },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    const hasMore = posts.length > limit;
+    const postsToReturn = hasMore ? posts.slice(0, limit) : posts;
+    const nextCursor = hasMore ? postsToReturn[postsToReturn.length - 1].createdAt.toISOString() : null;
 
     // Check if current user is following this user
     let isFollowing = false;
@@ -78,7 +90,7 @@ export async function GET(req: NextRequest, { params }: Params) {
         isFollowing,
         isOwnProfile: currentUserId === userId,
       },
-      posts: user.posts.map((p) => ({
+      posts: postsToReturn.map((p) => ({
         id: p.id,
         content: p.content,
         createdAt: p.createdAt,
@@ -94,6 +106,7 @@ export async function GET(req: NextRequest, { params }: Params) {
         commentCount: p._count.comments,
         isLiked: p.likes.length > 0,
       })),
+      nextCursor,
     });
   } catch (error) {
     console.error("Get user profile error:", error);

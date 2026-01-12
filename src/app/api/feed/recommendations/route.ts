@@ -157,18 +157,22 @@ export async function GET(req: NextRequest) {
       select: { sport: true },
     });
 
-    // Build sport interest map
-    const sportInterests = new Map<string, number>();
+    // Build tag interest map (handle comma-separated tags)
+    const tagInterests = new Map<string, number>();
     [...userLikes.map((l) => l.post.sport), ...userPosts.map((p) => p.sport)]
       .filter(Boolean)
       .forEach((sport) => {
-        sportInterests.set(sport!, (sportInterests.get(sport!) ?? 0) + 1);
+        // Split by comma to handle multiple tags
+        const tags = sport!.split(',').map(t => t.trim()).filter(Boolean);
+        tags.forEach((tag) => {
+          tagInterests.set(tag, (tagInterests.get(tag) ?? 0) + 1);
+        });
       });
 
-    // Normalize sport interests
-    const maxInterest = Math.max(...Array.from(sportInterests.values()), 1);
-    sportInterests.forEach((value, key) => {
-      sportInterests.set(key, value / maxInterest);
+    // Normalize tag interests
+    const maxInterest = Math.max(...Array.from(tagInterests.values()), 1);
+    tagInterests.forEach((value, key) => {
+      tagInterests.set(key, value / maxInterest);
     });
 
     // 4. Score each post
@@ -181,10 +185,21 @@ export async function GET(req: NextRequest) {
       let score = timeDecay * WEIGHTS.RECENCY + engagement * WEIGHTS.ENGAGEMENT;
       const reasons: string[] = [];
 
-      // Sport interest boost
-      if (post.sport && sportInterests.has(post.sport)) {
-        score += sportInterests.get(post.sport)! * WEIGHTS.SPORT_INTEREST;
-        reasons.push(`Based on your ${post.sport} interest`);
+      // Tag interest boost (handle comma-separated tags)
+      if (post.sport) {
+        const postTags = post.sport.split(',').map(t => t.trim()).filter(Boolean);
+        let maxTagScore = 0;
+        let matchingTag = '';
+        postTags.forEach((tag) => {
+          if (tagInterests.has(tag) && tagInterests.get(tag)! > maxTagScore) {
+            maxTagScore = tagInterests.get(tag)!;
+            matchingTag = tag;
+          }
+        });
+        if (maxTagScore > 0) {
+          score += maxTagScore * WEIGHTS.SPORT_INTEREST;
+          reasons.push(`Based on your #${matchingTag} interest`);
+        }
       }
 
       // Following boost
@@ -238,7 +253,7 @@ export async function GET(req: NextRequest) {
       debug: process.env.NODE_ENV === "development" ? {
         followingCount: followingIds.size,
         secondDegreeCount: secondDegreeIds.size,
-        sportInterests: Object.fromEntries(sportInterests),
+        tagInterests: Object.fromEntries(tagInterests),
       } : undefined,
     });
   } catch (error) {

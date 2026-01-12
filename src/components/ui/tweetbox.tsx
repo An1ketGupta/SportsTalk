@@ -1,34 +1,23 @@
 "use client";
 import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
 import { useState, useRef } from "react";
-import { FiImage, FiSmile, FiX } from "react-icons/fi";
+import { FiImage, FiSmile, FiX, FiHash } from "react-icons/fi";
 import { useSession } from "next-auth/react";
-
-const SPORTS_CATEGORIES = [
-  "Football",
-  "Basketball",
-  "Tennis",
-  "Cricket",
-  "Baseball",
-  "Hockey",
-  "Soccer",
-  "Golf",
-  "Rugby",
-  "Other",
-];
 
 export default function TweetBox({ onPostCreated }: { onPostCreated?: () => void }) {
   const { data: session } = useSession();
   const [text, setText] = useState("");
   const [mediaUrl, setMediaUrl] = useState("");
   const [mediaPreview, setMediaPreview] = useState("");
-  const [selectedSport, setSelectedSport] = useState("");
+  const [customTag, setCustomTag] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
   const [emojiselected, setEmojiSelected] = useState(false);
   const [isPosting, setIsPosting] = useState(false);
-  const [showSportDropdown, setShowSportDropdown] = useState(false);
+  const [showTagInput, setShowTagInput] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const MAX_CHARS = 280;
+  const MAX_TAGS = 5;
   const charCount = text.length;
   const charPercentage = (charCount / MAX_CHARS) * 100;
 
@@ -46,6 +35,25 @@ export default function TweetBox({ onPostCreated }: { onPostCreated?: () => void
     }
   };
 
+  const handleAddTag = () => {
+    const trimmedTag = customTag.trim().replace(/^#/, ''); // Remove leading # if present
+    if (trimmedTag && tags.length < MAX_TAGS && !tags.includes(trimmedTag)) {
+      setTags([...tags, trimmedTag]);
+      setCustomTag("");
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove: string) => {
+    setTags(tags.filter(tag => tag !== tagToRemove));
+  };
+
+  const handleTagKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleAddTag();
+    }
+  };
+
   const handlePost = async () => {
     if (!text.trim() || isPosting) return;
 
@@ -57,7 +65,7 @@ export default function TweetBox({ onPostCreated }: { onPostCreated?: () => void
         body: JSON.stringify({
           content: text.trim(),
           mediaUrl: mediaUrl.trim() || null,
-          sport: selectedSport || null,
+          sport: tags.length > 0 ? tags.join(',') : null, // Store tags as comma-separated
         }),
       });
 
@@ -72,7 +80,8 @@ export default function TweetBox({ onPostCreated }: { onPostCreated?: () => void
       setText("");
       setMediaUrl("");
       setMediaPreview("");
-      setSelectedSport("");
+      setTags([]);
+      setCustomTag("");
       
       // Notify parent
       if (onPostCreated) {
@@ -167,20 +176,57 @@ export default function TweetBox({ onPostCreated }: { onPostCreated?: () => void
             </div>
           )}
 
-          {/* Sport Tag */}
-          {selectedSport && (
-            <div className="inline-flex items-center gap-2 bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-sm">
-              <span>#{selectedSport}</span>
-              <button
-                onClick={() => setSelectedSport("")}
-                className="hover:bg-blue-500/30 rounded-full"
-              >
-                <FiX className="w-3 h-3" />
-              </button>
+          {/* Tags Display */}
+          {tags.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {tags.map((tag) => (
+                <div 
+                  key={tag}
+                  className="inline-flex items-center gap-1 bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-sm"
+                >
+                  <span>#{tag}</span>
+                  <button
+                    onClick={() => handleRemoveTag(tag)}
+                    className="hover:bg-blue-500/30 rounded-full p-0.5"
+                  >
+                    <FiX className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
             </div>
           )}
         </div>
       </div>
+
+      {/* Tag Input */}
+      {showTagInput && (
+        <div className="pl-14">
+          <div className="flex gap-2">
+            <div className="flex-1 relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">#</span>
+              <input
+                type="text"
+                value={customTag}
+                onChange={(e) => setCustomTag(e.target.value.replace(/[^a-zA-Z0-9]/g, ''))}
+                onKeyDown={handleTagKeyDown}
+                placeholder="Add a tag (e.g., Football, NBA, WorldCup)"
+                className="w-full bg-gray-900 rounded-lg pl-7 pr-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+                maxLength={30}
+              />
+            </div>
+            <button
+              onClick={handleAddTag}
+              disabled={!customTag.trim() || tags.length >= MAX_TAGS}
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
+            >
+              Add
+            </button>
+          </div>
+          <p className="text-xs text-gray-500 mt-1">
+            {tags.length}/{MAX_TAGS} tags added. Press Enter to add.
+          </p>
+        </div>
+      )}
 
       {/* Media URL Input */}
       {!mediaPreview && (
@@ -208,30 +254,15 @@ export default function TweetBox({ onPostCreated }: { onPostCreated?: () => void
             <FiSmile className="w-5 h-5" />
           </button>
 
-          <div className="relative">
-            <button
-              onClick={() => setShowSportDropdown(!showSportDropdown)}
-              className="text-sm hover:bg-blue-500/10 px-3 py-1.5 rounded-full transition-colors"
-            >
-              {selectedSport || "Add Sport Tag"}
-            </button>
-            {showSportDropdown && (
-              <div className="absolute top-full mt-2 left-0 bg-gray-900 rounded-lg border border-gray-700 shadow-xl z-10 max-h-60 overflow-y-auto">
-                {SPORTS_CATEGORIES.map((sport) => (
-                  <button
-                    key={sport}
-                    onClick={() => {
-                      setSelectedSport(sport);
-                      setShowSportDropdown(false);
-                    }}
-                    className="block w-full text-left px-4 py-2 hover:bg-gray-800 transition-colors text-sm"
-                  >
-                    {sport}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          <button
+            onClick={() => setShowTagInput(!showTagInput)}
+            className={`flex items-center gap-1 text-sm hover:bg-blue-500/10 px-3 py-1.5 rounded-full transition-colors ${
+              showTagInput ? 'bg-blue-500/20' : ''
+            }`}
+          >
+            <FiHash className="w-4 h-4" />
+            {tags.length > 0 ? `${tags.length} tag${tags.length > 1 ? 's' : ''}` : 'Add Tags'}
+          </button>
         </div>
 
         {/* Post Button */}
