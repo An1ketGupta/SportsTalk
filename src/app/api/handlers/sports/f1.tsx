@@ -10,7 +10,7 @@ export default async function F1MatchesHandler() {
             method: "GET",
             headers: {
                 "x-rapidapi-host": "v1.formula-1.api-sports.io",
-                "x-rapidapi-key": "115c63a79ada64779433b7f133255804"
+                "x-rapidapi-key": process.env.RAPIDAPI_SPORTS_KEY!
             },
             next: { revalidate: 30 } // cache for 30 seconds
         }
@@ -70,7 +70,7 @@ export async function F1MatchByIdHandler({ id }: { id: string }) {
           method: "GET",
           headers: {
               "x-rapidapi-host": "v1.formula-1.api-sports.io",
-              "x-rapidapi-key": "115c63a79ada64779433b7f133255804"
+              "x-rapidapi-key": process.env.RAPIDAPI_SPORTS_KEY!
           },
           next: { revalidate: 30 }
       }

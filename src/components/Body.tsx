@@ -105,6 +105,7 @@ export default async function Body() {
                     imglink={cat.img}
                     Title={cat.title}
                     Description={cat.description}
+                    link={cat.link}
                 />
             ))}
         </div>

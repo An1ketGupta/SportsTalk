@@ -1,11 +1,13 @@
 export default function SportsCatalogue({
     imglink,
     Title,
-    Description
+    Description,
+    link
 }: {
     imglink: string;
     Title: string;
     Description: string;
+    link: string;
 }) {
     return (
         <div className="bg-[#181818] rounded-xl h-auto w-auto overflow-hidden p-7 flex flex-col items-center justify-between transform transition-transform border-[#959595] border-opacity-50 border-[0.5px] duration-200 hover:-translate-y-2">
@@ -33,7 +35,7 @@ export default function SportsCatalogue({
                 </span>
                 <span className="text-[#959595] font-semibold">Active Community</span>
                 <span>
-                    <a href={`/livematches/${Title.toLowerCase()}`} className="bg-red-600 cursor-pointer flex rounded-lg font-semibold py-1 items-center w-auto px-3 hover:bg-[#e04d2b]">
+                    <a href={`/livematches/${link}`} className="bg-red-600 cursor-pointer flex rounded-lg font-semibold py-1 items-center w-auto px-3 hover:bg-[#e04d2b]">
                         <div>
                             Live Scores
                         </div>

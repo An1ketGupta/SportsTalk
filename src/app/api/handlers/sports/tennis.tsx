@@ -76,7 +76,7 @@ export async function TennisMatchByIdHandler({ id }: { id: string }) {
   const response = await fetch(url, {
     method: "GET",
     headers: {
-      "x-rapidapi-key": "e60478613emsh5570a46ef93e082p1752e5jsndf6235d350ab",
+      "x-rapidapi-key": process.env.RAPIDAPI_TENNIS_KEY!,
       "x-rapidapi-host": "tennisapi1.p.rapidapi.com",
     },
     next: { revalidate: 30 },
@@ -86,7 +86,7 @@ export async function TennisMatchByIdHandler({ id }: { id: string }) {
   const statsResponse = await fetch(`https://tennisapi1.p.rapidapi.com/api/tennis/event/${id}/statistics`, {
     method: "GET",
     headers: {
-      "x-rapidapi-key": "e60478613emsh5570a46ef93e082p1752e5jsndf6235d350ab",
+      "x-rapidapi-key": process.env.RAPIDAPI_TENNIS_KEY!,
       "x-rapidapi-host": "tennisapi1.p.rapidapi.com",
     },
     next: { revalidate: 30 },

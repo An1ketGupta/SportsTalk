@@ -8,7 +8,7 @@ export default async function BasketballMatchesHandler() {
         method: 'GET',
         headers: {
             "x-rapidapi-host": "v1.basketball.api-sports.io",
-            "x-rapidapi-key": "115c63a79ada64779433b7f133255804"
+            "x-rapidapi-key": process.env.RAPIDAPI_SPORTS_KEY!
         },
         next: {
             revalidate: 30
@@ -64,7 +64,7 @@ export async function BasketballMatchByIdHandler({ id }: { id: string }) {
         method: 'GET',
         headers: {
             "x-rapidapi-host": "v1.basketball.api-sports.io",
-            "x-rapidapi-key": "115c63a79ada64779433b7f133255804"
+            "x-rapidapi-key": process.env.RAPIDAPI_SPORTS_KEY!
         },
         next: {
             revalidate: 30
@@ -76,7 +76,7 @@ export async function BasketballMatchByIdHandler({ id }: { id: string }) {
         method: 'GET',
         headers: {
             "x-rapidapi-host": "v1.basketball.api-sports.io",
-            "x-rapidapi-key": "115c63a79ada64779433b7f133255804"
+            "x-rapidapi-key": process.env.RAPIDAPI_SPORTS_KEY!
         },
         next: {
             revalidate: 30
