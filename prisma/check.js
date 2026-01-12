@@ -1,5 +1,5 @@
 // Check database counts
-const { PrismaClient } = require("../src/generated/prisma");
+const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 async function check() {
