@@ -104,81 +104,124 @@ export async function FootballMatchByIdHandler({
   const homeStats = statistics.find((s: any) => s?.team?.id === home?.id);
   const awayStats = statistics.find((s: any) => s?.team?.id === away?.id);
 
+  const isGameLive = status?.short !== "FT" && status?.short !== "NS";
+  const isGameFinished = status?.short === "FT";
+
   return (
-    <div className="space-y-6">
-      {/* Match Header with League Info */}
-      <div className="bg-gradient-to-br from-blue-900/20 via-gray-900/50 to-gray-900/30 backdrop-blur-sm border border-blue-500/20 rounded-2xl p-6 shadow-lg">
-        <div className="text-center mb-4">
-          <div className="flex items-center justify-center gap-3 mb-2">
-            <img src={data.league?.logo} alt={data.league?.name} className="w-8 h-8 object-contain" />
-            <h2 className="text-lg font-bold text-blue-400">{data.league?.name}</h2>
+    <div className="w-full space-y-4 p-4 md:p-6">
+      
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <img src={data.league?.logo} alt="" className="w-6 h-6 object-contain" />
+          <div>
+            <h1 className="text-white font-semibold text-lg">{data.league?.name}</h1>
+            <p className="text-gray-500 text-sm">{data.league?.round}</p>
           </div>
-          <p className="text-sm text-gray-400">{data.league?.round}</p>
-          {fixture.venue && (
-            <p className="text-xs text-gray-500 mt-2">
-              📍 {fixture.venue.name}, {fixture.venue.city}
-            </p>
-          )}
+        </div>
+        <div className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
+          isGameLive 
+            ? 'bg-green-500/10 text-green-400 border border-green-500/20' 
+            : isGameFinished 
+              ? 'bg-gray-500/10 text-gray-400 border border-gray-500/20' 
+              : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+        }`}>
+          {isGameLive && <span className="inline-block w-1.5 h-1.5 bg-green-400 rounded-full mr-2 animate-pulse" />}
+          {isGameFinished ? "Full Time" : isGameLive ? `${status?.elapsed}'` : status?.long || "Scheduled"}
+        </div>
+      </div>
+
+      {/* Venue */}
+      {fixture.venue && (
+        <div className="flex items-center gap-2 text-gray-400 text-sm">
+          <span>📍</span>
+          <span>{fixture.venue.name}, {fixture.venue.city}</span>
           {fixture.date && (
-            <p className="text-xs text-gray-500 mt-1">
-              🗓 {new Date(fixture.date).toLocaleString()}
-            </p>
+            <>
+              <span className="text-gray-600">•</span>
+              <span>{new Date(fixture.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+            </>
           )}
         </div>
+      )}
 
-        {/* Score Display */}
-        <div className="flex items-center justify-between gap-6">
-          <div className="flex-1 flex flex-col items-center">
-            <img src={home?.logo} alt={home?.name} className="w-20 h-20 object-contain mb-3 drop-shadow-lg" />
-            <div className="text-base font-semibold text-white text-center">{home?.name}</div>
+      {/* Main Scoreboard */}
+      <div className="bg-[#111] rounded-2xl p-6 md:p-8 border border-white/5">
+        <div className="grid grid-cols-3 items-center">
+          {/* Home Team */}
+          <div className="text-center">
+            <img 
+              src={home?.logo} 
+              alt={home?.name} 
+              className="w-20 h-20 md:w-28 md:h-28 mx-auto object-contain mb-3" 
+            />
+            <h2 className="text-white font-medium text-sm md:text-base mb-2">{home?.name}</h2>
+            <p className="text-5xl md:text-7xl font-bold text-white tabular-nums">
+              {goals?.home ?? 0}
+            </p>
           </div>
-          <div className="flex flex-col items-center min-w-[160px]">
-            <div className="text-5xl font-extrabold bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
-              {goals?.home ?? 0} - {goals?.away ?? 0}
-            </div>
-            <div className="mt-2 px-4 py-1 bg-blue-500/20 rounded-full">
-              <span className="text-sm font-semibold text-blue-400">
-                {status?.long} {status?.elapsed ? `• ${status.elapsed}'` : ""}
-              </span>
-            </div>
+
+          {/* Divider */}
+          <div className="flex flex-col items-center gap-2">
+            <div className="w-px h-12 bg-white/10" />
+            <span className="text-gray-600 text-xs font-medium tracking-widest">VS</span>
+            <div className="w-px h-12 bg-white/10" />
           </div>
-          <div className="flex-1 flex flex-col items-center">
-            <img src={away?.logo} alt={away?.name} className="w-20 h-20 object-contain mb-3 drop-shadow-lg" />
-            <div className="text-base font-semibold text-white text-center">{away?.name}</div>
+
+          {/* Away Team */}
+          <div className="text-center">
+            <img 
+              src={away?.logo} 
+              alt={away?.name} 
+              className="w-20 h-20 md:w-28 md:h-28 mx-auto object-contain mb-3" 
+            />
+            <h2 className="text-white font-medium text-sm md:text-base mb-2">{away?.name}</h2>
+            <p className="text-5xl md:text-7xl font-bold text-white tabular-nums">
+              {goals?.away ?? 0}
+            </p>
           </div>
         </div>
       </div>
 
       {/* Match Statistics */}
       {statistics.length > 0 && homeStats?.statistics && awayStats?.statistics && (
-        <div className="bg-[#181818] border border-white/5 rounded-2xl p-6 shadow-lg">
-          <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-            <span>📊</span> Match Statistics
-          </h3>
-          <div className="space-y-4">
-            {homeStats.statistics.map((stat: any, idx: number) => {
+        <div className="bg-[#111] rounded-xl border border-white/5 overflow-hidden">
+          <div className="px-4 py-3 border-b border-white/5 flex items-center justify-between">
+            <h3 className="text-white text-sm font-medium">Match Stats</h3>
+            <div className="flex items-center gap-4 text-xs text-gray-500">
+              <div className="flex items-center gap-2">
+                <img src={home?.logo} alt="" className="w-4 h-4 object-contain" />
+                <span className="hidden sm:inline">{home?.name}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="hidden sm:inline">{away?.name}</span>
+                <img src={away?.logo} alt="" className="w-4 h-4 object-contain" />
+              </div>
+            </div>
+          </div>
+          
+          <div className="p-4 space-y-4">
+            {homeStats.statistics.slice(0, 8).map((stat: any, idx: number) => {
               const awayStat = awayStats.statistics[idx];
               const homeValue = typeof stat.value === 'string' ? parseInt(stat.value) || 0 : stat.value || 0;
               const awayValue = typeof awayStat?.value === 'string' ? parseInt(awayStat.value) || 0 : awayStat?.value || 0;
               const total = homeValue + awayValue || 1;
               const homePercent = (homeValue / total) * 100;
-              const awayPercent = (awayValue / total) * 100;
 
               return (
                 <div key={idx}>
-                  <div className="flex items-center justify-between text-sm mb-1">
-                    <span className="text-blue-400 font-medium">{homeValue}</span>
-                    <span className="text-gray-400 text-xs uppercase">{stat.type}</span>
-                    <span className="text-blue-400 font-medium">{awayValue}</span>
+                  <div className="flex items-center justify-between text-sm mb-1.5">
+                    <span className={`tabular-nums ${homeValue > awayValue ? 'text-white font-medium' : 'text-gray-400'}`}>{stat.value || 0}</span>
+                    <span className="text-gray-500 text-xs">{stat.type}</span>
+                    <span className={`tabular-nums ${awayValue > homeValue ? 'text-white font-medium' : 'text-gray-400'}`}>{awayStat?.value || 0}</span>
                   </div>
-                  <div className="flex gap-1 h-2 bg-gray-800 rounded-full overflow-hidden">
+                  <div className="flex h-1 bg-white/5 rounded-full overflow-hidden gap-0.5">
                     <div
-                      className="bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-500"
+                      className={`h-full rounded-full transition-all duration-500 ${homeValue >= awayValue ? 'bg-white' : 'bg-white/30'}`}
                       style={{ width: `${homePercent}%` }}
                     />
                     <div
-                      className="bg-gradient-to-r from-gray-600 to-gray-500 transition-all duration-500"
-                      style={{ width: `${awayPercent}%` }}
+                      className={`h-full rounded-full transition-all duration-500 flex-1 ${awayValue > homeValue ? 'bg-white' : 'bg-white/30'}`}
                     />
                   </div>
                 </div>
@@ -189,58 +232,34 @@ export async function FootballMatchByIdHandler({
       )}
 
       {/* Events */}
-      <div className="bg-[#181818] border border-white/5 rounded-2xl p-6 shadow-lg">
-        <div className="flex items-center justify-between mb-5">
-          <h3 className="text-white font-semibold flex items-center gap-2">
-            <span>⚡</span> Match Events
-          </h3>
-          <span className="text-xs bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full">
-            {events.length} events
-          </span>
-        </div>
-        {events.length === 0 ? (
-          <div className="text-center py-8 text-gray-400">
-            <div className="text-4xl mb-2">⚽</div>
-            <p className="text-sm">No events recorded yet</p>
+      {events.length > 0 && (
+        <div className="bg-[#111] rounded-xl border border-white/5 overflow-hidden">
+          <div className="px-4 py-3 border-b border-white/5 flex items-center justify-between">
+            <h3 className="text-white text-sm font-medium">Match Events</h3>
+            <span className="text-gray-500 text-xs">{events.length} events</span>
           </div>
-        ) : (
-          <div className="space-y-3">
+          
+          <div className="divide-y divide-white/5 max-h-80 overflow-y-auto scrollbar-hide">
             {events.map((ev: any, idx: number) => {
               const isGoal = ev?.type === 'Goal';
               const isCard = ev?.type === 'Card';
-              const isSubstitution = ev?.type === 'subst';
               
               return (
-                <div 
-                  key={idx} 
-                  className={`flex items-center gap-3 p-3 rounded-lg transition-colors ${
-                    isGoal ? 'bg-green-500/10 border border-green-500/20' :
-                    isCard && ev?.detail === 'Red Card' ? 'bg-red-500/10 border border-red-500/20' :
-                    isCard ? 'bg-yellow-500/10 border border-yellow-500/20' :
-                    'bg-gray-800/30'
-                  }`}
-                >
-                  <div className="flex items-center justify-center w-12 h-12 bg-gray-900 rounded-lg border border-white/10">
-                    <span className="text-sm font-bold text-blue-400">{ev?.time?.elapsed}'</span>
-                  </div>
-                  <img 
-                    src={ev?.team?.logo} 
-                    alt={ev?.team?.name} 
-                    className="w-8 h-8 object-contain" 
-                  />
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-white font-semibold">{ev?.player?.name}</span>
-                      {isGoal && <span className="text-xl">⚽</span>}
-                      {isCard && ev?.detail === 'Yellow Card' && <span className="text-xl">🟨</span>}
-                      {isCard && ev?.detail === 'Red Card' && <span className="text-xl">🟥</span>}
-                      {isSubstitution && <span className="text-xl">🔄</span>}
-                    </div>
-                    <div className="text-xs text-gray-400 mt-1">
-                      <span className="font-medium text-blue-400">{ev?.type}</span>
-                      {ev?.detail && <span className="text-gray-500"> • {ev.detail}</span>}
+                <div key={idx} className="px-4 py-3 hover:bg-white/[0.02] transition-colors">
+                  <div className="flex items-start gap-3">
+                    <img src={ev?.team?.logo} alt="" className="w-5 h-5 object-contain mt-0.5 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
+                        <span>{ev?.time?.elapsed}'</span>
+                        <span>•</span>
+                        <span>{ev?.type}</span>
+                        {isGoal && <span>⚽</span>}
+                        {isCard && ev?.detail === 'Yellow Card' && <span>🟨</span>}
+                        {isCard && ev?.detail === 'Red Card' && <span>🟥</span>}
+                      </div>
+                      <p className="text-white text-sm">{ev?.player?.name}</p>
                       {ev?.assist?.name && (
-                        <span className="text-gray-400"> • Assist: {ev.assist.name}</span>
+                        <p className="text-gray-500 text-xs mt-0.5">Assist: {ev.assist.name}</p>
                       )}
                     </div>
                   </div>
@@ -248,96 +267,68 @@ export async function FootballMatchByIdHandler({
               );
             })}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Lineups */}
-      <div className="bg-[#181818] border border-white/5 rounded-2xl p-6 shadow-lg">
-        <h3 className="text-white font-semibold mb-5 flex items-center gap-2">
-          <span>👥</span> Team Lineups
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Home Lineup */}
-          <div>
-            <div className="flex items-center justify-between mb-3 p-3 bg-blue-500/10 rounded-lg border border-blue-500/20">
-              <div className="flex items-center gap-2">
-                <img src={home?.logo} alt={home?.name} className="w-7 h-7 object-contain" />
-                <span className="text-sm text-white font-semibold">{home?.name}</span>
-              </div>
-              {homeLineup?.formation && (
-                <span className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded">
-                  {homeLineup.formation}
-                </span>
-              )}
-            </div>
-            <div className="rounded-xl border border-white/5 overflow-hidden">
-              <div className="p-3 bg-gray-900/50 border-b border-white/5 text-xs font-semibold text-gray-400 uppercase">
-                Starting XI
-              </div>
-              <ul className="max-h-96 overflow-auto divide-y divide-white/5">
-                {(homeLineup?.startXI || []).map((p: any, i: number) => (
-                  <li 
-                    key={i} 
-                    className="p-3 hover:bg-gray-800/30 transition-colors flex items-center justify-between group"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-7 h-7 flex items-center justify-center bg-blue-500/20 text-blue-400 rounded text-xs font-bold">
-                        {p?.player?.number}
-                      </div>
-                      <span className="text-sm text-white group-hover:text-blue-400 transition-colors">
-                        {p?.player?.name}
-                      </span>
-                    </div>
-                    <span className="text-xs bg-gray-800 text-gray-400 px-2 py-1 rounded">
-                      {p?.player?.pos}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+      {(homeLineup || awayLineup) && (
+        <div className="bg-[#111] rounded-xl border border-white/5 overflow-hidden">
+          <div className="px-4 py-3 border-b border-white/5">
+            <h3 className="text-white text-sm font-medium">Lineups</h3>
           </div>
-
-          {/* Away Lineup */}
-          <div>
-            <div className="flex items-center justify-between mb-3 p-3 bg-gray-700/10 rounded-lg border border-gray-600/20">
-              <div className="flex items-center gap-2">
-                <img src={away?.logo} alt={away?.name} className="w-7 h-7 object-contain" />
-                <span className="text-sm text-white font-semibold">{away?.name}</span>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-white/5">
+            {/* Home Lineup */}
+            <div className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <img src={home?.logo} alt="" className="w-4 h-4 object-contain" />
+                  <span className="text-gray-500 text-xs">{home?.name}</span>
+                </div>
+                {homeLineup?.formation && (
+                  <span className="text-xs text-gray-500">{homeLineup.formation}</span>
+                )}
               </div>
-              {awayLineup?.formation && (
-                <span className="text-xs bg-gray-600/20 text-gray-400 px-2 py-1 rounded">
-                  {awayLineup.formation}
-                </span>
-              )}
-            </div>
-            <div className="rounded-xl border border-white/5 overflow-hidden">
-              <div className="p-3 bg-gray-900/50 border-b border-white/5 text-xs font-semibold text-gray-400 uppercase">
-                Starting XI
-              </div>
-              <ul className="max-h-96 overflow-auto divide-y divide-white/5">
-                {(awayLineup?.startXI || []).map((p: any, i: number) => (
-                  <li 
-                    key={i} 
-                    className="p-3 hover:bg-gray-800/30 transition-colors flex items-center justify-between group"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-7 h-7 flex items-center justify-center bg-gray-600/20 text-gray-400 rounded text-xs font-bold">
-                        {p?.player?.number}
-                      </div>
-                      <span className="text-sm text-white group-hover:text-blue-400 transition-colors">
-                        {p?.player?.name}
-                      </span>
+              <div className="space-y-1 max-h-64 overflow-y-auto scrollbar-hide">
+                {(homeLineup?.startXI || []).map((p: any, i: number) => (
+                  <div key={i} className="flex items-center justify-between py-1.5 text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-500 text-xs w-5">{p?.player?.number}</span>
+                      <span className="text-white">{p?.player?.name}</span>
                     </div>
-                    <span className="text-xs bg-gray-800 text-gray-400 px-2 py-1 rounded">
-                      {p?.player?.pos}
-                    </span>
-                  </li>
+                    <span className="text-gray-500 text-xs">{p?.player?.pos}</span>
+                  </div>
                 ))}
-              </ul>
+              </div>
+            </div>
+
+            {/* Away Lineup */}
+            <div className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <img src={away?.logo} alt="" className="w-4 h-4 object-contain" />
+                  <span className="text-gray-500 text-xs">{away?.name}</span>
+                </div>
+                {awayLineup?.formation && (
+                  <span className="text-xs text-gray-500">{awayLineup.formation}</span>
+                )}
+              </div>
+              <div className="space-y-1 max-h-64 overflow-y-auto scrollbar-hide">
+                {(awayLineup?.startXI || []).map((p: any, i: number) => (
+                  <div key={i} className="flex items-center justify-between py-1.5 text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-500 text-xs w-5">{p?.player?.number}</span>
+                      <span className="text-white">{p?.player?.name}</span>
+                    </div>
+                    <span className="text-gray-500 text-xs">{p?.player?.pos}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
+
     </div>
   );
 }

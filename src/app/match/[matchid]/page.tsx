@@ -180,9 +180,9 @@ export default function Match({ params }: any) {
   const sportInfo = getSportInfo();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black via-gray-950 to-black text-white">
+    <div className="min-h-screen bg-[#0a0a0a] text-white">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/5">
+      <header className="sticky top-0 z-50 bg-[#0a0a0a]/90 backdrop-blur-md border-b border-white/5">
         <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Back Button */}
@@ -243,13 +243,12 @@ export default function Match({ params }: any) {
           {/* Match Details Section */}
           <div className="xl:col-span-7 2xl:col-span-8">
             {loading ? (
-              <div className="flex flex-col items-center justify-center py-32 bg-gradient-to-br from-gray-900/80 to-gray-900/40 rounded-3xl border border-white/5 backdrop-blur-sm">
+              <div className="flex flex-col items-center justify-center py-32 bg-[#111] rounded-2xl border border-white/5">
                 <div className="relative">
-                  <div className="h-16 w-16 rounded-full border-4 border-gray-800" />
-                  <div className="absolute inset-0 h-16 w-16 rounded-full border-4 border-blue-500 border-t-transparent animate-spin" />
+                  <div className="h-10 w-10 rounded-full border-2 border-white/10" />
+                  <div className="absolute inset-0 h-10 w-10 rounded-full border-2 border-white border-t-transparent animate-spin" />
                 </div>
-                <p className="mt-6 text-base text-gray-400 font-medium">Loading match details...</p>
-                <p className="mt-2 text-sm text-gray-600">Fetching live data</p>
+                <p className="mt-5 text-sm text-gray-400">Loading match details...</p>
               </div>
             ) : (
               <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">

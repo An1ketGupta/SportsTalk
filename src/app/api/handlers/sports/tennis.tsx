@@ -130,181 +130,142 @@ export async function TennisMatchByIdHandler({ id }: { id: string }) {
   const homeTiebreaks = match.homeScore?.period1TieBreak || match.homeScore?.period2TieBreak || match.homeScore?.period3TieBreak;
   const awayTiebreaks = match.awayScore?.period1TieBreak || match.awayScore?.period2TieBreak || match.awayScore?.period3TieBreak;
 
+  const isLive = match.status?.description?.toLowerCase().includes('live') || 
+                 match.status?.description?.toLowerCase().includes('set') ||
+                 match.status?.description?.toLowerCase().includes('game');
+  const isFinished = match.status?.description?.toLowerCase().includes('ended') ||
+                     match.status?.description?.toLowerCase().includes('finished');
+
   return (
-    <div className="bg-[#1a1a1a] w-full border border-white/10 rounded-3xl p-8 shadow-2xl">
-      {/* Header with Tournament and Status */}
-      <div className="flex items-center justify-between mb-6">
-        {/* Tournament Info */}
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-900/20 border border-emerald-400/30 rounded-full">
-          <span className="text-2xl">🎾</span>
-          <span className="text-emerald-400 font-bold text-lg">
-            {match.tournament?.name || "Tennis Match"}
-          </span>
-        </div>
-
-        {/* Status */}
+    <div className="w-full space-y-4 p-4 md:p-6">
+      
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          {match.startTimestamp && (
-            <div className="text-right">
-              <div className="text-gray-400 text-xs">
-                {new Date(match.startTimestamp * 1000).toLocaleDateString('en-US', { 
-                  weekday: 'short', 
-                  month: 'short', 
-                  day: 'numeric' 
-                })}
-              </div>
-              <div className="text-white font-semibold text-sm">
-                {new Date(match.startTimestamp * 1000).toLocaleTimeString('en-US', { 
-                  hour: '2-digit', 
-                  minute: '2-digit'
-                })}
-              </div>
-            </div>
-          )}
-          <div className="bg-black/30 rounded-xl px-4 py-2 border border-white/5">
-            <div className="text-emerald-400 font-bold text-sm">{match.status?.description || "Live"}</div>
+          <span className="text-xl">🎾</span>
+          <div>
+            <h1 className="text-white font-semibold text-lg">{match.tournament?.name || "Tennis Match"}</h1>
+            <p className="text-gray-500 text-sm">{match.roundInfo?.name || match.tournament?.category?.name}</p>
           </div>
         </div>
-      </div>
-
-      {/* Venue & Round Info */}
-      <div className="bg-black/30 rounded-xl p-4 mb-6 border border-white/5 text-center">
-        <div className="flex items-center justify-center gap-4 flex-wrap">
-          {match.groundType && (
-            <div className="flex items-center gap-2">
-              <span className="text-xl">🏟️</span>
-              <span className="text-white font-semibold">{match.groundType}</span>
-            </div>
-          )}
-          {match.roundInfo?.name && (
-            <>
-              <span className="text-gray-500">•</span>
-              <span className="text-gray-400">{match.roundInfo.name}</span>
-            </>
-          )}
-          {match.tournament?.category?.name && (
-            <>
-              <span className="text-gray-500">•</span>
-              <span className="text-gray-400">{match.tournament.category.name}</span>
-            </>
-          )}
+        <div className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
+          isLive 
+            ? 'bg-green-500/10 text-green-400 border border-green-500/20' 
+            : isFinished 
+              ? 'bg-gray-500/10 text-gray-400 border border-gray-500/20' 
+              : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+        }`}>
+          {isLive && <span className="inline-block w-1.5 h-1.5 bg-green-400 rounded-full mr-2 animate-pulse" />}
+          {match.status?.description || "Scheduled"}
         </div>
       </div>
 
-      {/* Players & Main Score */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between gap-8">
+      {/* Venue */}
+      <div className="flex items-center gap-2 text-gray-400 text-sm flex-wrap">
+        {match.groundType && (
+          <>
+            <span>🏟️</span>
+            <span>{match.groundType}</span>
+          </>
+        )}
+        {match.startTimestamp && (
+          <>
+            {match.groundType && <span className="text-gray-600">•</span>}
+            <span>{new Date(match.startTimestamp * 1000).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+          </>
+        )}
+      </div>
+
+      {/* Main Scoreboard */}
+      <div className="bg-[#111] rounded-2xl p-6 md:p-8 border border-white/5">
+        <div className="grid grid-cols-3 items-center">
           {/* Home Player */}
-          <div className="flex-1 text-center">
-            <div className="mb-4">
-              {match.homeTeam?.country?.alpha2 && (
-                <div className="text-6xl mb-2">
-                  {String.fromCodePoint(
-                    ...[...match.homeTeam.country.alpha2.toUpperCase()].map(
-                      (char) => 127397 + char.charCodeAt(0)
-                    )
-                  )}
-                </div>
-              )}
-            </div>
-            <h2 className="text-2xl font-bold text-white mb-1">
-              {match.homeTeam?.name || "Player 1"}
-            </h2>
-            {match.homeTeam?.country?.name && (
-              <p className="text-sm text-gray-400 mb-2">{match.homeTeam.country.name}</p>
+          <div className="text-center">
+            {match.homeTeam?.country?.alpha2 && (
+              <div className="text-5xl md:text-6xl mb-3">
+                {String.fromCodePoint(
+                  ...[...match.homeTeam.country.alpha2.toUpperCase()].map(
+                    (char) => 127397 + char.charCodeAt(0)
+                  )
+                )}
+              </div>
             )}
-            <div className="text-6xl font-black text-emerald-400">
+            <h2 className="text-white font-medium text-sm md:text-base mb-1">{match.homeTeam?.name || "Player 1"}</h2>
+            {match.homeTeam?.country?.name && (
+              <p className="text-gray-500 text-xs mb-3">{match.homeTeam.country.name}</p>
+            )}
+            <p className="text-5xl md:text-7xl font-bold text-white tabular-nums">
               {match.homeScore?.current ?? 0}
-            </div>
+            </p>
           </div>
 
-          {/* VS Divider */}
-          <div className="flex flex-col items-center">
-            <div className="text-gray-500 font-bold text-2xl">VS</div>
-            <div className="h-24 w-px bg-gradient-to-b from-transparent via-gray-600 to-transparent my-4"></div>
+          {/* Divider */}
+          <div className="flex flex-col items-center gap-2">
+            <div className="w-px h-12 bg-white/10" />
+            <span className="text-gray-600 text-xs font-medium tracking-widest">VS</span>
+            <div className="w-px h-12 bg-white/10" />
           </div>
 
           {/* Away Player */}
-          <div className="flex-1 text-center">
-            <div className="mb-4">
-              {match.awayTeam?.country?.alpha2 && (
-                <div className="text-6xl mb-2">
-                  {String.fromCodePoint(
-                    ...[...match.awayTeam.country.alpha2.toUpperCase()].map(
-                      (char) => 127397 + char.charCodeAt(0)
-                    )
-                  )}
-                </div>
-              )}
-            </div>
-            <h2 className="text-2xl font-bold text-white mb-1">
-              {match.awayTeam?.name || "Player 2"}
-            </h2>
-            {match.awayTeam?.country?.name && (
-              <p className="text-sm text-gray-400 mb-2">{match.awayTeam.country.name}</p>
+          <div className="text-center">
+            {match.awayTeam?.country?.alpha2 && (
+              <div className="text-5xl md:text-6xl mb-3">
+                {String.fromCodePoint(
+                  ...[...match.awayTeam.country.alpha2.toUpperCase()].map(
+                    (char) => 127397 + char.charCodeAt(0)
+                  )
+                )}
+              </div>
             )}
-            <div className="text-6xl font-black text-emerald-400">
+            <h2 className="text-white font-medium text-sm md:text-base mb-1">{match.awayTeam?.name || "Player 2"}</h2>
+            {match.awayTeam?.country?.name && (
+              <p className="text-gray-500 text-xs mb-3">{match.awayTeam.country.name}</p>
+            )}
+            <p className="text-5xl md:text-7xl font-bold text-white tabular-nums">
               {match.awayScore?.current ?? 0}
-            </div>
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Set by Set Scores */}
+      {/* Set Scores */}
       {sets.length > 0 && (
-        <div className="bg-black/30 rounded-xl p-6 mb-6 border border-white/5">
-          <h3 className="text-lg font-bold text-white mb-4 text-center">Set Scores</h3>
+        <div className="bg-[#111] rounded-xl border border-white/5 overflow-hidden">
+          <div className="px-4 py-3 border-b border-white/5">
+            <h3 className="text-white text-sm font-medium">Set Scores</h3>
+          </div>
+          
           <div className="overflow-x-auto">
-            <table className="w-full text-center">
+            <table className="w-full">
               <thead>
-                <tr className="border-b border-white/10">
-                  <th className="py-3 px-4 text-gray-400 font-semibold text-sm">Player</th>
+                <tr className="border-b border-white/5">
+                  <th className="py-3 px-4 text-left text-gray-500 text-xs font-medium">Player</th>
                   {sets.map((set) => (
-                    <th key={set.set} className="py-3 px-4 text-gray-400 font-semibold text-sm">
-                      Set {set.set}
+                    <th key={set.set} className="py-3 px-4 text-center text-gray-500 text-xs font-medium">
+                      S{set.set}
                     </th>
                   ))}
-                  <th className="py-3 px-4 text-emerald-400 font-bold text-sm">Sets Won</th>
+                  <th className="py-3 px-4 text-center text-gray-500 text-xs font-medium">Total</th>
                 </tr>
               </thead>
               <tbody>
-                {/* Home Player Row */}
-                <tr className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                  <td className="py-4 px-4 text-white font-semibold">
-                    {match.homeTeam?.shortName || match.homeTeam?.name || "Player 1"}
-                  </td>
+                <tr className="border-b border-white/5">
+                  <td className="py-3 px-4 text-white text-sm">{match.homeTeam?.shortName || match.homeTeam?.name || "Player 1"}</td>
                   {sets.map((set) => (
-                    <td
-                      key={set.set}
-                      className={`py-4 px-4 font-bold ${
-                        set.home > set.away ? "text-emerald-400" : "text-gray-300"
-                      }`}
-                    >
+                    <td key={set.set} className={`py-3 px-4 text-center tabular-nums font-medium ${set.home > set.away ? 'text-white' : 'text-gray-500'}`}>
                       {set.home}
                     </td>
                   ))}
-                  <td className="py-4 px-4 text-emerald-400 font-bold text-xl">
-                    {match.homeScore?.current ?? 0}
-                  </td>
+                  <td className="py-3 px-4 text-center text-white font-semibold tabular-nums">{match.homeScore?.current ?? 0}</td>
                 </tr>
-                {/* Away Player Row */}
-                <tr className="hover:bg-white/5 transition-colors">
-                  <td className="py-4 px-4 text-white font-semibold">
-                    {match.awayTeam?.shortName || match.awayTeam?.name || "Player 2"}
-                  </td>
+                <tr>
+                  <td className="py-3 px-4 text-white text-sm">{match.awayTeam?.shortName || match.awayTeam?.name || "Player 2"}</td>
                   {sets.map((set) => (
-                    <td
-                      key={set.set}
-                      className={`py-4 px-4 font-bold ${
-                        set.away > set.home ? "text-emerald-400" : "text-gray-300"
-                      }`}
-                    >
+                    <td key={set.set} className={`py-3 px-4 text-center tabular-nums font-medium ${set.away > set.home ? 'text-white' : 'text-gray-500'}`}>
                       {set.away}
                     </td>
                   ))}
-                  <td className="py-4 px-4 text-emerald-400 font-bold text-xl">
-                    {match.awayScore?.current ?? 0}
-                  </td>
+                  <td className="py-3 px-4 text-center text-white font-semibold tabular-nums">{match.awayScore?.current ?? 0}</td>
                 </tr>
               </tbody>
             </table>
@@ -314,69 +275,66 @@ export async function TennisMatchByIdHandler({ id }: { id: string }) {
 
       {/* Current Game Score */}
       {(match.homeScore?.point || match.awayScore?.point) && (
-        <div className="bg-black/30 rounded-xl p-6 mb-6 border border-white/5">
-          <h3 className="text-lg font-bold text-white mb-4 text-center">Current Game</h3>
-          <div className="flex justify-center items-center gap-8">
-            <div className="text-center">
-              <div className="text-gray-400 text-sm mb-1">
-                {match.homeTeam?.shortName || "Player 1"}
+        <div className="bg-[#111] rounded-xl border border-white/5 overflow-hidden">
+          <div className="px-4 py-3 border-b border-white/5">
+            <h3 className="text-white text-sm font-medium">Current Game</h3>
+          </div>
+          
+          <div className="p-6">
+            <div className="flex justify-center items-center gap-12">
+              <div className="text-center">
+                <div className="text-gray-500 text-xs mb-2">{match.homeTeam?.shortName || "P1"}</div>
+                <div className="text-4xl font-bold text-white tabular-nums">{match.homeScore?.point || "0"}</div>
               </div>
-              <div className="text-4xl font-bold text-emerald-400">
-                {match.homeScore?.point || "0"}
-              </div>
-            </div>
-            <div className="text-gray-500">-</div>
-            <div className="text-center">
-              <div className="text-gray-400 text-sm mb-1">
-                {match.awayTeam?.shortName || "Player 2"}
-              </div>
-              <div className="text-4xl font-bold text-emerald-400">
-                {match.awayScore?.point || "0"}
+              <div className="text-gray-600">–</div>
+              <div className="text-center">
+                <div className="text-gray-500 text-xs mb-2">{match.awayTeam?.shortName || "P2"}</div>
+                <div className="text-4xl font-bold text-white tabular-nums">{match.awayScore?.point || "0"}</div>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Match Status */}
-      <div className="text-center mb-6">
-        <span className="inline-flex items-center px-6 py-3 rounded-full text-base font-bold bg-emerald-900/30 text-emerald-400 border-2 border-emerald-400/30">
-          {match.status?.description || "Live"}
-        </span>
-      </div>
-
       {/* Match Statistics */}
       {statistics && statistics.length > 0 && (
-        <div className="bg-black/30 rounded-xl p-6 mb-6 border border-white/5">
-          <h3 className="text-lg font-bold text-white mb-4 text-center">Match Statistics</h3>
-          <div className="space-y-4">
+        <div className="bg-[#111] rounded-xl border border-white/5 overflow-hidden">
+          <div className="px-4 py-3 border-b border-white/5">
+            <h3 className="text-white text-sm font-medium">Match Statistics</h3>
+          </div>
+          
+          <div className="p-4 space-y-6">
             {statistics[0]?.groups?.map((group: any, groupIdx: number) => (
               <div key={groupIdx}>
-                <h4 className="text-emerald-400 font-semibold text-sm mb-3 uppercase tracking-wide">
+                <h4 className="text-gray-500 text-xs font-medium mb-3 uppercase tracking-wide">
                   {group.groupName}
                 </h4>
                 <div className="space-y-3">
-                  {group.statisticsItems?.map((stat: any, statIdx: number) => (
-                    <div key={statIdx} className="flex items-center justify-between">
-                      <div className="flex-1 text-right pr-4">
-                        <span className={`font-bold ${
-                          Number(stat.home) > Number(stat.away) ? 'text-emerald-400' : 'text-gray-300'
-                        }`}>
-                          {stat.home}
-                        </span>
+                  {group.statisticsItems?.map((stat: any, statIdx: number) => {
+                    const homeVal = Number(stat.home) || 0;
+                    const awayVal = Number(stat.away) || 0;
+                    const total = homeVal + awayVal || 1;
+                    const homePercent = (homeVal / total) * 100;
+                    
+                    return (
+                      <div key={statIdx}>
+                        <div className="flex items-center justify-between text-sm mb-1.5">
+                          <span className={`tabular-nums ${homeVal > awayVal ? 'text-white font-medium' : 'text-gray-400'}`}>{stat.home}</span>
+                          <span className="text-gray-500 text-xs">{stat.name}</span>
+                          <span className={`tabular-nums ${awayVal > homeVal ? 'text-white font-medium' : 'text-gray-400'}`}>{stat.away}</span>
+                        </div>
+                        <div className="flex h-1 bg-white/5 rounded-full overflow-hidden gap-0.5">
+                          <div
+                            className={`h-full rounded-full transition-all duration-500 ${homeVal >= awayVal ? 'bg-white' : 'bg-white/30'}`}
+                            style={{ width: `${homePercent}%` }}
+                          />
+                          <div
+                            className={`h-full rounded-full transition-all duration-500 flex-1 ${awayVal > homeVal ? 'bg-white' : 'bg-white/30'}`}
+                          />
+                        </div>
                       </div>
-                      <div className="text-gray-400 text-sm text-center min-w-[120px]">
-                        {stat.name}
-                      </div>
-                      <div className="flex-1 text-left pl-4">
-                        <span className={`font-bold ${
-                          Number(stat.away) > Number(stat.home) ? 'text-emerald-400' : 'text-gray-300'
-                        }`}>
-                          {stat.away}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             ))}

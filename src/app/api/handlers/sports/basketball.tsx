@@ -107,420 +107,327 @@ export async function BasketballMatchByIdHandler({ id }: { id: string }) {
     const homeStats = statistics.find((s: any) => s.team?.id === match.teams?.home?.id);
     const awayStats = statistics.find((s: any) => s.team?.id === match.teams?.away?.id);
 
+    const isGameLive = match.status?.short && !["FT", "NS", "AOT", "POST"].includes(match.status.short);
+    const isGameFinished = match.status?.long === "Game Finished" || match.status?.short === "FT" || match.status?.short === "AOT";
+
     return (
-        <div className="bg-[#1a1a1a] w-full border border-white/10 rounded-3xl p-8 shadow-2xl">
-            {/* Header with League and Status */}
-            <div className="flex items-center justify-between mb-6">
-                {/* League Info */}
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-900/20 border border-orange-400/30 rounded-full">
-                    <span className="text-2xl">🏀</span>
-                    <span className="text-orange-400 font-bold text-lg">
-                        {match.league?.name || 'Basketball League'}
-                    </span>
-                    {match.league?.season && (
-                        <>
-                            <span className="text-gray-400">•</span>
-                            <span className="text-gray-300 font-medium">Season {match.league.season}</span>
-                        </>
-                    )}
-                </div>
-
-                {/* Status and Time */}
-                <div className="flex items-center gap-4">
-                    {match.date && (
-                        <div className="text-right">
-                            <div className="text-gray-400 text-xs">
-                                {new Date(match.date).toLocaleDateString('en-US', { 
-                                    weekday: 'short', 
-                                    month: 'short', 
-                                    day: 'numeric' 
-                                })}
-                            </div>
-                            <div className="text-white font-semibold text-sm">
-                                {match.time || 'TBA'}
-                            </div>
-                        </div>
-                    )}
-                    <div className="bg-black/30 rounded-xl px-4 py-2 border border-white/5">
-                        <div className="text-orange-400 font-bold text-sm">
-                            {match.status?.long === "Game Finished" ? "Final" : match.status?.long || "Live"}
-                        </div>
-                        {match.status?.timer && (
-                            <div className="text-gray-400 text-xs text-center">{match.status.timer}'</div>
-                        )}
+        <div className="w-full space-y-4 p-4 md:p-6">
+            
+            {/* Header */}
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <span className="text-xl">🏀</span>
+                    <div>
+                        <h1 className="text-white font-semibold text-lg">{match.league?.name || 'Basketball'}</h1>
+                        <p className="text-gray-500 text-sm">{match.league?.season ? `Season ${match.league.season}` : match.country?.name}</p>
                     </div>
+                </div>
+                <div className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
+                    isGameLive 
+                        ? 'bg-green-500/10 text-green-400 border border-green-500/20' 
+                        : isGameFinished 
+                            ? 'bg-gray-500/10 text-gray-400 border border-gray-500/20' 
+                            : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+                }`}>
+                    {isGameLive && <span className="inline-block w-1.5 h-1.5 bg-green-400 rounded-full mr-2 animate-pulse" />}
+                    {isGameFinished ? "Final" : isGameLive ? match.status?.long : "Scheduled"}
                 </div>
             </div>
 
-            {/* Venue Information */}
-            <div className="bg-black/30 rounded-xl p-4 mb-6 border border-white/5 text-center">
-                <div className="flex items-center justify-center gap-4 flex-wrap">
-                    <div className="flex items-center gap-2">
-                        <span className="text-xl">🏟️</span>
-                        <span className="text-white font-semibold">{match.league?.name || 'Basketball'}</span>
-                    </div>
-                    {match.country?.name && (
-                        <>
-                            <span className="text-gray-500">•</span>
-                            <span className="text-gray-400">{match.country.name}</span>
-                        </>
-                    )}
-                    {match.country?.flag && (
-                        <img src={match.country.flag} alt={match.country.name} className="w-6 h-4 object-cover rounded" />
-                    )}
-                </div>
+            {/* Venue */}
+            <div className="flex items-center gap-2 text-gray-400 text-sm flex-wrap">
+                {match.country?.name && (
+                    <>
+                        <span>📍</span>
+                        <span>{match.country.name}</span>
+                    </>
+                )}
+                {match.date && (
+                    <>
+                        {match.country?.name && <span className="text-gray-600">•</span>}
+                        <span>{new Date(match.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+                    </>
+                )}
+                {match.time && (
+                    <>
+                        <span className="text-gray-600">•</span>
+                        <span>{match.time}</span>
+                    </>
+                )}
             </div>
 
-            {/* Teams & Main Score */}
-            <div className="mb-8">
-                <div className="flex items-center justify-between gap-8">
+            {/* Main Scoreboard */}
+            <div className="bg-[#111] rounded-2xl p-6 md:p-8 border border-white/5">
+                <div className="grid grid-cols-3 items-center">
                     {/* Home Team */}
-                    <div className="flex-1 text-center">
-                        <div className="mb-4">
-                            {match.teams?.home?.logo && (
-                                <img
-                                    src={match.teams.home.logo}
-                                    alt={match.teams.home.name}
-                                    className="w-32 h-32 mx-auto object-contain"
-                                />
-                            )}
-                        </div>
-                        <h2 className="text-2xl font-bold text-white mb-2">
-                            {match.teams?.home?.name || 'Home Team'}
-                        </h2>
-                        <div className="text-6xl font-black text-orange-400">
+                    <div className="text-center">
+                        {match.teams?.home?.logo && (
+                            <img 
+                                src={match.teams.home.logo} 
+                                alt={match.teams.home.name} 
+                                className="w-20 h-20 md:w-28 md:h-28 mx-auto object-contain mb-3" 
+                            />
+                        )}
+                        <h2 className="text-white font-medium text-sm md:text-base mb-2">{match.teams?.home?.name || 'Home'}</h2>
+                        <p className="text-5xl md:text-7xl font-bold text-white tabular-nums">
                             {match.scores?.home?.total ?? 0}
-                        </div>
+                        </p>
                     </div>
 
-                    {/* VS Divider */}
-                    <div className="flex flex-col items-center">
-                        <div className="text-gray-500 font-bold text-2xl">VS</div>
-                        <div className="h-24 w-px bg-gradient-to-b from-transparent via-gray-600 to-transparent my-4"></div>
+                    {/* Divider */}
+                    <div className="flex flex-col items-center gap-2">
+                        <div className="w-px h-12 bg-white/10" />
+                        <span className="text-gray-600 text-xs font-medium tracking-widest">VS</span>
+                        <div className="w-px h-12 bg-white/10" />
                     </div>
 
                     {/* Away Team */}
-                    <div className="flex-1 text-center">
-                        <div className="mb-4">
-                            {match.teams?.away?.logo && (
-                                <img
-                                    src={match.teams.away.logo}
-                                    alt={match.teams.away.name}
-                                    className="w-32 h-32 mx-auto object-contain"
-                                />
-                            )}
-                        </div>
-                        <h2 className="text-2xl font-bold text-white mb-2">
-                            {match.teams?.away?.name || 'Away Team'}
-                        </h2>
-                        <div className="text-6xl font-black text-orange-400">
+                    <div className="text-center">
+                        {match.teams?.away?.logo && (
+                            <img 
+                                src={match.teams.away.logo} 
+                                alt={match.teams.away.name} 
+                                className="w-20 h-20 md:w-28 md:h-28 mx-auto object-contain mb-3" 
+                            />
+                        )}
+                        <h2 className="text-white font-medium text-sm md:text-base mb-2">{match.teams?.away?.name || 'Away'}</h2>
+                        <p className="text-5xl md:text-7xl font-bold text-white tabular-nums">
                             {match.scores?.away?.total ?? 0}
-                        </div>
+                        </p>
                     </div>
                 </div>
             </div>
 
-            {/* Quarter by Quarter Scores */}
-            <div className="bg-black/30 rounded-xl p-6 mb-6 border border-white/5">
-                <h3 className="text-lg font-bold text-white mb-4 text-center">Score Breakdown</h3>
+            {/* Quarter Scores */}
+            <div className="bg-[#111] rounded-xl border border-white/5 overflow-hidden">
+                <div className="px-4 py-3 border-b border-white/5">
+                    <h3 className="text-white text-sm font-medium">Score by Quarter</h3>
+                </div>
+                
                 <div className="overflow-x-auto">
-                    <table className="w-full text-center">
+                    <table className="w-full">
                         <thead>
-                            <tr className="border-b border-white/10">
-                                <th className="py-3 px-4 text-gray-400 font-semibold text-sm">Team</th>
-                                <th className="py-3 px-4 text-gray-400 font-semibold text-sm">Q1</th>
-                                <th className="py-3 px-4 text-gray-400 font-semibold text-sm">Q2</th>
-                                <th className="py-3 px-4 text-gray-400 font-semibold text-sm">Q3</th>
-                                <th className="py-3 px-4 text-gray-400 font-semibold text-sm">Q4</th>
+                            <tr className="border-b border-white/5">
+                                <th className="py-3 px-4 text-left text-gray-500 text-xs font-medium">Team</th>
+                                <th className="py-3 px-4 text-center text-gray-500 text-xs font-medium">Q1</th>
+                                <th className="py-3 px-4 text-center text-gray-500 text-xs font-medium">Q2</th>
+                                <th className="py-3 px-4 text-center text-gray-500 text-xs font-medium">Q3</th>
+                                <th className="py-3 px-4 text-center text-gray-500 text-xs font-medium">Q4</th>
                                 {(match.scores?.home?.over_time || match.scores?.away?.over_time) && (
-                                    <th className="py-3 px-4 text-gray-400 font-semibold text-sm">OT</th>
+                                    <th className="py-3 px-4 text-center text-gray-500 text-xs font-medium">OT</th>
                                 )}
-                                <th className="py-3 px-4 text-orange-400 font-bold text-sm">Total</th>
+                                <th className="py-3 px-4 text-center text-gray-500 text-xs font-medium">Total</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {/* Home Team Row */}
-                            <tr className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                                <td className="py-4 px-4 text-white font-semibold">
-                                    {match.teams?.home?.name || 'Home'}
-                                </td>
-                                <td className="py-4 px-4 text-gray-300">
-                                    {match.scores?.home?.quarter_1 ?? 0}
-                                </td>
-                                <td className="py-4 px-4 text-gray-300">
-                                    {match.scores?.home?.quarter_2 ?? 0}
-                                </td>
-                                <td className="py-4 px-4 text-gray-300">
-                                    {match.scores?.home?.quarter_3 ?? 0}
-                                </td>
-                                <td className="py-4 px-4 text-gray-300">
-                                    {match.scores?.home?.quarter_4 ?? 0}
-                                </td>
+                            <tr className="border-b border-white/5">
+                                <td className="py-3 px-4 text-white text-sm">{match.teams?.home?.name || 'Home'}</td>
+                                <td className="py-3 px-4 text-center text-gray-400 tabular-nums">{match.scores?.home?.quarter_1 ?? 0}</td>
+                                <td className="py-3 px-4 text-center text-gray-400 tabular-nums">{match.scores?.home?.quarter_2 ?? 0}</td>
+                                <td className="py-3 px-4 text-center text-gray-400 tabular-nums">{match.scores?.home?.quarter_3 ?? 0}</td>
+                                <td className="py-3 px-4 text-center text-gray-400 tabular-nums">{match.scores?.home?.quarter_4 ?? 0}</td>
                                 {(match.scores?.home?.over_time || match.scores?.away?.over_time) && (
-                                    <td className="py-4 px-4 text-gray-300">
-                                        {match.scores?.home?.over_time ?? 0}
-                                    </td>
+                                    <td className="py-3 px-4 text-center text-gray-400 tabular-nums">{match.scores?.home?.over_time ?? 0}</td>
                                 )}
-                                <td className="py-4 px-4 text-orange-400 font-bold text-xl">
-                                    {match.scores?.home?.total ?? 0}
-                                </td>
+                                <td className="py-3 px-4 text-center text-white font-semibold tabular-nums">{match.scores?.home?.total ?? 0}</td>
                             </tr>
-                            {/* Away Team Row */}
-                            <tr className="hover:bg-white/5 transition-colors">
-                                <td className="py-4 px-4 text-white font-semibold">
-                                    {match.teams?.away?.name || 'Away'}
-                                </td>
-                                <td className="py-4 px-4 text-gray-300">
-                                    {match.scores?.away?.quarter_1 ?? 0}
-                                </td>
-                                <td className="py-4 px-4 text-gray-300">
-                                    {match.scores?.away?.quarter_2 ?? 0}
-                                </td>
-                                <td className="py-4 px-4 text-gray-300">
-                                    {match.scores?.away?.quarter_3 ?? 0}
-                                </td>
-                                <td className="py-4 px-4 text-gray-300">
-                                    {match.scores?.away?.quarter_4 ?? 0}
-                                </td>
+                            <tr>
+                                <td className="py-3 px-4 text-white text-sm">{match.teams?.away?.name || 'Away'}</td>
+                                <td className="py-3 px-4 text-center text-gray-400 tabular-nums">{match.scores?.away?.quarter_1 ?? 0}</td>
+                                <td className="py-3 px-4 text-center text-gray-400 tabular-nums">{match.scores?.away?.quarter_2 ?? 0}</td>
+                                <td className="py-3 px-4 text-center text-gray-400 tabular-nums">{match.scores?.away?.quarter_3 ?? 0}</td>
+                                <td className="py-3 px-4 text-center text-gray-400 tabular-nums">{match.scores?.away?.quarter_4 ?? 0}</td>
                                 {(match.scores?.home?.over_time || match.scores?.away?.over_time) && (
-                                    <td className="py-4 px-4 text-gray-300">
-                                        {match.scores?.away?.over_time ?? 0}
-                                    </td>
+                                    <td className="py-3 px-4 text-center text-gray-400 tabular-nums">{match.scores?.away?.over_time ?? 0}</td>
                                 )}
-                                <td className="py-4 px-4 text-orange-400 font-bold text-xl">
-                                    {match.scores?.away?.total ?? 0}
-                                </td>
+                                <td className="py-3 px-4 text-center text-white font-semibold tabular-nums">{match.scores?.away?.total ?? 0}</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            {/* Game Status */}
-            <div className="text-center mb-6">
-                <span className="inline-flex items-center px-6 py-3 rounded-full text-base font-bold bg-orange-900/30 text-orange-400 border-2 border-orange-400/30">
-                    {match.status?.long === "Game Finished" ? "🏁 Final" : match.status?.long || match.status?.short || "Live"}
-                </span>
-            </div>
-
             {/* Team Statistics */}
             {(homeStats || awayStats) && (
-                <div className="bg-black/30 rounded-xl p-6 mb-6 border border-white/5">
-                    <h3 className="text-lg font-bold text-white mb-4 text-center">Team Statistics</h3>
-                    <div className="space-y-4">
+                <div className="bg-[#111] rounded-xl border border-white/5 overflow-hidden">
+                    <div className="px-4 py-3 border-b border-white/5 flex items-center justify-between">
+                        <h3 className="text-white text-sm font-medium">Team Stats</h3>
+                        <div className="flex items-center gap-4 text-xs text-gray-500">
+                            <div className="flex items-center gap-2">
+                                <img src={match.teams?.home?.logo} alt="" className="w-4 h-4 object-contain" />
+                                <span className="hidden sm:inline">{match.teams?.home?.name}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <span className="hidden sm:inline">{match.teams?.away?.name}</span>
+                                <img src={match.teams?.away?.logo} alt="" className="w-4 h-4 object-contain" />
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div className="p-4 space-y-4">
                         {/* Field Goals */}
                         {(homeStats?.statistics?.fieldGoalsMade !== undefined || awayStats?.statistics?.fieldGoalsMade !== undefined) && (
-                            <div className="flex items-center justify-between">
-                                <div className="flex-1 text-right pr-4">
-                                    <span className="text-white font-bold">
-                                        {homeStats?.statistics?.fieldGoalsMade ?? 0}/{homeStats?.statistics?.fieldGoalsAttempted ?? 0}
-                                    </span>
+                            <div>
+                                <div className="flex items-center justify-between text-sm mb-1.5">
+                                    <span className="text-white tabular-nums">{homeStats?.statistics?.fieldGoalsMade ?? 0}/{homeStats?.statistics?.fieldGoalsAttempted ?? 0}</span>
+                                    <span className="text-gray-500 text-xs">Field Goals</span>
+                                    <span className="text-white tabular-nums">{awayStats?.statistics?.fieldGoalsMade ?? 0}/{awayStats?.statistics?.fieldGoalsAttempted ?? 0}</span>
                                 </div>
-                                <div className="text-gray-400 text-sm text-center min-w-[120px]">Field Goals</div>
-                                <div className="flex-1 text-left pl-4">
-                                    <span className="text-white font-bold">
-                                        {awayStats?.statistics?.fieldGoalsMade ?? 0}/{awayStats?.statistics?.fieldGoalsAttempted ?? 0}
-                                    </span>
+                                <div className="flex h-1 bg-white/5 rounded-full overflow-hidden gap-0.5">
+                                    <div className="h-full rounded-full bg-white/50" style={{ width: `${(homeStats?.statistics?.fieldGoalsMade || 0) / ((homeStats?.statistics?.fieldGoalsMade || 0) + (awayStats?.statistics?.fieldGoalsMade || 0) || 1) * 100}%` }} />
+                                    <div className="h-full rounded-full bg-white/50 flex-1" />
                                 </div>
                             </div>
                         )}
                         {/* 3-Pointers */}
                         {(homeStats?.statistics?.threePointsMade !== undefined || awayStats?.statistics?.threePointsMade !== undefined) && (
-                            <div className="flex items-center justify-between">
-                                <div className="flex-1 text-right pr-4">
-                                    <span className="text-white font-bold">
-                                        {homeStats?.statistics?.threePointsMade ?? 0}/{homeStats?.statistics?.threePointsAttempted ?? 0}
-                                    </span>
+                            <div>
+                                <div className="flex items-center justify-between text-sm mb-1.5">
+                                    <span className="text-white tabular-nums">{homeStats?.statistics?.threePointsMade ?? 0}/{homeStats?.statistics?.threePointsAttempted ?? 0}</span>
+                                    <span className="text-gray-500 text-xs">3-Pointers</span>
+                                    <span className="text-white tabular-nums">{awayStats?.statistics?.threePointsMade ?? 0}/{awayStats?.statistics?.threePointsAttempted ?? 0}</span>
                                 </div>
-                                <div className="text-gray-400 text-sm text-center min-w-[120px]">3-Pointers</div>
-                                <div className="flex-1 text-left pl-4">
-                                    <span className="text-white font-bold">
-                                        {awayStats?.statistics?.threePointsMade ?? 0}/{awayStats?.statistics?.threePointsAttempted ?? 0}
-                                    </span>
-                                </div>
-                            </div>
-                        )}
-                        {/* Free Throws */}
-                        {(homeStats?.statistics?.freeThrowsMade !== undefined || awayStats?.statistics?.freeThrowsMade !== undefined) && (
-                            <div className="flex items-center justify-between">
-                                <div className="flex-1 text-right pr-4">
-                                    <span className="text-white font-bold">
-                                        {homeStats?.statistics?.freeThrowsMade ?? 0}/{homeStats?.statistics?.freeThrowsAttempted ?? 0}
-                                    </span>
-                                </div>
-                                <div className="text-gray-400 text-sm text-center min-w-[120px]">Free Throws</div>
-                                <div className="flex-1 text-left pl-4">
-                                    <span className="text-white font-bold">
-                                        {awayStats?.statistics?.freeThrowsMade ?? 0}/{awayStats?.statistics?.freeThrowsAttempted ?? 0}
-                                    </span>
+                                <div className="flex h-1 bg-white/5 rounded-full overflow-hidden gap-0.5">
+                                    <div className="h-full rounded-full bg-white/50" style={{ width: `${(homeStats?.statistics?.threePointsMade || 0) / ((homeStats?.statistics?.threePointsMade || 0) + (awayStats?.statistics?.threePointsMade || 0) || 1) * 100}%` }} />
+                                    <div className="h-full rounded-full bg-white/50 flex-1" />
                                 </div>
                             </div>
                         )}
                         {/* Rebounds */}
-                        {(homeStats?.statistics?.reboundsTotal !== undefined || awayStats?.statistics?.reboundsTotal !== undefined) && (
-                            <div className="flex items-center justify-between">
-                                <div className="flex-1 text-right pr-4">
-                                    <span className={`font-bold ${
-                                        (homeStats?.statistics?.reboundsTotal ?? 0) > (awayStats?.statistics?.reboundsTotal ?? 0) ? 'text-orange-400' : 'text-white'
-                                    }`}>
-                                        {homeStats?.statistics?.reboundsTotal ?? 0}
-                                    </span>
+                        {(homeStats?.statistics?.reboundsTotal !== undefined || awayStats?.statistics?.reboundsTotal !== undefined) && (() => {
+                            const homeVal = homeStats?.statistics?.reboundsTotal ?? 0;
+                            const awayVal = awayStats?.statistics?.reboundsTotal ?? 0;
+                            const total = homeVal + awayVal || 1;
+                            return (
+                                <div>
+                                    <div className="flex items-center justify-between text-sm mb-1.5">
+                                        <span className={`tabular-nums ${homeVal > awayVal ? 'text-white font-medium' : 'text-gray-400'}`}>{homeVal}</span>
+                                        <span className="text-gray-500 text-xs">Rebounds</span>
+                                        <span className={`tabular-nums ${awayVal > homeVal ? 'text-white font-medium' : 'text-gray-400'}`}>{awayVal}</span>
+                                    </div>
+                                    <div className="flex h-1 bg-white/5 rounded-full overflow-hidden gap-0.5">
+                                        <div className={`h-full rounded-full ${homeVal >= awayVal ? 'bg-white' : 'bg-white/30'}`} style={{ width: `${(homeVal / total) * 100}%` }} />
+                                        <div className={`h-full rounded-full flex-1 ${awayVal > homeVal ? 'bg-white' : 'bg-white/30'}`} />
+                                    </div>
                                 </div>
-                                <div className="text-gray-400 text-sm text-center min-w-[120px]">Total Rebounds</div>
-                                <div className="flex-1 text-left pl-4">
-                                    <span className={`font-bold ${
-                                        (awayStats?.statistics?.reboundsTotal ?? 0) > (homeStats?.statistics?.reboundsTotal ?? 0) ? 'text-orange-400' : 'text-white'
-                                    }`}>
-                                        {awayStats?.statistics?.reboundsTotal ?? 0}
-                                    </span>
-                                </div>
-                            </div>
-                        )}
+                            );
+                        })()}
                         {/* Assists */}
-                        {(homeStats?.statistics?.assists !== undefined || awayStats?.statistics?.assists !== undefined) && (
-                            <div className="flex items-center justify-between">
-                                <div className="flex-1 text-right pr-4">
-                                    <span className={`font-bold ${
-                                        (homeStats?.statistics?.assists ?? 0) > (awayStats?.statistics?.assists ?? 0) ? 'text-orange-400' : 'text-white'
-                                    }`}>
-                                        {homeStats?.statistics?.assists ?? 0}
-                                    </span>
+                        {(homeStats?.statistics?.assists !== undefined || awayStats?.statistics?.assists !== undefined) && (() => {
+                            const homeVal = homeStats?.statistics?.assists ?? 0;
+                            const awayVal = awayStats?.statistics?.assists ?? 0;
+                            const total = homeVal + awayVal || 1;
+                            return (
+                                <div>
+                                    <div className="flex items-center justify-between text-sm mb-1.5">
+                                        <span className={`tabular-nums ${homeVal > awayVal ? 'text-white font-medium' : 'text-gray-400'}`}>{homeVal}</span>
+                                        <span className="text-gray-500 text-xs">Assists</span>
+                                        <span className={`tabular-nums ${awayVal > homeVal ? 'text-white font-medium' : 'text-gray-400'}`}>{awayVal}</span>
+                                    </div>
+                                    <div className="flex h-1 bg-white/5 rounded-full overflow-hidden gap-0.5">
+                                        <div className={`h-full rounded-full ${homeVal >= awayVal ? 'bg-white' : 'bg-white/30'}`} style={{ width: `${(homeVal / total) * 100}%` }} />
+                                        <div className={`h-full rounded-full flex-1 ${awayVal > homeVal ? 'bg-white' : 'bg-white/30'}`} />
+                                    </div>
                                 </div>
-                                <div className="text-gray-400 text-sm text-center min-w-[120px]">Assists</div>
-                                <div className="flex-1 text-left pl-4">
-                                    <span className={`font-bold ${
-                                        (awayStats?.statistics?.assists ?? 0) > (homeStats?.statistics?.assists ?? 0) ? 'text-orange-400' : 'text-white'
-                                    }`}>
-                                        {awayStats?.statistics?.assists ?? 0}
-                                    </span>
-                                </div>
-                            </div>
-                        )}
+                            );
+                        })()}
                         {/* Steals */}
-                        {(homeStats?.statistics?.steals !== undefined || awayStats?.statistics?.steals !== undefined) && (
-                            <div className="flex items-center justify-between">
-                                <div className="flex-1 text-right pr-4">
-                                    <span className={`font-bold ${
-                                        (homeStats?.statistics?.steals ?? 0) > (awayStats?.statistics?.steals ?? 0) ? 'text-orange-400' : 'text-white'
-                                    }`}>
-                                        {homeStats?.statistics?.steals ?? 0}
-                                    </span>
+                        {(homeStats?.statistics?.steals !== undefined || awayStats?.statistics?.steals !== undefined) && (() => {
+                            const homeVal = homeStats?.statistics?.steals ?? 0;
+                            const awayVal = awayStats?.statistics?.steals ?? 0;
+                            const total = homeVal + awayVal || 1;
+                            return (
+                                <div>
+                                    <div className="flex items-center justify-between text-sm mb-1.5">
+                                        <span className={`tabular-nums ${homeVal > awayVal ? 'text-white font-medium' : 'text-gray-400'}`}>{homeVal}</span>
+                                        <span className="text-gray-500 text-xs">Steals</span>
+                                        <span className={`tabular-nums ${awayVal > homeVal ? 'text-white font-medium' : 'text-gray-400'}`}>{awayVal}</span>
+                                    </div>
+                                    <div className="flex h-1 bg-white/5 rounded-full overflow-hidden gap-0.5">
+                                        <div className={`h-full rounded-full ${homeVal >= awayVal ? 'bg-white' : 'bg-white/30'}`} style={{ width: `${(homeVal / total) * 100}%` }} />
+                                        <div className={`h-full rounded-full flex-1 ${awayVal > homeVal ? 'bg-white' : 'bg-white/30'}`} />
+                                    </div>
                                 </div>
-                                <div className="text-gray-400 text-sm text-center min-w-[120px]">Steals</div>
-                                <div className="flex-1 text-left pl-4">
-                                    <span className={`font-bold ${
-                                        (awayStats?.statistics?.steals ?? 0) > (homeStats?.statistics?.steals ?? 0) ? 'text-orange-400' : 'text-white'
-                                    }`}>
-                                        {awayStats?.statistics?.steals ?? 0}
-                                    </span>
-                                </div>
-                            </div>
-                        )}
+                            );
+                        })()}
                         {/* Blocks */}
-                        {(homeStats?.statistics?.blocks !== undefined || awayStats?.statistics?.blocks !== undefined) && (
-                            <div className="flex items-center justify-between">
-                                <div className="flex-1 text-right pr-4">
-                                    <span className={`font-bold ${
-                                        (homeStats?.statistics?.blocks ?? 0) > (awayStats?.statistics?.blocks ?? 0) ? 'text-orange-400' : 'text-white'
-                                    }`}>
-                                        {homeStats?.statistics?.blocks ?? 0}
-                                    </span>
+                        {(homeStats?.statistics?.blocks !== undefined || awayStats?.statistics?.blocks !== undefined) && (() => {
+                            const homeVal = homeStats?.statistics?.blocks ?? 0;
+                            const awayVal = awayStats?.statistics?.blocks ?? 0;
+                            const total = homeVal + awayVal || 1;
+                            return (
+                                <div>
+                                    <div className="flex items-center justify-between text-sm mb-1.5">
+                                        <span className={`tabular-nums ${homeVal > awayVal ? 'text-white font-medium' : 'text-gray-400'}`}>{homeVal}</span>
+                                        <span className="text-gray-500 text-xs">Blocks</span>
+                                        <span className={`tabular-nums ${awayVal > homeVal ? 'text-white font-medium' : 'text-gray-400'}`}>{awayVal}</span>
+                                    </div>
+                                    <div className="flex h-1 bg-white/5 rounded-full overflow-hidden gap-0.5">
+                                        <div className={`h-full rounded-full ${homeVal >= awayVal ? 'bg-white' : 'bg-white/30'}`} style={{ width: `${(homeVal / total) * 100}%` }} />
+                                        <div className={`h-full rounded-full flex-1 ${awayVal > homeVal ? 'bg-white' : 'bg-white/30'}`} />
+                                    </div>
                                 </div>
-                                <div className="text-gray-400 text-sm text-center min-w-[120px]">Blocks</div>
-                                <div className="flex-1 text-left pl-4">
-                                    <span className={`font-bold ${
-                                        (awayStats?.statistics?.blocks ?? 0) > (homeStats?.statistics?.blocks ?? 0) ? 'text-orange-400' : 'text-white'
-                                    }`}>
-                                        {awayStats?.statistics?.blocks ?? 0}
-                                    </span>
+                            );
+                        })()}
+                        {/* Turnovers */}
+                        {(homeStats?.statistics?.turnovers !== undefined || awayStats?.statistics?.turnovers !== undefined) && (() => {
+                            const homeVal = homeStats?.statistics?.turnovers ?? 0;
+                            const awayVal = awayStats?.statistics?.turnovers ?? 0;
+                            const total = homeVal + awayVal || 1;
+                            return (
+                                <div>
+                                    <div className="flex items-center justify-between text-sm mb-1.5">
+                                        <span className={`tabular-nums ${homeVal < awayVal ? 'text-white font-medium' : 'text-gray-400'}`}>{homeVal}</span>
+                                        <span className="text-gray-500 text-xs">Turnovers</span>
+                                        <span className={`tabular-nums ${awayVal < homeVal ? 'text-white font-medium' : 'text-gray-400'}`}>{awayVal}</span>
+                                    </div>
+                                    <div className="flex h-1 bg-white/5 rounded-full overflow-hidden gap-0.5">
+                                        <div className={`h-full rounded-full ${homeVal <= awayVal ? 'bg-white' : 'bg-white/30'}`} style={{ width: `${(homeVal / total) * 100}%` }} />
+                                        <div className={`h-full rounded-full flex-1 ${awayVal < homeVal ? 'bg-white' : 'bg-white/30'}`} />
+                                    </div>
                                 </div>
+                            );
+                        })()}
+                    </div>
+                </div>
+            )}
+
+            {/* Match Info */}
+            {(match.league?.name || match.country?.name || match.league?.season) && (
+                <div className="bg-[#111] rounded-xl border border-white/5 overflow-hidden">
+                    <div className="px-4 py-3 border-b border-white/5">
+                        <h3 className="text-white text-sm font-medium">Match Info</h3>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-white/5">
+                        {match.league?.name && (
+                            <div className="p-4 text-center">
+                                <div className="text-gray-500 text-xs mb-1">League</div>
+                                <div className="text-white text-sm">{match.league.name}</div>
                             </div>
                         )}
-                        {/* Turnovers */}
-                        {(homeStats?.statistics?.turnovers !== undefined || awayStats?.statistics?.turnovers !== undefined) && (
-                            <div className="flex items-center justify-between">
-                                <div className="flex-1 text-right pr-4">
-                                    <span className={`font-bold ${
-                                        (homeStats?.statistics?.turnovers ?? 0) < (awayStats?.statistics?.turnovers ?? 0) ? 'text-orange-400' : 'text-white'
-                                    }`}>
-                                        {homeStats?.statistics?.turnovers ?? 0}
-                                    </span>
-                                </div>
-                                <div className="text-gray-400 text-sm text-center min-w-[120px]">Turnovers</div>
-                                <div className="flex-1 text-left pl-4">
-                                    <span className={`font-bold ${
-                                        (awayStats?.statistics?.turnovers ?? 0) < (homeStats?.statistics?.turnovers ?? 0) ? 'text-orange-400' : 'text-white'
-                                    }`}>
-                                        {awayStats?.statistics?.turnovers ?? 0}
-                                    </span>
-                                </div>
+                        {match.country?.name && (
+                            <div className="p-4 text-center">
+                                <div className="text-gray-500 text-xs mb-1">Country</div>
+                                <div className="text-white text-sm">{match.country.name}</div>
+                            </div>
+                        )}
+                        {match.league?.season && (
+                            <div className="p-4 text-center">
+                                <div className="text-gray-500 text-xs mb-1">Season</div>
+                                <div className="text-white text-sm">{match.league.season}</div>
+                            </div>
+                        )}
+                        {match.week && (
+                            <div className="p-4 text-center">
+                                <div className="text-gray-500 text-xs mb-1">Week</div>
+                                <div className="text-white text-sm">{match.week}</div>
                             </div>
                         )}
                     </div>
                 </div>
             )}
 
-            {/* Match Details */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* League Info */}
-                <div className="bg-black/20 rounded-lg p-4 border border-white/5">
-                    <div className="flex items-center gap-3">
-                        <span className="text-3xl">🏆</span>
-                        <div>
-                            <div className="text-gray-400 text-xs uppercase font-semibold mb-1">League</div>
-                            <div className="text-white font-medium">
-                                {match.league?.name || 'Basketball League'}
-                            </div>
-                            {match.league?.type && (
-                                <div className="text-gray-400 text-sm">{match.league.type}</div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Country */}
-                {match.country?.name && (
-                    <div className="bg-black/20 rounded-lg p-4 border border-white/5">
-                        <div className="flex items-center gap-3">
-                            {match.country?.flag ? (
-                                <img src={match.country.flag} alt={match.country.name} className="w-10 h-7 object-cover rounded" />
-                            ) : (
-                                <span className="text-3xl">🌍</span>
-                            )}
-                            <div>
-                                <div className="text-gray-400 text-xs uppercase font-semibold mb-1">Country</div>
-                                <div className="text-white font-medium">{match.country.name}</div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Season */}
-                {match.league?.season && (
-                    <div className="bg-black/20 rounded-lg p-4 border border-white/5">
-                        <div className="flex items-center gap-3">
-                            <span className="text-3xl">📅</span>
-                            <div>
-                                <div className="text-gray-400 text-xs uppercase font-semibold mb-1">Season</div>
-                                <div className="text-white font-medium">{match.league.season}</div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Week/Stage */}
-                {match.week && (
-                    <div className="bg-black/20 rounded-lg p-4 border border-white/5">
-                        <div className="flex items-center gap-3">
-                            <span className="text-3xl">📊</span>
-                            <div>
-                                <div className="text-gray-400 text-xs uppercase font-semibold mb-1">Week</div>
-                                <div className="text-white font-medium">Week {match.week}</div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </div>
         </div>
     );
 }

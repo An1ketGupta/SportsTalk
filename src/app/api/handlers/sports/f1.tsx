@@ -90,152 +90,175 @@ export async function F1MatchByIdHandler({ id }: { id: string }) {
 
   const race = matchData[0];
   const date = new Date(race.date);
-  const formattedDate = date.toLocaleDateString("en-US", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-  });
-  const formattedTime = date.toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-  });
+
+  const isRaceLive = race.status?.toLowerCase().includes('live') || 
+                     race.status?.toLowerCase().includes('running') ||
+                     (race.laps?.current > 0 && race.laps?.current < race.laps?.total);
+  const isRaceFinished = race.status?.toLowerCase().includes('completed') || 
+                         race.status?.toLowerCase().includes('finished');
 
   return (
-      <div className="bg-[#1a1a1a] w-full border border-white/10 rounded-3xl p-8 shadow-2xl">
-          {/* Race Header */}
-          <div className="text-center mb-8">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-900/20 border border-red-400/30 rounded-full">
-                  <span className="text-2xl">🏎️</span>
-                  <span className="text-red-400 font-bold text-lg">
-                      {race.competition.name || 'Formula 1'}
-                  </span>
-              </div>
-              <div className="mt-3">
-                  <h1 className="text-3xl font-black text-white mb-2">{race.type}</h1>
-                  <p className="text-gray-400 text-sm">
-                      {race.competition.location.city}, {race.competition.location.country}
-                  </p>
-              </div>
+    <div className="w-full space-y-4 p-4 md:p-6">
+      
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <span className="text-xl">🏎️</span>
+          <div>
+            <h1 className="text-white font-semibold text-lg">{race.competition?.name || 'Formula 1'}</h1>
+            <p className="text-gray-500 text-sm">{race.type}</p>
           </div>
-
-          {/* Circuit Info */}
-          <div className="bg-black/30 rounded-xl p-6 mb-6 border border-white/5">
-              <div className="flex items-center justify-center gap-6">
-                  {race.circuit.image && (
-                      <img 
-                          src={race.circuit.image} 
-                          alt={race.circuit.name} 
-                          className="w-32 h-32 object-contain" 
-                      />
-                  )}
-                  <div>
-                      <h2 className="text-2xl font-bold text-white mb-1">{race.circuit.name}</h2>
-                      <p className="text-gray-400 text-sm">
-                          {race.competition.location.city}, {race.competition.location.country}
-                      </p>
-                  </div>
-              </div>
-          </div>
-
-          {/* Race Stats */}
-          <div className="bg-black/30 rounded-xl p-6 mb-6 border border-white/5">
-              <h3 className="text-lg font-bold text-white mb-4 text-center">Race Information</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                  <div>
-                      <div className="text-gray-400 text-xs uppercase font-semibold mb-1">Total Laps</div>
-                      <div className="text-white font-bold text-2xl">{race.laps.total}</div>
-                  </div>
-                  <div>
-                      <div className="text-gray-400 text-xs uppercase font-semibold mb-1">Current Lap</div>
-                      <div className="text-white font-bold text-2xl">{race.laps.current || 0}</div>
-                  </div>
-                  <div>
-                      <div className="text-gray-400 text-xs uppercase font-semibold mb-1">Distance</div>
-                      <div className="text-white font-bold text-2xl">{race.distance}</div>
-                  </div>
-              </div>
-          </div>
-
-          {/* Weather Conditions (if available) */}
-          {race.weather && (
-              <div className="bg-black/30 rounded-xl p-6 mb-6 border border-white/5">
-                  <h3 className="text-lg font-bold text-white mb-4 text-center">Weather Conditions</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                      {race.weather.temp && (
-                          <div>
-                              <div className="text-gray-400 text-xs uppercase font-semibold mb-1">Temperature</div>
-                              <div className="text-white font-bold text-xl">{race.weather.temp}</div>
-                          </div>
-                      )}
-                      {race.weather.humidity && (
-                          <div>
-                              <div className="text-gray-400 text-xs uppercase font-semibold mb-1">Humidity</div>
-                              <div className="text-white font-bold text-xl">{race.weather.humidity}</div>
-                          </div>
-                      )}
-                      {race.weather.wind && (
-                          <div>
-                              <div className="text-gray-400 text-xs uppercase font-semibold mb-1">Wind</div>
-                              <div className="text-white font-bold text-xl">{race.weather.wind}</div>
-                          </div>
-                      )}
-                  </div>
-              </div>
-          )}
-
-          {/* Fastest Lap (if available) */}
-          {race.fastest_lap && (
-              <div className="bg-black/30 rounded-xl p-6 mb-6 border border-white/5">
-                  <h3 className="text-lg font-bold text-white mb-4 text-center">⚡ Fastest Lap</h3>
-                  <div className="text-center">
-                      {race.fastest_lap.driver && (
-                          <div className="text-xl font-bold text-red-400 mb-2">
-                              {race.fastest_lap.driver.name}
-                          </div>
-                      )}
-                      {race.fastest_lap.time && (
-                          <div className="text-3xl font-black text-white">{race.fastest_lap.time}</div>
-                      )}
-                  </div>
-              </div>
-          )}
-
-          {/* Race Status */}
-          <div className="text-center mb-6">
-              <span className="inline-flex items-center px-6 py-3 rounded-full text-base font-bold bg-red-900/30 text-red-400 border-2 border-red-400/30">
-                  {race.status === "Completed" ? "🏁 Race Finished" : race.status || "Scheduled"}
-              </span>
-          </div>
-
-          {/* Race Details */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Circuit Details */}
-              <div className="bg-black/20 rounded-lg p-4 border border-white/5">
-                  <div className="flex items-center gap-3">
-                      <span className="text-3xl">🏁</span>
-                      <div>
-                          <div className="text-gray-400 text-xs uppercase font-semibold mb-1">Circuit</div>
-                          <div className="text-white font-medium">{race.circuit.name}</div>
-                          <div className="text-gray-400 text-sm">
-                              {race.competition.location.city}, {race.competition.location.country}
-                          </div>
-                      </div>
-                  </div>
-              </div>
-
-              {/* Date & Time */}
-              <div className="bg-black/20 rounded-lg p-4 border border-white/5">
-                  <div className="flex items-center gap-3">
-                      <span className="text-3xl">📅</span>
-                      <div>
-                          <div className="text-gray-400 text-xs uppercase font-semibold mb-1">Date & Time</div>
-                          <div className="text-white font-medium">{formattedDate}</div>
-                          <div className="text-gray-400 text-sm">{formattedTime} (UTC)</div>
-                      </div>
-                  </div>
-              </div>
-          </div>
+        </div>
+        <div className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
+          isRaceLive 
+            ? 'bg-green-500/10 text-green-400 border border-green-500/20' 
+            : isRaceFinished 
+              ? 'bg-gray-500/10 text-gray-400 border border-gray-500/20' 
+              : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+        }`}>
+          {isRaceLive && <span className="inline-block w-1.5 h-1.5 bg-green-400 rounded-full mr-2 animate-pulse" />}
+          {isRaceFinished ? "Finished" : isRaceLive ? `Lap ${race.laps?.current}/${race.laps?.total}` : "Scheduled"}
+        </div>
       </div>
+
+      {/* Location */}
+      <div className="flex items-center gap-2 text-gray-400 text-sm flex-wrap">
+        <span>📍</span>
+        <span>{race.competition?.location?.city}, {race.competition?.location?.country}</span>
+        {race.date && (
+          <>
+            <span className="text-gray-600">•</span>
+            <span>{date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+          </>
+        )}
+      </div>
+
+      {/* Circuit Card */}
+      <div className="bg-[#111] rounded-2xl p-6 md:p-8 border border-white/5">
+        <div className="flex flex-col md:flex-row items-center gap-6">
+          {race.circuit?.image && (
+            <img 
+              src={race.circuit.image} 
+              alt={race.circuit?.name} 
+              className="w-32 h-32 md:w-40 md:h-40 object-contain" 
+            />
+          )}
+          <div className="text-center md:text-left">
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">{race.circuit?.name}</h2>
+            <p className="text-gray-400 text-sm mb-4">
+              {race.competition?.location?.city}, {race.competition?.location?.country}
+            </p>
+            <div className="flex items-center justify-center md:justify-start gap-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-white tabular-nums">{race.laps?.total || 0}</div>
+                <div className="text-gray-500 text-xs">Total Laps</div>
+              </div>
+              <div className="w-px h-8 bg-white/10" />
+              <div className="text-center">
+                <div className="text-2xl font-bold text-white tabular-nums">{race.distance || '-'}</div>
+                <div className="text-gray-500 text-xs">Distance</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Race Progress */}
+      {(race.laps?.current > 0 || isRaceFinished) && (
+        <div className="bg-[#111] rounded-xl border border-white/5 overflow-hidden">
+          <div className="px-4 py-3 border-b border-white/5">
+            <h3 className="text-white text-sm font-medium">Race Progress</h3>
+          </div>
+          
+          <div className="p-4">
+            <div className="flex items-center justify-between text-sm mb-2">
+              <span className="text-gray-500">Lap Progress</span>
+              <span className="text-white tabular-nums">{race.laps?.current || race.laps?.total} / {race.laps?.total}</span>
+            </div>
+            <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-white rounded-full transition-all duration-500"
+                style={{ width: `${((race.laps?.current || (isRaceFinished ? race.laps?.total : 0)) / (race.laps?.total || 1)) * 100}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Weather */}
+      {race.weather && (
+        <div className="bg-[#111] rounded-xl border border-white/5 overflow-hidden">
+          <div className="px-4 py-3 border-b border-white/5">
+            <h3 className="text-white text-sm font-medium">Weather Conditions</h3>
+          </div>
+          
+          <div className="grid grid-cols-3 divide-x divide-white/5">
+            {race.weather.temp && (
+              <div className="p-4 text-center">
+                <div className="text-gray-500 text-xs mb-1">Temperature</div>
+                <div className="text-white font-semibold">{race.weather.temp}</div>
+              </div>
+            )}
+            {race.weather.humidity && (
+              <div className="p-4 text-center">
+                <div className="text-gray-500 text-xs mb-1">Humidity</div>
+                <div className="text-white font-semibold">{race.weather.humidity}</div>
+              </div>
+            )}
+            {race.weather.wind && (
+              <div className="p-4 text-center">
+                <div className="text-gray-500 text-xs mb-1">Wind</div>
+                <div className="text-white font-semibold">{race.weather.wind}</div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Fastest Lap */}
+      {race.fastest_lap && (
+        <div className="bg-[#111] rounded-xl border border-white/5 overflow-hidden">
+          <div className="px-4 py-3 border-b border-white/5 flex items-center gap-2">
+            <span>⚡</span>
+            <h3 className="text-white text-sm font-medium">Fastest Lap</h3>
+          </div>
+          
+          <div className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                {race.fastest_lap.driver && (
+                  <div className="text-white font-medium">{race.fastest_lap.driver.name}</div>
+                )}
+                {race.fastest_lap.team && (
+                  <div className="text-gray-500 text-sm">{race.fastest_lap.team.name}</div>
+                )}
+              </div>
+              {race.fastest_lap.time && (
+                <div className="text-2xl font-bold text-white tabular-nums">{race.fastest_lap.time}</div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Race Info */}
+      <div className="bg-[#111] rounded-xl border border-white/5 overflow-hidden">
+        <div className="px-4 py-3 border-b border-white/5">
+          <h3 className="text-white text-sm font-medium">Race Details</h3>
+        </div>
+        
+        <div className="grid grid-cols-2 divide-x divide-white/5">
+          <div className="p-4">
+            <div className="text-gray-500 text-xs mb-1">Circuit</div>
+            <div className="text-white text-sm">{race.circuit?.name}</div>
+          </div>
+          <div className="p-4">
+            <div className="text-gray-500 text-xs mb-1">Date & Time</div>
+            <div className="text-white text-sm">{date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
   );
 }

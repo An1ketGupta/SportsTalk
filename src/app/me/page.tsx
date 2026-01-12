@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import SearchBar from "@/components/ui/searchbar";
 import Sidebar from "@/components/sidebar";
 import Userpagenavbar from "@/components/ui/ProfilePageNavbar";
@@ -11,8 +12,11 @@ import Post, { FeedPost } from "@/components/ui/post";
 import EditProfileModal from "@/components/EditProfileModal";
 import { GoCheckCircleFill } from "react-icons/go";
 import { FiCalendar } from "react-icons/fi";
+import { FaTrash } from "react-icons/fa";
 
 const POSTS_PER_PAGE = 10;
+
+type TabType = "posts" | "replies" | "likes";
 
 interface UserProfile {
   id: string;
@@ -27,13 +31,31 @@ interface UserProfile {
   postCount: number;
 }
 
+interface Reply {
+  id: string;
+  content: string;
+  createdAt: string;
+  author: {
+    id: string;
+    name: string | null;
+    image: string | null;
+    username: string;
+  };
+  post: FeedPost;
+}
+
 export default function MePage() {
   const router = useRouter();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [posts, setPosts] = useState<FeedPost[]>([]);
+  const [replies, setReplies] = useState<Reply[]>([]);
+  const [likedPosts, setLikedPosts] = useState<FeedPost[]>([]);
+  const [activeTab, setActiveTab] = useState<TabType>("posts");
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [repliesCursor, setRepliesCursor] = useState<string | null>(null);
+  const [likesCursor, setLikesCursor] = useState<string | null>(null);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -79,16 +101,95 @@ export default function MePage() {
     }
   }, [router]);
 
+  const loadMyReplies = useCallback(async (cursor?: string) => {
+    try {
+      if (cursor) {
+        setLoadingMore(true);
+      }
+      
+      const params = new URLSearchParams();
+      params.set("limit", POSTS_PER_PAGE.toString());
+      if (cursor) params.set("cursor", cursor);
+      
+      const res = await fetch(`/api/users/me/replies?${params.toString()}`);
+      
+      if (!res.ok) throw new Error("Failed to load replies");
+      const data = await res.json();
+      
+      if (!cursor) {
+        setReplies(data.replies ?? []);
+      } else {
+        setReplies(prev => {
+          const existingIds = new Set(prev.map(r => r.id));
+          const newReplies = (data.replies ?? []).filter((r: Reply) => !existingIds.has(r.id));
+          return [...prev, ...newReplies];
+        });
+      }
+      setRepliesCursor(data.nextCursor ?? null);
+    } catch (error) {
+      console.error("Load replies error:", error);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, []);
+
+  const loadMyLikes = useCallback(async (cursor?: string) => {
+    try {
+      if (cursor) {
+        setLoadingMore(true);
+      }
+      
+      const params = new URLSearchParams();
+      params.set("limit", POSTS_PER_PAGE.toString());
+      if (cursor) params.set("cursor", cursor);
+      
+      const res = await fetch(`/api/users/me/likes?${params.toString()}`);
+      
+      if (!res.ok) throw new Error("Failed to load likes");
+      const data = await res.json();
+      
+      if (!cursor) {
+        setLikedPosts(data.posts ?? []);
+      } else {
+        setLikedPosts(prev => {
+          const existingIds = new Set(prev.map(p => p.id));
+          const newPosts = (data.posts ?? []).filter((p: FeedPost) => !existingIds.has(p.id));
+          return [...prev, ...newPosts];
+        });
+      }
+      setLikesCursor(data.nextCursor ?? null);
+    } catch (error) {
+      console.error("Load likes error:", error);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, []);
+
   useEffect(() => {
     loadMyProfile();
   }, [loadMyProfile]);
+
+  // Load tab data when tab changes
+  useEffect(() => {
+    if (activeTab === "replies" && replies.length === 0) {
+      loadMyReplies();
+    } else if (activeTab === "likes" && likedPosts.length === 0) {
+      loadMyLikes();
+    }
+  }, [activeTab, replies.length, likedPosts.length, loadMyReplies, loadMyLikes]);
 
   // Infinite scroll with Intersection Observer
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && nextCursor && !loadingMore && !loading) {
-          loadMyProfile(nextCursor);
+        if (entries[0].isIntersecting && !loadingMore && !loading) {
+          if (activeTab === "posts" && nextCursor) {
+            loadMyProfile(nextCursor);
+          } else if (activeTab === "replies" && repliesCursor) {
+            loadMyReplies(repliesCursor);
+          } else if (activeTab === "likes" && likesCursor) {
+            loadMyLikes(likesCursor);
+          }
         }
       },
       { threshold: 0.1 }
@@ -99,10 +200,28 @@ export default function MePage() {
     }
 
     return () => observer.disconnect();
-  }, [nextCursor, loadingMore, loading, loadMyProfile]);
+  }, [activeTab, nextCursor, repliesCursor, likesCursor, loadingMore, loading, loadMyProfile, loadMyReplies, loadMyLikes]);
 
   const handlePostDeleted = (postId: string) => {
     setPosts(posts.filter((p) => p.id !== postId));
+    setLikedPosts(likedPosts.filter((p) => p.id !== postId));
+  };
+
+  const handleReplyDeleted = async (replyId: string, postId: string) => {
+    if (!confirm("Are you sure you want to delete this reply?")) return;
+
+    try {
+      const res = await fetch(`/api/posts/${postId}/comments/${replyId}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) throw new Error("Failed to delete reply");
+      
+      setReplies(replies.filter((r) => r.id !== replyId));
+    } catch (error) {
+      console.error("Delete reply error:", error);
+      alert("Failed to delete reply. Please try again.");
+    }
   };
 
   const handleSaveProfile = async (data: { name: string; bio: string }) => {
@@ -143,14 +262,49 @@ export default function MePage() {
     });
   };
 
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const diff = Date.now() - date.getTime();
+    const seconds = Math.floor(diff / 1000);
+    if (seconds < 60) return "Just now";
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h`;
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days}d`;
+    return date.toLocaleDateString();
+  };
+
+  const getCurrentCursor = () => {
+    switch (activeTab) {
+      case "posts": return nextCursor;
+      case "replies": return repliesCursor;
+      case "likes": return likesCursor;
+    }
+  };
+
+  const getCurrentItems = () => {
+    switch (activeTab) {
+      case "posts": return posts;
+      case "replies": return replies;
+      case "likes": return likedPosts;
+    }
+  };
+
   if (loading) {
     return (
-      <div className="w-full h-screen flex text-white">
+      <div className="w-full h-[90vh] flex text-white">
         <div>
           <Sidebar />
         </div>
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-gray-400">Loading your profile...</div>
+        <div className="border-r w-full max-w-[88vh] border-white border-opacity-20 flex-1 flex items-center justify-center">
+          <div className="w-8 h-8 border-4 border-gray-700 border-t-blue-500 rounded-full animate-spin"></div>
+        </div>
+        <div className="pl-8 overflow-y-auto scrollbar-hide hidden lg:block">
+          <SearchBar />
+          <TrendingSports />
+          <WhoToFollow />
         </div>
       </div>
     );
@@ -158,12 +312,17 @@ export default function MePage() {
 
   if (!user) {
     return (
-      <div className="w-full h-screen flex text-white">
+      <div className="w-full h-[90vh] flex text-white">
         <div>
           <Sidebar />
         </div>
-        <div className="flex-1 flex items-center justify-center">
+        <div className="border-r w-full max-w-[88vh] border-white border-opacity-20 flex-1 flex items-center justify-center">
           <div className="text-gray-400">Please sign in to view your profile</div>
+        </div>
+        <div className="pl-8 overflow-y-auto scrollbar-hide hidden lg:block">
+          <SearchBar />
+          <TrendingSports />
+          <WhoToFollow />
         </div>
       </div>
     );
@@ -241,31 +400,146 @@ export default function MePage() {
 
         {/* Tabs */}
         <div className="flex border-b border-gray-800">
-          <button className="flex-1 py-4 text-center font-semibold text-white border-b-2 border-blue-500">
+          <button 
+            onClick={() => setActiveTab("posts")}
+            className={`flex-1 py-4 text-center font-semibold transition-colors ${
+              activeTab === "posts" 
+                ? "text-white border-b-2 border-blue-500" 
+                : "text-gray-500 hover:bg-gray-900"
+            }`}
+          >
             Posts
           </button>
-          <button className="flex-1 py-4 text-center font-semibold text-gray-500 hover:bg-gray-900">
+          <button 
+            onClick={() => setActiveTab("replies")}
+            className={`flex-1 py-4 text-center font-semibold transition-colors ${
+              activeTab === "replies" 
+                ? "text-white border-b-2 border-blue-500" 
+                : "text-gray-500 hover:bg-gray-900"
+            }`}
+          >
             Replies
           </button>
-          <button className="flex-1 py-4 text-center font-semibold text-gray-500 hover:bg-gray-900">
-            Media
+          <button 
+            onClick={() => setActiveTab("likes")}
+            className={`flex-1 py-4 text-center font-semibold transition-colors ${
+              activeTab === "likes" 
+                ? "text-white border-b-2 border-blue-500" 
+                : "text-gray-500 hover:bg-gray-900"
+            }`}
+          >
+            Likes
           </button>
         </div>
 
-        {/* Posts */}
+        {/* Content based on active tab */}
         <div className="px-2 py-2 space-y-3">
-          {posts.length === 0 && !loading ? (
-            <div className="text-center text-gray-500 py-10">
-              You haven&apos;t posted anything yet
-            </div>
-          ) : (
-            posts.map((post) => (
-              <Post
-                key={post.id}
-                post={post}
-                onDelete={() => handlePostDeleted(post.id)}
-              />
-            ))
+          {/* Posts Tab */}
+          {activeTab === "posts" && (
+            <>
+              {posts.length === 0 ? (
+                <div className="text-center text-gray-500 py-10">
+                  You haven&apos;t posted anything yet
+                </div>
+              ) : (
+                posts.map((post) => (
+                  <Post
+                    key={post.id}
+                    post={post}
+                    onDelete={() => handlePostDeleted(post.id)}
+                    showDeleteButton={true}
+                  />
+                ))
+              )}
+            </>
+          )}
+
+          {/* Replies Tab */}
+          {activeTab === "replies" && (
+            <>
+              {replies.length === 0 ? (
+                <div className="text-center text-gray-500 py-10">
+                  You haven&apos;t replied to any posts yet
+                </div>
+              ) : (
+                replies.map((reply) => (
+                  <div key={reply.id} className="border-b border-gray-800 pb-3">
+                    {/* Reply context - the original post */}
+                    <div className="text-xs text-gray-500 px-4 py-2 flex items-center gap-1">
+                      <span>Replying to</span>
+                      <Link href={`/user/${reply.post.author.id}`} className="text-blue-500 hover:underline">
+                        @{reply.post.author.username}
+                      </Link>
+                    </div>
+                    
+                    {/* The reply itself */}
+                    <div className="px-4 py-2 bg-gray-900/50 rounded-lg mx-2">
+                      <div className="flex items-start gap-3">
+                        <img
+                          src={reply.author.image ?? "/default-avatar.png"}
+                          alt={reply.author.name ?? reply.author.username}
+                          className="w-10 h-10 rounded-full object-cover"
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2 text-sm">
+                              <span className="font-semibold">{reply.author.name ?? reply.author.username}</span>
+                              <GoCheckCircleFill className="text-blue-500" />
+                              <span className="text-gray-500">@{reply.author.username}</span>
+                              <span className="text-gray-500 text-xs">· {formatTimeAgo(reply.createdAt)}</span>
+                            </div>
+                            <button
+                              onClick={() => handleReplyDeleted(reply.id, reply.post.id)}
+                              className="p-2 text-gray-500 hover:text-red-500 hover:bg-red-500/10 rounded-full transition-colors"
+                              title="Delete reply"
+                            >
+                              <FaTrash className="w-3 h-3" />
+                            </button>
+                          </div>
+                          <p className="text-[15px] mt-1">{reply.content}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Original post preview */}
+                    <Link href={`/post/${reply.post.id}`} className="block mt-2">
+                      <div className="mx-4 p-3 border border-gray-700 rounded-xl hover:bg-gray-900/30 transition-colors">
+                        <div className="flex items-center gap-2 text-sm">
+                          <img
+                            src={reply.post.author.image ?? "/default-avatar.png"}
+                            alt={reply.post.author.name ?? reply.post.author.username}
+                            className="w-5 h-5 rounded-full object-cover"
+                          />
+                          <span className="font-semibold">{reply.post.author.name ?? reply.post.author.username}</span>
+                          <span className="text-gray-500">@{reply.post.author.username}</span>
+                        </div>
+                        <p className="text-sm text-gray-300 mt-1 line-clamp-2">{reply.post.content}</p>
+                      </div>
+                    </Link>
+                  </div>
+                ))
+              )}
+            </>
+          )}
+
+          {/* Likes Tab */}
+          {activeTab === "likes" && (
+            <>
+              {likedPosts.length === 0 ? (
+                <div className="text-center text-gray-500 py-10">
+                  You haven&apos;t liked any posts yet
+                </div>
+              ) : (
+                likedPosts.map((post) => (
+                  <Post
+                    key={post.id}
+                    post={post}
+                    onDelete={() => handlePostDeleted(post.id)}
+                    showDeleteButton={post.author.id === user.id}
+                  />
+                ))
+              )}
+            </>
           )}
           
           {/* Infinite Scroll Sentinel */}
@@ -277,10 +551,10 @@ export default function MePage() {
             )}
           </div>
 
-          {/* End of Posts Message */}
-          {!loading && posts.length > 0 && !nextCursor && !loadingMore && (
+          {/* End of Content Message */}
+          {!loading && getCurrentItems().length > 0 && !getCurrentCursor() && !loadingMore && (
             <div className="flex justify-center py-4 text-gray-500 text-sm">
-              No more posts
+              No more {activeTab}
             </div>
           )}
         </div>

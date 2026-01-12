@@ -88,164 +88,194 @@ export async function HockeyMatchByIdHandler({ id }: { id: string }) {
 
   const game = matchData[0]
   const gameDate = new Date(game.date)
-  const formattedDate = gameDate.toLocaleDateString("en-US", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  })
-  const formattedTime = gameDate.toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-  })
-
-  // Parse period scores (format: "away-home")
-  const parsePeriodScore = (periodStr: string | null, team: 'home' | 'away') => {
-    if (!periodStr) return 0;
-    const scores = periodStr.split('-');
-    return team === 'away' ? parseInt(scores[0]) || 0 : parseInt(scores[1]) || 0;
-  };
+  
+  const isGameLive = game.status?.short && !["FT", "NS", "AOT", "POST"].includes(game.status.short);
+  const isGameFinished = game.status?.short === "FT" || game.status?.short === "AOT" || game.status?.long?.toLowerCase().includes("finished");
 
   return (
-    <div className="bg-[#0a0a0a] w-full min-h-screen pb-8">
-      {/* League Header */}
-      <div className="bg-[#1a1a1a] border-b border-white/10 p-6 mb-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-3xl">🏒</span>
-            <div>
-              <h1 className="text-cyan-400 font-bold text-2xl">{game.league.name}</h1>
-              <p className="text-gray-400 text-sm">{game.country.name}</p>
-            </div>
+    <div className="w-full space-y-4 p-4 md:p-6">
+      
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <span className="text-xl">🏒</span>
+          <div>
+            <h1 className="text-white font-semibold text-lg">{game.league?.name || 'Hockey'}</h1>
+            <p className="text-gray-500 text-sm">{game.country?.name}</p>
           </div>
-          <div className="text-right">
-            <div className="text-gray-400 text-sm">{formattedDate}</div>
-            <div className="text-gray-500 text-xs">{formattedTime}</div>
+        </div>
+        <div className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
+          isGameLive 
+            ? 'bg-green-500/10 text-green-400 border border-green-500/20' 
+            : isGameFinished 
+              ? 'bg-gray-500/10 text-gray-400 border border-gray-500/20' 
+              : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+        }`}>
+          {isGameLive && <span className="inline-block w-1.5 h-1.5 bg-green-400 rounded-full mr-2 animate-pulse" />}
+          {isGameFinished ? (game.periods?.overtime ? "Final / OT" : "Final") : isGameLive ? game.status?.long : "Scheduled"}
+        </div>
+      </div>
+
+      {/* Venue */}
+      <div className="flex items-center gap-2 text-gray-400 text-sm flex-wrap">
+        {game.venue && (
+          <>
+            <span>📍</span>
+            <span>{game.venue}</span>
+          </>
+        )}
+        {game.date && (
+          <>
+            {game.venue && <span className="text-gray-600">•</span>}
+            <span>{gameDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+          </>
+        )}
+      </div>
+
+      {/* Main Scoreboard */}
+      <div className="bg-[#111] rounded-2xl p-6 md:p-8 border border-white/5">
+        <div className="grid grid-cols-3 items-center">
+          {/* Home Team */}
+          <div className="text-center">
+            <img 
+              src={game.teams?.home?.logo} 
+              alt={game.teams?.home?.name} 
+              className="w-20 h-20 md:w-28 md:h-28 mx-auto object-contain mb-3" 
+            />
+            <h2 className="text-white font-medium text-sm md:text-base mb-2">{game.teams?.home?.name || 'Home'}</h2>
+            <p className="text-5xl md:text-7xl font-bold text-white tabular-nums">
+              {game.scores?.home ?? 0}
+            </p>
+          </div>
+
+          {/* Divider */}
+          <div className="flex flex-col items-center gap-2">
+            <div className="w-px h-12 bg-white/10" />
+            <span className="text-gray-600 text-xs font-medium tracking-widest">VS</span>
+            <div className="w-px h-12 bg-white/10" />
+          </div>
+
+          {/* Away Team */}
+          <div className="text-center">
+            <img 
+              src={game.teams?.away?.logo} 
+              alt={game.teams?.away?.name} 
+              className="w-20 h-20 md:w-28 md:h-28 mx-auto object-contain mb-3" 
+            />
+            <h2 className="text-white font-medium text-sm md:text-base mb-2">{game.teams?.away?.name || 'Away'}</h2>
+            <p className="text-5xl md:text-7xl font-bold text-white tabular-nums">
+              {game.scores?.away ?? 0}
+            </p>
           </div>
         </div>
       </div>
 
-      <div className="px-6">
-        {/* Match Status Badge */}
-        <div className="mb-4">
-          <span className="inline-flex items-center px-4 py-2 rounded-lg text-sm font-bold bg-red-900/30 text-red-400 border border-red-400/30">
-            {game.status.short === "FT" ? "Final" : game.status.long || "Live"}
-            {game.periods.overtime && " / OT"}
-          </span>
-        </div>
-
-        {/* Teams & Main Score */}
-        <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl p-8 mb-6">
-          <div className="flex items-center justify-between gap-8">
-            {/* Away Team */}
-            <div className="flex-1 text-center">
-              <img
-                src={game.teams.away.logo}
-                alt={game.teams.away.name}
-                className="w-24 h-24 mx-auto object-contain mb-4"
-              />
-              <h2 className="text-2xl font-bold text-white mb-2">
-                {game.teams.away.name}
-              </h2>
-              <p className="text-gray-500 text-sm mb-3">Away</p>
-              <div className="text-6xl font-black text-cyan-400">
-                {game.scores.away ?? 0}
-              </div>
-            </div>
-
-            {/* VS Divider */}
-            <div className="flex flex-col items-center px-4">
-              <div className="text-gray-500 font-bold text-2xl">VS</div>
-              <div className="h-32 w-px bg-gradient-to-b from-transparent via-gray-600 to-transparent my-4"></div>
-            </div>
-
-            {/* Home Team */}
-            <div className="flex-1 text-center">
-              <img
-                src={game.teams.home.logo}
-                alt={game.teams.home.name}
-                className="w-24 h-24 mx-auto object-contain mb-4"
-              />
-              <h2 className="text-2xl font-bold text-white mb-2">
-                {game.teams.home.name}
-              </h2>
-              <p className="text-gray-500 text-sm mb-3">Home</p>
-              <div className="text-6xl font-black text-cyan-400">
-                {game.scores.home ?? 0}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Location */}
-        {game.venue && (
-          <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl p-6 mb-6">
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">📍</span>
-              <div>
-                <div className="text-gray-400 text-xs uppercase font-semibold mb-1">Location</div>
-                <div className="text-white font-medium">{game.venue}</div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Game Stats / Box Score */}
-        <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl p-6">
-          <h3 className="text-xl font-bold text-white mb-6">GAME STATS</h3>
-          <div className="text-center mb-4">
-            <span className="text-sm font-semibold text-gray-400 uppercase">Box Score</span>
+      {/* Period Scores */}
+      {game.periods && (
+        <div className="bg-[#111] rounded-xl border border-white/5 overflow-hidden">
+          <div className="px-4 py-3 border-b border-white/5">
+            <h3 className="text-white text-sm font-medium">Period Scores</h3>
           </div>
           
-          <div className="space-y-4">
-            {/* Stats Grid */}
-            <div className="grid grid-cols-3 gap-4">
-              {/* Away Team Stats */}
-              <div className="text-right">
-                <div className="text-2xl font-bold text-cyan-400">
-                  {game.scores.away ?? 0}
-                </div>
-                <div className="text-xs text-gray-500 mt-1">{game.teams.away.name}</div>
-              </div>
-
-              {/* Stat Name */}
-              <div className="text-center">
-                <div className="text-sm font-semibold text-white">Goals</div>
-              </div>
-
-              {/* Home Team Stats */}
-              <div className="text-left">
-                <div className="text-2xl font-bold text-cyan-400">
-                  {game.scores.home ?? 0}
-                </div>
-                <div className="text-xs text-gray-500 mt-1">{game.teams.home.name}</div>
-              </div>
-            </div>
-
-            <div className="border-t border-white/10 my-4"></div>
-
-            {/* Additional Stats */}
-            {[
-              { label: 'Shots on Goal', away: 30, home: 33 },
-              { label: 'Penalties', away: 2, home: 1 },
-              { label: 'Penalty Minutes', away: 4, home: 2 },
-              { label: 'Power-Play Goals', away: 0, home: game.periods.overtime ? 1 : 0 },
-              { label: 'Short-Handed Goals', away: 0, home: 0 },
-              { label: 'Saves', away: 29, home: 30 },
-              { label: 'Hits', away: 6, home: 10 },
-              { label: 'Giveaways', away: 17, home: 21 },
-              { label: 'Takeaways', away: 7, home: 4 },
-              { label: 'Faceoffs Won', away: 30, home: 37 },
-            ].map((stat, idx) => (
-              <div key={idx} className="grid grid-cols-3 gap-4 py-2 hover:bg-white/5 transition-colors rounded-lg px-2">
-                <div className="text-right text-white font-semibold">{stat.away}</div>
-                <div className="text-center text-gray-400 text-sm">{stat.label}</div>
-                <div className="text-left text-white font-semibold">{stat.home}</div>
-              </div>
-            ))}
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-white/5">
+                  <th className="py-3 px-4 text-left text-gray-500 text-xs font-medium">Team</th>
+                  <th className="py-3 px-4 text-center text-gray-500 text-xs font-medium">P1</th>
+                  <th className="py-3 px-4 text-center text-gray-500 text-xs font-medium">P2</th>
+                  <th className="py-3 px-4 text-center text-gray-500 text-xs font-medium">P3</th>
+                  {game.periods?.overtime && (
+                    <th className="py-3 px-4 text-center text-gray-500 text-xs font-medium">OT</th>
+                  )}
+                  <th className="py-3 px-4 text-center text-gray-500 text-xs font-medium">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-white/5">
+                  <td className="py-3 px-4 text-white text-sm">{game.teams?.home?.name || 'Home'}</td>
+                  <td className="py-3 px-4 text-center text-gray-400 tabular-nums">{game.periods?.first?.split('-')[1] || 0}</td>
+                  <td className="py-3 px-4 text-center text-gray-400 tabular-nums">{game.periods?.second?.split('-')[1] || 0}</td>
+                  <td className="py-3 px-4 text-center text-gray-400 tabular-nums">{game.periods?.third?.split('-')[1] || 0}</td>
+                  {game.periods?.overtime && (
+                    <td className="py-3 px-4 text-center text-gray-400 tabular-nums">{game.periods?.overtime?.split('-')[1] || 0}</td>
+                  )}
+                  <td className="py-3 px-4 text-center text-white font-semibold tabular-nums">{game.scores?.home ?? 0}</td>
+                </tr>
+                <tr>
+                  <td className="py-3 px-4 text-white text-sm">{game.teams?.away?.name || 'Away'}</td>
+                  <td className="py-3 px-4 text-center text-gray-400 tabular-nums">{game.periods?.first?.split('-')[0] || 0}</td>
+                  <td className="py-3 px-4 text-center text-gray-400 tabular-nums">{game.periods?.second?.split('-')[0] || 0}</td>
+                  <td className="py-3 px-4 text-center text-gray-400 tabular-nums">{game.periods?.third?.split('-')[0] || 0}</td>
+                  {game.periods?.overtime && (
+                    <td className="py-3 px-4 text-center text-gray-400 tabular-nums">{game.periods?.overtime?.split('-')[0] || 0}</td>
+                  )}
+                  <td className="py-3 px-4 text-center text-white font-semibold tabular-nums">{game.scores?.away ?? 0}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
+      )}
+
+      {/* Game Stats */}
+      <div className="bg-[#111] rounded-xl border border-white/5 overflow-hidden">
+        <div className="px-4 py-3 border-b border-white/5 flex items-center justify-between">
+          <h3 className="text-white text-sm font-medium">Game Stats</h3>
+          <div className="flex items-center gap-4 text-xs text-gray-500">
+            <div className="flex items-center gap-2">
+              <img src={game.teams?.home?.logo} alt="" className="w-4 h-4 object-contain" />
+              <span className="hidden sm:inline">{game.teams?.home?.name}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="hidden sm:inline">{game.teams?.away?.name}</span>
+              <img src={game.teams?.away?.logo} alt="" className="w-4 h-4 object-contain" />
+            </div>
+          </div>
+        </div>
+        
+        <div className="p-4 space-y-4">
+          {[
+            { label: 'Goals', home: game.scores?.home ?? 0, away: game.scores?.away ?? 0 },
+            { label: 'Shots on Goal', home: 33, away: 30 },
+            { label: 'Penalties', home: 1, away: 2 },
+            { label: 'Penalty Minutes', home: 2, away: 4 },
+            { label: 'Power-Play Goals', home: game.periods?.overtime ? 1 : 0, away: 0 },
+            { label: 'Saves', home: 30, away: 29 },
+            { label: 'Hits', home: 10, away: 6 },
+            { label: 'Faceoffs Won', home: 37, away: 30 },
+          ].map((stat, idx) => {
+            const total = (stat.home || 0) + (stat.away || 0) || 1;
+            const homePercent = ((stat.home || 0) / total) * 100;
+            const homeWins = stat.label === 'Penalties' || stat.label === 'Penalty Minutes' 
+              ? stat.home < stat.away 
+              : stat.home > stat.away;
+            const awayWins = stat.label === 'Penalties' || stat.label === 'Penalty Minutes'
+              ? stat.away < stat.home
+              : stat.away > stat.home;
+            
+            return (
+              <div key={idx}>
+                <div className="flex items-center justify-between text-sm mb-1.5">
+                  <span className={`tabular-nums ${homeWins ? 'text-white font-medium' : 'text-gray-400'}`}>{stat.home}</span>
+                  <span className="text-gray-500 text-xs">{stat.label}</span>
+                  <span className={`tabular-nums ${awayWins ? 'text-white font-medium' : 'text-gray-400'}`}>{stat.away}</span>
+                </div>
+                <div className="flex h-1 bg-white/5 rounded-full overflow-hidden gap-0.5">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ${homeWins || stat.home === stat.away ? 'bg-white' : 'bg-white/30'}`}
+                    style={{ width: `${homePercent}%` }}
+                  />
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 flex-1 ${awayWins ? 'bg-white' : 'bg-white/30'}`}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
+
     </div>
   )
 }

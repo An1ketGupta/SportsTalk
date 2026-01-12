@@ -97,229 +97,167 @@ export async function NBAMatchByIdHandler({ id }: { id: string }) {
   }
 
   const game = matchData[0]
+  const isGameLive = game.status?.long !== "Finished" && game.status?.short !== "NS";
+  const isGameFinished = game.status?.long === "Finished";
+
   return (
-    <div className="bg-[#1a1a1a] w-full border border-white/10 rounded-3xl p-8 shadow-2xl">
-      {/* Header with League and Status */}
-      <div className="flex items-center justify-between mb-8">
-        {/* League Info */}
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-900/20 border border-blue-400/30 rounded-full">
+    <div className="w-full space-y-4 p-4 md:p-6">
+      
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
           <span className="text-2xl">🏀</span>
-          <span className="text-blue-400 font-bold text-lg">NBA</span>
-          <span className="text-gray-400">•</span>
-          <span className="text-gray-300 font-medium">Season {game.season}</span>
-        </div>
-
-        {/* Status and Time */}
-        <div className="flex items-center gap-4">
-          {game.date?.start && (
-            <div className="text-right">
-              <div className="text-gray-400 text-xs">
-                {new Date(game.date.start).toLocaleDateString('en-US', { 
-                  weekday: 'short', 
-                  month: 'short', 
-                  day: 'numeric' 
-                })}
-              </div>
-              <div className="text-white font-semibold text-sm">
-                {new Date(game.date.start).toLocaleTimeString('en-US', { 
-                  hour: '2-digit', 
-                  minute: '2-digit'
-                })}
-              </div>
-            </div>
-          )}
-          
-          <div className="bg-black/30 rounded-xl px-4 py-2 border border-white/5">
-            <div className="text-white font-bold text-sm">{game.status?.long || 'N/A'}</div>
-            {game.status?.clock && (
-              <div className="text-gray-400 text-xs text-center">{game.status.clock}</div>
-            )}
+          <div>
+            <h1 className="text-white font-semibold text-lg">NBA</h1>
+            <p className="text-gray-500 text-sm">Season {game.season}</p>
           </div>
         </div>
-      </div>
-
-      {/* Venue Information */}
-      <div className="bg-black/30 rounded-xl p-4 mb-6 border border-white/5 text-center">
-        <div className="flex items-center justify-center gap-2">
-          <span className="text-xl">🏟️</span>
-          <span className="text-white font-semibold">{game.arena?.name || 'Venue TBA'}</span>
-          {game.arena?.city && game.arena?.state && (
-            <>
-              <span className="text-gray-400">•</span>
-              <span className="text-gray-400">{game.arena.city}, {game.arena.state}</span>
-            </>
-          )}
+        <div className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
+          isGameLive 
+            ? 'bg-green-500/10 text-green-400 border border-green-500/20' 
+            : isGameFinished 
+              ? 'bg-gray-500/10 text-gray-400 border border-gray-500/20' 
+              : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+        }`}>
+          {isGameLive && <span className="inline-block w-1.5 h-1.5 bg-green-400 rounded-full mr-2 animate-pulse" />}
+          {isGameFinished ? "Final" : game.status?.long || "Scheduled"}
         </div>
       </div>
 
-      {/* Teams & Main Score */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between gap-8">
+      {/* Venue */}
+      <div className="flex items-center gap-2 text-gray-400 text-sm">
+        <span>📍</span>
+        <span>{game.arena?.name || 'Venue TBA'}{game.arena?.city ? `, ${game.arena.city}` : ''}{game.arena?.state ? `, ${game.arena.state}` : ''}</span>
+        {game.date?.start && (
+          <>
+            <span className="text-gray-600">•</span>
+            <span>{new Date(game.date.start).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+          </>
+        )}
+      </div>
+
+      {/* Main Scoreboard */}
+      <div className="bg-[#111] rounded-2xl p-6 md:p-8 border border-white/5">
+        <div className="grid grid-cols-3 items-center">
           {/* Visitors Team */}
-          <div className="flex-1 text-center">
-            <div className="mb-4">
-              <img
-                src={game.teams.visitors.logo}
-                alt={game.teams.visitors.name}
-                className="w-32 h-32 mx-auto object-contain"
-              />
-            </div>
-            <h2 className="text-2xl font-bold text-white mb-1">{game.teams.visitors.nickname}</h2>
-            <p className="text-sm text-gray-400 mb-2">{game.teams.visitors.name}</p>
-            <div className="text-6xl font-black text-blue-400">
+          <div className="text-center">
+            <img 
+              src={game.teams.visitors.logo} 
+              alt={game.teams.visitors.name} 
+              className="w-20 h-20 md:w-28 md:h-28 mx-auto object-contain mb-3" 
+            />
+            <h2 className="text-white font-medium text-sm md:text-base mb-2">{game.teams.visitors.nickname}</h2>
+            <p className="text-5xl md:text-7xl font-bold text-white tabular-nums">
               {game.scores.visitors.points ?? 0}
-            </div>
+            </p>
           </div>
 
-          {/* VS Divider */}
-          <div className="flex flex-col items-center">
-            <div className="text-gray-500 font-bold text-2xl">VS</div>
-            <div className="h-24 w-px bg-gradient-to-b from-transparent via-gray-600 to-transparent my-4"></div>
+          {/* Divider */}
+          <div className="flex flex-col items-center gap-2">
+            <div className="w-px h-12 bg-white/10" />
+            <span className="text-gray-600 text-xs font-medium tracking-widest">VS</span>
+            <div className="w-px h-12 bg-white/10" />
           </div>
 
           {/* Home Team */}
-          <div className="flex-1 text-center">
-            <div className="mb-4">
-              <img
-                src={game.teams.home.logo}
-                alt={game.teams.home.name}
-                className="w-32 h-32 mx-auto object-contain"
-              />
-            </div>
-            <h2 className="text-2xl font-bold text-white mb-1">{game.teams.home.nickname}</h2>
-            <p className="text-sm text-gray-400 mb-2">{game.teams.home.name}</p>
-            <div className="text-6xl font-black text-blue-400">
+          <div className="text-center">
+            <img 
+              src={game.teams.home.logo} 
+              alt={game.teams.home.name} 
+              className="w-20 h-20 md:w-28 md:h-28 mx-auto object-contain mb-3" 
+            />
+            <h2 className="text-white font-medium text-sm md:text-base mb-2">{game.teams.home.nickname}</h2>
+            <p className="text-5xl md:text-7xl font-bold text-white tabular-nums">
               {game.scores.home.points ?? 0}
-            </div>
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Quarter by Quarter Scores */}
-      <div className="bg-black/30 rounded-xl p-6 mb-6 border border-white/5">
-        <h3 className="text-lg font-bold text-white mb-4 text-center">Score Breakdown</h3>
+      {/* Quarter Scores */}
+      <div className="bg-[#111] rounded-xl border border-white/5 overflow-hidden">
+        <div className="px-4 py-3 border-b border-white/5">
+          <h3 className="text-white text-sm font-medium">Score by Quarter</h3>
+        </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-center">
+          <table className="w-full text-center text-sm">
             <thead>
-              <tr className="border-b border-white/10">
-                <th className="py-3 px-4 text-left text-gray-400 font-semibold text-sm">Team</th>
-                <th className="py-3 px-4 text-center text-gray-400 font-semibold text-sm">Q1</th>
-                <th className="py-3 px-4 text-center text-gray-400 font-semibold text-sm">Q2</th>
-                <th className="py-3 px-4 text-center text-gray-400 font-semibold text-sm">Q3</th>
-                <th className="py-3 px-4 text-center text-gray-400 font-semibold text-sm">Q4</th>
+              <tr className="text-gray-500">
+                <th className="py-3 px-4 font-medium text-left">Team</th>
+                <th className="py-3 px-4 font-medium w-12">1</th>
+                <th className="py-3 px-4 font-medium w-12">2</th>
+                <th className="py-3 px-4 font-medium w-12">3</th>
+                <th className="py-3 px-4 font-medium w-12">4</th>
                 {game.scores.visitors.linescore && game.scores.visitors.linescore.length > 4 && (
-                  <th className="py-3 px-4 text-center text-gray-400 font-semibold text-sm">OT</th>
+                  <th className="py-3 px-4 font-medium w-12">OT</th>
                 )}
-                <th className="py-3 px-4 text-center text-blue-400 font-bold text-sm">Total</th>
+                <th className="py-3 px-4 font-medium w-14 text-white">T</th>
               </tr>
             </thead>
-            <tbody>
-              <tr className="border-b border-white/5">
-                <td className="py-4 px-4 text-white font-semibold text-left">
-                  {game.teams.visitors.nickname}
+            <tbody className="text-gray-300">
+              <tr className="border-t border-white/5">
+                <td className="py-3 px-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <img src={game.teams.visitors.logo} alt="" className="w-5 h-5 object-contain" />
+                    <span className="text-white text-sm">{game.teams.visitors.nickname}</span>
+                  </div>
                 </td>
-                <td className="py-4 px-4 text-center text-gray-300">
-                  {game.scores.visitors.linescore?.[0] ?? 0}
-                </td>
-                <td className="py-4 px-4 text-center text-gray-300">
-                  {game.scores.visitors.linescore?.[1] ?? 0}
-                </td>
-                <td className="py-4 px-4 text-center text-gray-300">
-                  {game.scores.visitors.linescore?.[2] ?? 0}
-                </td>
-                <td className="py-4 px-4 text-center text-gray-300">
-                  {game.scores.visitors.linescore?.[3] ?? 0}
-                </td>
+                <td className="py-3 px-4 tabular-nums">{game.scores.visitors.linescore?.[0] ?? 0}</td>
+                <td className="py-3 px-4 tabular-nums">{game.scores.visitors.linescore?.[1] ?? 0}</td>
+                <td className="py-3 px-4 tabular-nums">{game.scores.visitors.linescore?.[2] ?? 0}</td>
+                <td className="py-3 px-4 tabular-nums">{game.scores.visitors.linescore?.[3] ?? 0}</td>
                 {game.scores.visitors.linescore && game.scores.visitors.linescore.length > 4 && (
-                  <td className="py-4 px-4 text-center text-gray-300">
-                    {game.scores.visitors.linescore[4]}
-                  </td>
+                  <td className="py-3 px-4 tabular-nums">{game.scores.visitors.linescore[4]}</td>
                 )}
-                <td className="py-4 px-4 text-center text-blue-400 font-bold text-lg">
-                  {game.scores.visitors.points ?? 0}
-                </td>
+                <td className="py-3 px-4 text-white font-semibold tabular-nums">{game.scores.visitors.points ?? 0}</td>
               </tr>
-              <tr>
-                <td className="py-4 px-4 text-white font-semibold text-left">
-                  {game.teams.home.nickname}
+              <tr className="border-t border-white/5">
+                <td className="py-3 px-4 text-left">
+                  <div className="flex items-center gap-2">
+                    <img src={game.teams.home.logo} alt="" className="w-5 h-5 object-contain" />
+                    <span className="text-white text-sm">{game.teams.home.nickname}</span>
+                  </div>
                 </td>
-                <td className="py-4 px-4 text-center text-gray-300">
-                  {game.scores.home.linescore?.[0] ?? 0}
-                </td>
-                <td className="py-4 px-4 text-center text-gray-300">
-                  {game.scores.home.linescore?.[1] ?? 0}
-                </td>
-                <td className="py-4 px-4 text-center text-gray-300">
-                  {game.scores.home.linescore?.[2] ?? 0}
-                </td>
-                <td className="py-4 px-4 text-center text-gray-300">
-                  {game.scores.home.linescore?.[3] ?? 0}
-                </td>
+                <td className="py-3 px-4 tabular-nums">{game.scores.home.linescore?.[0] ?? 0}</td>
+                <td className="py-3 px-4 tabular-nums">{game.scores.home.linescore?.[1] ?? 0}</td>
+                <td className="py-3 px-4 tabular-nums">{game.scores.home.linescore?.[2] ?? 0}</td>
+                <td className="py-3 px-4 tabular-nums">{game.scores.home.linescore?.[3] ?? 0}</td>
                 {game.scores.home.linescore && game.scores.home.linescore.length > 4 && (
-                  <td className="py-4 px-4 text-center text-gray-300">
-                    {game.scores.home.linescore[4]}
-                  </td>
+                  <td className="py-3 px-4 tabular-nums">{game.scores.home.linescore[4]}</td>
                 )}
-                <td className="py-4 px-4 text-center text-blue-400 font-bold text-lg">
-                  {game.scores.home.points ?? 0}
-                </td>
+                <td className="py-3 px-4 text-white font-semibold tabular-nums">{game.scores.home.points ?? 0}</td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* Officials Section */}
-      {game.officials && game.officials.length > 0 && (
-        <div className="bg-black/30 rounded-xl p-5 mb-6 border border-white/5">
-          <div className="flex items-center gap-3 mb-3">
-            <span className="text-2xl">👨‍⚖️</span>
-            <h4 className="text-white font-bold">Officials</h4>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {game.officials.map((official: string, idx: number) => (
-              <span key={idx} className="bg-white/5 text-gray-300 text-sm px-3 py-1 rounded-full">
-                {official}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Top Performers Section */}
+      {/* Top Performers */}
       {playerStats.length > 0 && (
-        <div className="bg-black/30 rounded-xl p-6 border border-white/5">
-          <h3 className="text-lg font-bold text-white mb-6 text-center">Top Performers</h3>
+        <div className="bg-[#111] rounded-xl border border-white/5 overflow-hidden">
+          <div className="px-4 py-3 border-b border-white/5">
+            <h3 className="text-white text-sm font-medium">Top Performers</h3>
+          </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-white/5">
             {/* Visitors Top Performers */}
-            <div>
-              <h4 className="text-blue-400 font-bold mb-4 text-center">{game.teams.visitors.nickname}</h4>
-              <div className="space-y-3">
+            <div className="p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <img src={game.teams.visitors.logo} alt="" className="w-4 h-4 object-contain" />
+                <span className="text-gray-500 text-xs">{game.teams.visitors.nickname}</span>
+              </div>
+              <div className="space-y-2">
                 {playerStats
                   .filter((p: any) => p.team.id === game.teams.visitors.id)
                   .sort((a: any, b: any) => (b.points || 0) - (a.points || 0))
-                  .slice(0, 5)
+                  .slice(0, 3)
                   .map((player: any, idx: number) => (
-                    <div key={idx} className="bg-white/5 rounded-lg p-3 hover:bg-white/10 transition-colors">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
-                            <span className="text-blue-400 font-bold text-sm">{idx + 1}</span>
-                          </div>
-                          <div>
-                            <div className="text-white font-semibold text-sm">
-                              {player.player.firstname} {player.player.lastname}
-                            </div>
-                            <div className="text-gray-400 text-xs">{player.pos || 'N/A'}</div>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-white font-bold">{player.points || 0} pts</div>
-                          <div className="text-gray-400 text-xs">
-                            {player.totReb || 0}R • {player.assists || 0}A
-                          </div>
-                        </div>
+                    <div key={idx} className="flex items-center justify-between py-2 hover:bg-white/[0.02] transition-colors rounded px-2 -mx-2">
+                      <span className="text-white text-sm">{player.player.firstname} {player.player.lastname}</span>
+                      <div className="flex items-center gap-3 text-xs text-gray-500">
+                        <span className="text-white font-medium">{player.points || 0} pts</span>
+                        <span>{player.totReb || 0} reb</span>
+                        <span>{player.assists || 0} ast</span>
                       </div>
                     </div>
                   ))}
@@ -327,33 +265,23 @@ export async function NBAMatchByIdHandler({ id }: { id: string }) {
             </div>
 
             {/* Home Top Performers */}
-            <div>
-              <h4 className="text-blue-400 font-bold mb-4 text-center">{game.teams.home.nickname}</h4>
-              <div className="space-y-3">
+            <div className="p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <img src={game.teams.home.logo} alt="" className="w-4 h-4 object-contain" />
+                <span className="text-gray-500 text-xs">{game.teams.home.nickname}</span>
+              </div>
+              <div className="space-y-2">
                 {playerStats
                   .filter((p: any) => p.team.id === game.teams.home.id)
                   .sort((a: any, b: any) => (b.points || 0) - (a.points || 0))
-                  .slice(0, 5)
+                  .slice(0, 3)
                   .map((player: any, idx: number) => (
-                    <div key={idx} className="bg-white/5 rounded-lg p-3 hover:bg-white/10 transition-colors">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
-                            <span className="text-blue-400 font-bold text-sm">{idx + 1}</span>
-                          </div>
-                          <div>
-                            <div className="text-white font-semibold text-sm">
-                              {player.player.firstname} {player.player.lastname}
-                            </div>
-                            <div className="text-gray-400 text-xs">{player.pos || 'N/A'}</div>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-white font-bold">{player.points || 0} pts</div>
-                          <div className="text-gray-400 text-xs">
-                            {player.totReb || 0}R • {player.assists || 0}A
-                          </div>
-                        </div>
+                    <div key={idx} className="flex items-center justify-between py-2 hover:bg-white/[0.02] transition-colors rounded px-2 -mx-2">
+                      <span className="text-white text-sm">{player.player.firstname} {player.player.lastname}</span>
+                      <div className="flex items-center gap-3 text-xs text-gray-500">
+                        <span className="text-white font-medium">{player.points || 0} pts</span>
+                        <span>{player.totReb || 0} reb</span>
+                        <span>{player.assists || 0} ast</span>
                       </div>
                     </div>
                   ))}
@@ -362,6 +290,7 @@ export async function NBAMatchByIdHandler({ id }: { id: string }) {
           </div>
         </div>
       )}
+
     </div>
   )
 }

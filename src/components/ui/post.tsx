@@ -36,7 +36,7 @@ function formatTimeAgo(date: Date) {
   return date.toLocaleDateString();
 }
 
-export default function Post({ post, onDelete }: { post: FeedPost; onDelete?: () => void }) {
+export default function Post({ post, onDelete, showDeleteButton = false }: { post: FeedPost; onDelete?: () => void; showDeleteButton?: boolean }) {
   const [isLiked, setIsLiked] = useState(post.isLiked ?? false);
   const [likeCount, setLikeCount] = useState(post.likeCount);
   const [commentCount, setCommentCount] = useState(post.commentCount);
@@ -232,6 +232,17 @@ export default function Post({ post, onDelete }: { post: FeedPost; onDelete?: ()
                 <FaShare className="w-4 h-4" />
               </div>
             </button>
+
+            {showDeleteButton && onDelete && (
+              <button
+                onClick={(e) => { e.stopPropagation(); handleDelete(); }}
+                className="flex items-center gap-2 hover:text-red-500 transition-colors group ml-auto"
+              >
+                <div className="p-2 rounded-full group-hover:bg-red-500/10 transition-colors">
+                  <FaTrash className="w-4 h-4" />
+                </div>
+              </button>
+            )}
           </div>
 
           {/* Comments Section */}

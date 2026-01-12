@@ -54,7 +54,10 @@ export default async function CricketMatchesHandler() {
                         const team1Innings = match.matchScore?.team1Score?.inngs1;
                         const team2Innings = match.matchScore?.team2Score?.inngs1;
 
-                        const runsOnly = (innings: any) => innings?.runs ?? 0;
+                        const formatScore = (innings: any) => {
+                            if (!innings) return '-';
+                            return `${innings.runs ?? 0}/${innings.wickets ?? 0}`;
+                        };
                         const wickets = (innings: any) => innings?.wickets ?? 0;
                         const overs = (innings: any) => innings?.overs ? `${innings.overs} ov` : '';
 
@@ -80,18 +83,17 @@ export default async function CricketMatchesHandler() {
                                 homeTeam={{
                                     name: info.team1.teamName,
                                     logo: team1Logo,
-                                    goals: runsOnly(team1Innings),
+                                    goals: formatScore(team1Innings),
                                 }}
                                 awayTeam={{
                                     name: info.team2.teamName,
                                     logo: team2Logo,
-                                    goals: runsOnly(team2Innings),
+                                    goals: formatScore(team2Innings),
                                 }}
                                 status={{
                                     long: statusLong,
                                     short: statusText,
                                 }}
-                                venue={`${venue?.ground ?? 'Venue TBA'}${venue?.city ? `, ${venue.city}` : ''}`}
                                 href={`../match/cr${info.matchId}`}
                             />
                         );
@@ -216,136 +218,145 @@ function CricketMatchUI({
     const t1Score2 = formatScore(team1Score2);
     const t2Score2 = formatScore(team2Score2);
 
+    const isLive = !(info.state?.toLowerCase().includes('complete') || info.status?.toLowerCase().includes('won'));
+    const isComplete = info.state?.toLowerCase().includes('complete') || info.status?.toLowerCase().includes('won');
+
     return (
-        <div className="bg-[#1a1a1a] w-full border border-white/10 rounded-3xl p-6 md:p-8 shadow-2xl space-y-6">
-            {/* Header with Series & Venue */}
-            <div className="text-center">
-                <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-900/20 border border-green-400/30 rounded-full mb-3">
-                    <span className="text-2xl">🏏</span>
-                    <span className="text-green-400 font-bold text-lg">{info.seriesname || info.seriesName}</span>
+        <div className="w-full space-y-4 p-4 md:p-6">
+            
+            {/* Header */}
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <span className="text-xl">🏏</span>
+                    <div>
+                        <h1 className="text-white font-semibold text-lg">{info.seriesname || info.seriesName}</h1>
+                        <p className="text-gray-500 text-sm">{info.matchdesc || info.matchDesc}</p>
+                    </div>
                 </div>
-                <p className="text-gray-400 text-sm flex items-center justify-center gap-2">
-                    <span>🏟️</span>
-                    {info.venueinfo?.ground || info.venueInfo?.ground}, {info.venueinfo?.city || info.venueInfo?.city}
-                </p>
+                <div className={`px-3 py-1.5 rounded-full text-xs font-semibold ${
+                    isLive 
+                        ? 'bg-green-500/10 text-green-400 border border-green-500/20' 
+                        : isComplete 
+                            ? 'bg-gray-500/10 text-gray-400 border border-gray-500/20' 
+                            : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+                }`}>
+                    {isLive && <span className="inline-block w-1.5 h-1.5 bg-green-400 rounded-full mr-2 animate-pulse" />}
+                    {isComplete ? "Completed" : isLive ? "Live" : "Scheduled"}
+                </div>
             </div>
 
-            {/* Main Score Display */}
-            <div className="bg-gradient-to-br from-green-900/10 to-transparent rounded-2xl p-6 border border-green-500/10">
-                <div className="flex items-center justify-between gap-4">
+            {/* Venue */}
+            <div className="flex items-center gap-2 text-gray-400 text-sm">
+                <span>📍</span>
+                <span>{info.venueinfo?.ground || info.venueInfo?.ground}, {info.venueinfo?.city || info.venueInfo?.city}</span>
+            </div>
+
+            {/* Main Scoreboard */}
+            <div className="bg-[#111] rounded-2xl p-6 md:p-8 border border-white/5">
+                <div className="grid grid-cols-3 items-center">
                     {/* Team 1 */}
-                    <div className="flex-1 text-center">
+                    <div className="text-center">
                         <img 
                             src={team1Logo} 
                             alt={info.team1?.teamname || info.team1?.teamName} 
-                            className="w-20 h-20 md:w-24 md:h-24 mx-auto object-contain mb-3 rounded-full bg-black/20 p-2" 
+                            className="w-16 h-16 md:w-24 md:h-24 mx-auto object-contain mb-3 rounded-full bg-black/20" 
                         />
-                        <h2 className="text-lg md:text-xl font-bold text-white mb-1">
-                            {info.team1?.teamname || info.team1?.teamName}
+                        <h2 className="text-white font-medium text-sm md:text-base mb-1">
+                            {info.team1?.teamsname || info.team1?.teamSName || info.team1?.teamname || info.team1?.teamName}
                         </h2>
-                        <p className="text-gray-500 text-sm mb-2">{info.team1?.teamsname || info.team1?.teamSName}</p>
                         
                         {t1Score ? (
-                            <>
-                                <div className="text-4xl md:text-5xl font-black text-green-400">
-                                    {t1Score.runs}
-                                    <span className="text-2xl md:text-3xl text-gray-400">/{t1Score.wickets}</span>
-                                </div>
+                            <div className="mt-2">
+                                <p className="text-4xl md:text-5xl font-bold text-white tabular-nums">
+                                    {t1Score.runs}<span className="text-2xl md:text-3xl text-gray-500">/{t1Score.wickets}</span>
+                                </p>
                                 {t1Score.overs > 0 && (
-                                    <p className="text-gray-400 text-sm mt-1">({t1Score.overs} ov)</p>
+                                    <p className="text-gray-500 text-sm mt-1">({t1Score.overs} ov)</p>
                                 )}
-                                {/* Second innings for test matches */}
                                 {t1Score2 && (
-                                    <div className="mt-2 text-xl text-gray-300">
+                                    <p className="text-gray-400 text-lg mt-1 tabular-nums">
                                         & {t1Score2.runs}/{t1Score2.wickets}
-                                        <span className="text-sm text-gray-500 ml-1">({t1Score2.overs} ov)</span>
-                                    </div>
+                                        <span className="text-xs text-gray-500 ml-1">({t1Score2.overs} ov)</span>
+                                    </p>
                                 )}
-                            </>
+                            </div>
                         ) : (
-                            <div className="text-2xl text-gray-500">Yet to bat</div>
+                            <p className="text-gray-500 text-lg mt-2">Yet to bat</p>
                         )}
                     </div>
 
-                    {/* VS Divider */}
-                    <div className="flex flex-col items-center px-2 md:px-4">
-                        <div className="text-gray-600 font-bold text-lg">VS</div>
-                        <div className="h-12 w-px bg-gradient-to-b from-transparent via-green-500/30 to-transparent my-2"></div>
-                        <span className={`text-xs font-bold px-3 py-1 rounded-full ${
-                            info.state?.toLowerCase().includes('complete') || info.status?.toLowerCase().includes('won')
-                                ? "bg-gray-700 text-gray-300" 
-                                : "bg-green-500/20 text-green-400 animate-pulse"
-                        }`}>
-                            {info.state?.toLowerCase().includes('complete') ? "COMPLETED" : "LIVE"}
-                        </span>
+                    {/* Divider */}
+                    <div className="flex flex-col items-center gap-2">
+                        <div className="w-px h-12 bg-white/10" />
+                        <span className="text-gray-600 text-xs font-medium tracking-widest">VS</span>
+                        <div className="w-px h-12 bg-white/10" />
                     </div>
 
                     {/* Team 2 */}
-                    <div className="flex-1 text-center">
+                    <div className="text-center">
                         <img 
                             src={team2Logo} 
                             alt={info.team2?.teamname || info.team2?.teamName} 
-                            className="w-20 h-20 md:w-24 md:h-24 mx-auto object-contain mb-3 rounded-full bg-black/20 p-2" 
+                            className="w-16 h-16 md:w-24 md:h-24 mx-auto object-contain mb-3 rounded-full bg-black/20" 
                         />
-                        <h2 className="text-lg md:text-xl font-bold text-white mb-1">
-                            {info.team2?.teamname || info.team2?.teamName}
+                        <h2 className="text-white font-medium text-sm md:text-base mb-1">
+                            {info.team2?.teamsname || info.team2?.teamSName || info.team2?.teamname || info.team2?.teamName}
                         </h2>
-                        <p className="text-gray-500 text-sm mb-2">{info.team2?.teamsname || info.team2?.teamSName}</p>
                         
                         {t2Score ? (
-                            <>
-                                <div className="text-4xl md:text-5xl font-black text-green-400">
-                                    {t2Score.runs}
-                                    <span className="text-2xl md:text-3xl text-gray-400">/{t2Score.wickets}</span>
-                                </div>
+                            <div className="mt-2">
+                                <p className="text-4xl md:text-5xl font-bold text-white tabular-nums">
+                                    {t2Score.runs}<span className="text-2xl md:text-3xl text-gray-500">/{t2Score.wickets}</span>
+                                </p>
                                 {t2Score.overs > 0 && (
-                                    <p className="text-gray-400 text-sm mt-1">({t2Score.overs} ov)</p>
+                                    <p className="text-gray-500 text-sm mt-1">({t2Score.overs} ov)</p>
                                 )}
-                                {/* Second innings for test matches */}
                                 {t2Score2 && (
-                                    <div className="mt-2 text-xl text-gray-300">
+                                    <p className="text-gray-400 text-lg mt-1 tabular-nums">
                                         & {t2Score2.runs}/{t2Score2.wickets}
-                                        <span className="text-sm text-gray-500 ml-1">({t2Score2.overs} ov)</span>
-                                    </div>
+                                        <span className="text-xs text-gray-500 ml-1">({t2Score2.overs} ov)</span>
+                                    </p>
                                 )}
-                            </>
+                            </div>
                         ) : (
-                            <div className="text-2xl text-gray-500">Yet to bat</div>
+                            <p className="text-gray-500 text-lg mt-2">Yet to bat</p>
                         )}
                     </div>
                 </div>
 
                 {/* Match Status */}
                 {info.status && (
-                    <div className="mt-4 pt-4 border-t border-white/10 text-center">
-                        <p className="text-orange-400 font-semibold">{info.status.split('-')[0]}</p>
+                    <div className="mt-6 pt-4 border-t border-white/5 text-center">
+                        <p className="text-gray-400 text-sm">{info.status.split('-')[0]}</p>
                     </div>
                 )}
             </div>
 
-            {/* Key Stats Row */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div className="bg-black/20 rounded-xl p-4 border border-white/5 text-center">
-                    <div className="text-gray-500 text-xs uppercase mb-1">Run Rate</div>
-                    <div className="text-green-400 font-bold text-2xl">{crr}</div>
-                </div>
-                <div className="bg-black/20 rounded-xl p-4 border border-white/5 text-center">
-                    <div className="text-gray-500 text-xs uppercase mb-1">Format</div>
-                    <div className="text-white font-bold text-lg">{info.matchformat || info.matchFormat}</div>
-                </div>
-                {info.tossstatus && (
-                    <div className="bg-black/20 rounded-xl p-4 border border-white/5 text-center col-span-2">
-                        <div className="text-gray-500 text-xs uppercase mb-1">Toss</div>
-                        <div className="text-white font-semibold text-sm">{info.tossstatus}</div>
+            {/* Quick Stats */}
+            <div className="bg-[#111] rounded-xl border border-white/5 overflow-hidden">
+                <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-white/5">
+                    <div className="p-4 text-center">
+                        <div className="text-gray-500 text-xs mb-1">Run Rate</div>
+                        <div className="text-white font-semibold tabular-nums">{crr}</div>
                     </div>
-                )}
+                    <div className="p-4 text-center">
+                        <div className="text-gray-500 text-xs mb-1">Format</div>
+                        <div className="text-white font-semibold">{info.matchformat || info.matchFormat}</div>
+                    </div>
+                    <div className="p-4 text-center col-span-2">
+                        <div className="text-gray-500 text-xs mb-1">Toss</div>
+                        <div className="text-white text-sm">{info.tossstatus || '-'}</div>
+                    </div>
+                </div>
             </div>
 
             {/* Match Details */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-black/30 rounded-xl p-5 border border-white/5">
-                    <h3 className="text-sm font-bold text-gray-400 mb-3 uppercase tracking-wide">Match Info</h3>
-                    <div className="space-y-2 text-sm">
+                <div className="bg-[#111] rounded-xl border border-white/5 overflow-hidden">
+                    <div className="px-4 py-3 border-b border-white/5">
+                        <h3 className="text-white text-sm font-medium">Match Info</h3>
+                    </div>
+                    <div className="p-4 space-y-3 text-sm">
                         <div className="flex justify-between">
                             <span className="text-gray-500">Match</span>
                             <span className="text-white">{info.matchdesc || info.matchDesc}</span>
@@ -362,9 +373,11 @@ function CricketMatchUI({
                 </div>
 
                 {(info.venueinfo || info.venueInfo) && (
-                    <div className="bg-black/30 rounded-xl p-5 border border-white/5">
-                        <h3 className="text-sm font-bold text-gray-400 mb-3 uppercase tracking-wide">Venue</h3>
-                        <div className="space-y-2 text-sm">
+                    <div className="bg-[#111] rounded-xl border border-white/5 overflow-hidden">
+                        <div className="px-4 py-3 border-b border-white/5">
+                            <h3 className="text-white text-sm font-medium">Venue</h3>
+                        </div>
+                        <div className="p-4 space-y-3 text-sm">
                             <div className="flex justify-between">
                                 <span className="text-gray-500">Ground</span>
                                 <span className="text-white">{info.venueinfo?.ground || info.venueInfo?.ground}</span>
@@ -388,45 +401,6 @@ function CricketMatchUI({
                 )}
             </div>
 
-            {/* Match Officials */}
-            {(info.umpire1 || info.umpire2 || info.referee) && (
-                <div className="bg-black/30 rounded-xl p-5 border border-white/5">
-                    <h3 className="text-sm font-bold text-gray-400 mb-3 uppercase tracking-wide">Match Officials</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                        {info.umpire1 && (
-                            <div className="flex justify-between">
-                                <span className="text-gray-500">Umpire 1</span>
-                                <span className="text-white">{info.umpire1.name} ({info.umpire1.country})</span>
-                            </div>
-                        )}
-                        {info.umpire2 && (
-                            <div className="flex justify-between">
-                                <span className="text-gray-500">Umpire 2</span>
-                                <span className="text-white">{info.umpire2.name} ({info.umpire2.country})</span>
-                            </div>
-                        )}
-                        {info.umpire3 && (
-                            <div className="flex justify-between">
-                                <span className="text-gray-500">TV Umpire</span>
-                                <span className="text-white">{info.umpire3.name} ({info.umpire3.country})</span>
-                            </div>
-                        )}
-                        {info.referee && (
-                            <div className="flex justify-between">
-                                <span className="text-gray-500">Referee</span>
-                                <span className="text-white">{info.referee.name} ({info.referee.country})</span>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )}
-
-            {/* No Score Available Message */}
-            {!matchScore && (
-                <div className="bg-yellow-900/20 border border-yellow-500/30 rounded-xl p-4 text-center">
-                    <p className="text-yellow-400 text-sm">📊 Detailed scorecard will be available once the match starts</p>
-                </div>
-            )}
         </div>
     );
 }
