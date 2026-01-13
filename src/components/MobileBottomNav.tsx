@@ -86,7 +86,7 @@ export default function MobileBottomNav() {
                     }`}
                 style={{ maxHeight: '70vh' }}
             >
-                <div className="p-4">
+                <div className="px-4">
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-white text-lg font-bold">Trending</h2>
                         <button

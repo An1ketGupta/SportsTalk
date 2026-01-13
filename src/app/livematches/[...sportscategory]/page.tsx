@@ -118,7 +118,7 @@ export default function LiveMatches({ params }: any) {
   return (
     <div className="min-h-[90vh] w-full bg-black text-white flex flex-col">
       {/* Header */}
-      <div className="sticky top-0 z-40 border-b border-white/10 bg-black/90 backdrop-blur-md">
+      <div className="sticky top-0 z-50 border-b border-white/10 bg-black/90 backdrop-blur-md">
         <div className="px-4 py-4 md:px-12 md:py-6">
           {/* Title Section */}
           <div className="flex items-center gap-3 mb-4">

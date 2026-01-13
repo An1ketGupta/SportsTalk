@@ -204,12 +204,12 @@ export default function Match({ params }: any) {
     <div className="min-h-screen bg-[#0a0a0a] text-white">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-[#0a0a0a]/90 backdrop-blur-md border-b border-white/5">
-        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+        <div className="max-w-[1800px] mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-14 sm:h-16 gap-2">
             {/* Back Button */}
             <Link
               href={`/livematches/${sportInfo.name.toLowerCase().replace(" ", "_")}`}
-              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
+              className="flex items-center gap-1.5 sm:gap-2 text-gray-400 hover:text-white transition-colors group flex-shrink-0"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -221,26 +221,26 @@ export default function Match({ params }: any) {
               >
                 <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
               </svg>
-              <span className="text-sm font-medium">Back to matches</span>
+              <span className="text-sm font-medium hidden sm:inline">Back to matches</span>
             </Link>
 
             {/* Sport Badge */}
-            <div className="flex items-center gap-3">
-              <div className={`flex items-center gap-2 px-4 py-1.5 rounded-full bg-${sportInfo.color}-500/10 border border-${sportInfo.color}-500/20`}>
-                <span className="text-lg">{sportInfo.emoji}</span>
-                <span className={`text-sm font-semibold text-${sportInfo.color}-400`}>{sportInfo.name}</span>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-full bg-${sportInfo.color}-500/10 border border-${sportInfo.color}-500/20`}>
+                <span className="text-base sm:text-lg">{sportInfo.emoji}</span>
+                <span className={`text-xs sm:text-sm font-semibold text-${sportInfo.color}-400 hidden xs:inline`}>{sportInfo.name}</span>
               </div>
               {/* Live Indicator */}
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-500/10 border border-red-500/20">
-                <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                <span className="text-xs font-semibold text-red-400 uppercase tracking-wider">Live</span>
+              <div className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-red-500/10 border border-red-500/20">
+                <div className="w-1.5 sm:w-2 h-1.5 sm:h-2 bg-red-500 rounded-full animate-pulse" />
+                <span className="text-[10px] sm:text-xs font-semibold text-red-400 uppercase tracking-wider">Live</span>
               </div>
             </div>
 
             {/* Refresh Button */}
             <button
               onClick={() => window.location.reload()}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all hover:scale-105"
+              className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all hover:scale-105 flex-shrink-0"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -252,19 +252,19 @@ export default function Match({ params }: any) {
               >
                 <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
               </svg>
-              <span className="text-sm font-medium">Refresh</span>
+              <span className="text-sm font-medium hidden sm:inline">Refresh</span>
             </button>
           </div>
         </div>
       </header>
 
       {/* Main Content Grid */}
-      <main className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 lg:gap-8">
+      <main className="max-w-[1800px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 sm:gap-6 lg:gap-8">
           {/* Match Details Section */}
-          <div className="xl:col-span-7 2xl:col-span-8">
+          <div className="xl:col-span-7 2xl:col-span-8 min-w-0">
             {loading ? (
-              <div className="flex flex-col items-center justify-center py-32 bg-[#111] rounded-2xl border border-white/5">
+              <div className="flex flex-col items-center justify-center py-16 sm:py-32 bg-[#111] rounded-2xl border border-white/5">
                 <div className="relative">
                   <div className="h-10 w-10 rounded-full border-2 border-white/10" />
                   <div className="absolute inset-0 h-10 w-10 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
@@ -272,15 +272,15 @@ export default function Match({ params }: any) {
                 <p className="mt-5 text-sm text-gray-400">Loading match details...</p>
               </div>
             ) : (
-              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 overflow-x-auto">
                 {MatchesDiv}
               </div>
             )}
           </div>
 
           {/* Chat Section */}
-          <div className="xl:col-span-5 2xl:col-span-4">
-            <div className="sticky top-24">
+          <div className="xl:col-span-5 2xl:col-span-4 min-w-0">
+            <div className="xl:sticky xl:top-24">
               <div className="animate-in fade-in slide-in-from-right-4 duration-500 delay-150">
                 <ChatBox
                   matchId={matchId}
