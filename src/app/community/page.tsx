@@ -64,11 +64,11 @@ export default function CommunityPage() {
       } else {
         setLoading(true);
       }
-      
+
       let endpoint: string;
       const params = new URLSearchParams();
       params.set("limit", POSTS_PER_PAGE.toString());
-      
+
       if (tab === "foryou") {
         endpoint = "/api/feed/recommendations";
         if (cursor) params.set("cursor", cursor);
@@ -77,14 +77,14 @@ export default function CommunityPage() {
         params.set("type", "following");
         if (cursor) params.set("cursor", cursor);
       }
-      
+
       const res = await fetch(`${endpoint}?${params.toString()}`, {
         cache: "no-store",
       });
-      
+
       if (!res.ok) throw new Error("Failed to load feed");
       const data = await res.json();
-      
+
       if (cursor) {
         setPosts(prev => {
           const existingIds = new Set(prev.map(p => p.id));
@@ -94,9 +94,9 @@ export default function CommunityPage() {
       } else {
         setPosts(data.posts ?? []);
       }
-      
+
       setNextCursor(data.nextCursor ?? null);
-      
+
       if (tab === "following") {
         setHasTriedFollowing(true);
         if (typeof data.followingCount === "number") {
@@ -170,20 +170,19 @@ export default function CommunityPage() {
   }, [activeTab, loadFeed]);
 
   return (
-    <div className="w-full h-[90vh] flex">
+    <div className="w-full min-h-screen flex">
       <div>
         <Sidebar setAddPost={setTweetBox} />
       </div>
 
-      <div className="border-r max-w-[88vh] border-white border-opacity-20 overflow-y-auto scrollbar-hide flex-1">
+      <div className="border-r border-white border-opacity-20 overflow-y-auto scrollbar-hide flex-1 w-full md:max-w-xl lg:max-w-2xl">
         <div className="sticky top-0 bg-black/20 backdrop-blur-md border-none flex items-center z-10">
           <Button
             onClick={() => setActiveTab("foryou")}
-            className={`${
-              activeTab === "foryou"
+            className={`${activeTab === "foryou"
                 ? "bg-[#dfe6e9] text-black"
                 : "bg-black/20 text-white"
-            } w-full hover:bg-[#dfe6e9] hover:text-black rounded-sm flex items-center justify-center gap-1`}
+              } w-full hover:bg-[#dfe6e9] hover:text-black rounded-sm flex items-center justify-center gap-1`}
           >
             <FiStar className="w-4 h-4" />
             For You
@@ -191,11 +190,10 @@ export default function CommunityPage() {
 
           <Button
             onClick={() => setActiveTab("following")}
-            className={`${
-              activeTab === "following"
+            className={`${activeTab === "following"
                 ? "bg-[#dfe6e9] text-black"
                 : "bg-black/20 text-white"
-            } w-full hover:bg-[#dfe6e9] hover:text-black rounded-sm flex items-center justify-center gap-1`}
+              } w-full hover:bg-[#dfe6e9] hover:text-black rounded-sm flex items-center justify-center gap-1`}
           >
             <FiUsers className="w-4 h-4" />
             Following
@@ -237,8 +235,8 @@ export default function CommunityPage() {
                   {followingCount === 0
                     ? "You're not following anyone yet"
                     : selectedSport !== "All"
-                    ? `No ${selectedSport} posts from people you follow`
-                    : "No posts from people you follow"}
+                      ? `No ${selectedSport} posts from people you follow`
+                      : "No posts from people you follow"}
                 </p>
                 <p className="text-sm mt-1 max-w-xs">
                   Follow other fans to see their posts in your Following feed.

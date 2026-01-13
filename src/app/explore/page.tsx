@@ -64,7 +64,7 @@ export default function ExplorePage() {
   const handleFollow = async (userId: string) => {
     try {
       const previousState = followingStates[userId] ?? false;
-      
+
       setFollowingStates({
         ...followingStates,
         [userId]: !previousState,
@@ -93,12 +93,12 @@ export default function ExplorePage() {
   };
 
   return (
-    <div className="w-full h-[90vh] flex">
+    <div className="w-full min-h-screen flex">
       <div>
         <Sidebar />
       </div>
 
-      <div className="border-r max-w-[88vh] border-white border-opacity-20 overflow-y-auto scrollbar-hide flex-1">
+      <div className="border-r border-white border-opacity-20 overflow-y-auto scrollbar-hide flex-1 w-full md:max-w-xl lg:max-w-2xl">
         {/* Search Header */}
         <div className="sticky top-0 bg-black/80 backdrop-blur-md z-10 p-4">
           <div className="relative">
@@ -121,21 +121,19 @@ export default function ExplorePage() {
           <div className="flex mt-4 border-b border-gray-800">
             <button
               onClick={() => setActiveTab("posts")}
-              className={`flex-1 py-3 text-center font-semibold transition-colors ${
-                activeTab === "posts"
+              className={`flex-1 py-3 text-center font-semibold transition-colors ${activeTab === "posts"
                   ? "text-white border-b-2 border-blue-500"
                   : "text-gray-500 hover:bg-gray-900"
-              }`}
+                }`}
             >
               Posts ({posts.length})
             </button>
             <button
               onClick={() => setActiveTab("users")}
-              className={`flex-1 py-3 text-center font-semibold transition-colors ${
-                activeTab === "users"
+              className={`flex-1 py-3 text-center font-semibold transition-colors ${activeTab === "users"
                   ? "text-white border-b-2 border-blue-500"
                   : "text-gray-500 hover:bg-gray-900"
-              }`}
+                }`}
             >
               Users ({users.length})
             </button>
@@ -214,11 +212,10 @@ export default function ExplorePage() {
                       </Link>
                       <button
                         onClick={() => handleFollow(user.id)}
-                        className={`px-4 py-2 rounded-full font-semibold transition-colors ${
-                          followingStates[user.id]
+                        className={`px-4 py-2 rounded-full font-semibold transition-colors ${followingStates[user.id]
                             ? "bg-transparent border border-gray-600 text-white hover:bg-red-600/10 hover:border-red-600 hover:text-red-600"
                             : "bg-white text-black hover:bg-gray-200"
-                        }`}
+                          }`}
                       >
                         {followingStates[user.id] ? "Following" : "Follow"}
                       </button>

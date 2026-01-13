@@ -3,9 +3,9 @@ import { Mail, Bell, Heart } from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="bg-black border-t-[0.5px] border-gray-600 pt-20 text-gray-200 px-10 py-6">
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-10 max-w-7xl mx-auto">
-        <div className="md:col-span-2">
+    <footer className="bg-black border-t-[0.5px] border-gray-600 pt-12 sm:pt-20 text-gray-200 px-4 sm:px-6 lg:px-10 py-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-10 max-w-7xl mx-auto">
+        <div className="sm:col-span-2 lg:col-span-2">
           <div className="flex items-center gap-2 mb-4">
             <span className="font-bold text-xl">SportsTalk</span>
           </div>
@@ -13,14 +13,14 @@ export default function Footer() {
             Connect with fellow sports enthusiasts, share your thoughts, and experience live matches together in our vibrant community.
           </p>
 
-          <div className="flex gap-6 mt-6">
-            <div className="bg-black/40 rounded-2xl px-6 py-4 text-center">
-              <p className="text-2xl font-bold">10K+</p>
-              <p className="text-sm text-gray-400">Active Users</p>
+          <div className="flex flex-wrap gap-4 sm:gap-6 mt-6">
+            <div className="bg-black/40 rounded-2xl px-4 sm:px-6 py-3 sm:py-4 text-center">
+              <p className="text-xl sm:text-2xl font-bold">10K+</p>
+              <p className="text-xs sm:text-sm text-gray-400">Active Users</p>
             </div>
-            <div className="bg-black/40 rounded-2xl px-6 py-4 text-center">
-              <p className="text-2xl font-bold">24/7</p>
-              <p className="text-sm text-gray-400">Live Coverage</p>
+            <div className="bg-black/40 rounded-2xl px-4 sm:px-6 py-3 sm:py-4 text-center">
+              <p className="text-xl sm:text-2xl font-bold">24/7</p>
+              <p className="text-xs sm:text-sm text-gray-400">Live Coverage</p>
             </div>
           </div>
         </div>

@@ -2,7 +2,7 @@ import React from "react";
 
 export default function MyProfilePage() {
   return (
-    <div className="flex-1 max-w-[88vh] text-white overflow-y-auto h-[90vh] scrollbar-hide border-x border-white/10">
+    <div className="flex-1 w-full max-w-2xl text-white overflow-y-auto min-h-screen scrollbar-hide border-x border-white/10">
       <div className="sticky top-0 z-20 backdrop-blur bg-black/60">
         <div className="flex items-center gap-4 px-4 py-2">
           <button className="p-2 rounded-full hover:bg-white/10">
@@ -17,7 +17,7 @@ export default function MyProfilePage() {
         </div>
       </div>
 
-      <div className="w-full h-52 bg-neutral-800 relative">
+      <div className="w-full h-32 sm:h-44 md:h-52 bg-neutral-800 relative">
         <img
           src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1600&auto=format&fit=crop"
           alt="cover"
@@ -26,9 +26,9 @@ export default function MyProfilePage() {
       </div>
 
       <div className="px-4 relative">
-        <div className="-mt-16 flex items-end justify-between">
-          <div className="flex items-end gap-4">
-            <div className="w-32 h-32 rounded-full ring-4 ring-black overflow-hidden bg-neutral-700">
+        <div className="-mt-12 sm:-mt-16 flex items-end justify-between">
+          <div className="flex items-end gap-3 sm:gap-4">
+            <div className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full ring-4 ring-black overflow-hidden bg-neutral-700">
               <img
                 src="https://ui-avatars.com/api/?name=Aniket+Gupta&background=3b3b3b&color=ffffff&size=256"
                 alt="avatar"
@@ -37,13 +37,13 @@ export default function MyProfilePage() {
             </div>
           </div>
           <div className="flex gap-3">
-            <button className="px-4 py-2 rounded-full border border-white/30 text-white text-sm font-semibold hover:bg-white/10">Edit profile</button>
+            <button className="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full border border-white/30 text-white text-xs sm:text-sm font-semibold hover:bg-white/10">Edit profile</button>
           </div>
         </div>
 
         <div className="mt-4">
           <div className="flex items-center gap-2">
-            <div className="text-2xl font-extrabold">Aniket Gupta</div>
+            <div className="text-xl sm:text-2xl font-extrabold">Aniket Gupta</div>
           </div>
           <div className="text-neutral-400">@funnyket_</div>
           <div className="flex items-center gap-6 text-neutral-400 text-sm mt-2">

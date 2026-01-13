@@ -41,10 +41,10 @@ export default function MatchCard({
   return (
     <a
       href={href}
-      className="group block bg-gradient-to-br from-gray-900/40 to-gray-900/20 hover:from-gray-800/60 hover:to-gray-800/40 border border-white/10 hover:border-white/20 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] backdrop-blur-sm"
+      className="group block bg-gradient-to-br from-gray-900/40 to-gray-900/20 hover:from-gray-800/60 hover:to-gray-800/40 border border-white/10 hover:border-white/20 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] backdrop-blur-sm"
     >
       {/* Header - League Info */}
-      <div className="flex items-center justify-between mb-4 pb-4 border-b border-white/10">
+      <div className="flex items-center justify-between mb-3 sm:mb-4 pb-3 sm:pb-4 border-b border-white/10">
         <div className="flex items-center gap-2">
           <span className="text-xs font-semibold text-blue-400 px-3 py-1 rounded-full">
             {league.emoji || "🏆"} {league.name}
@@ -64,18 +64,18 @@ export default function MatchCard({
       </div>
 
       {/* Teams & Score */}
-      <div className="flex items-center justify-between gap-4 mb-4">
+      <div className="flex items-center justify-between gap-2 sm:gap-4 mb-3 sm:mb-4">
         {/* Home Team */}
         <div className="flex-1 flex flex-col items-center">
           <img
             src={homeTeam.logo}
             alt={homeTeam.name}
-            className="w-12 h-12 mb-2 object-contain group-hover:scale-110 transition-transform duration-300"
+            className="w-10 h-10 sm:w-12 sm:h-12 mb-2 object-contain group-hover:scale-110 transition-transform duration-300"
           />
-          <p className="text-sm font-semibold text-white text-center line-clamp-2 mb-2">
+          <p className="text-xs sm:text-sm font-semibold text-white text-center line-clamp-2 mb-2">
             {homeTeam.name}
           </p>
-          <p className="text-3xl font-extrabold text-blue-400">{homeTeam.goals}</p>
+          <p className="text-2xl sm:text-3xl font-extrabold text-blue-400">{homeTeam.goals}</p>
         </div>
 
         {/* Divider & Status */}
@@ -92,12 +92,12 @@ export default function MatchCard({
           <img
             src={awayTeam.logo}
             alt={awayTeam.name}
-            className="w-12 h-12 mb-2 object-contain group-hover:scale-110 transition-transform duration-300"
+            className="w-10 h-10 sm:w-12 sm:h-12 mb-2 object-contain group-hover:scale-110 transition-transform duration-300"
           />
-          <p className="text-sm font-semibold text-white text-center line-clamp-2 mb-2">
+          <p className="text-xs sm:text-sm font-semibold text-white text-center line-clamp-2 mb-2">
             {awayTeam.name}
           </p>
-          <p className="text-3xl font-extrabold text-blue-400">{awayTeam.goals}</p>
+          <p className="text-2xl sm:text-3xl font-extrabold text-blue-400">{awayTeam.goals}</p>
         </div>
       </div>
     </a>

@@ -12,11 +12,9 @@ export async function fetchSportsData(url: string, host: string) {
         });
 
         if (!response.ok) {
-            // Log error on server side for debugging
             console.error(`Status: ${response.status} ${response.statusText} for URL: ${url}`);
             return null;
         }
-
         return await response.json();
     } catch (error) {
         console.error("Error fetching sports data:", error);

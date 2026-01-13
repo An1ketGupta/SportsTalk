@@ -18,11 +18,6 @@ export default async function Body() {
                         <div className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl font-bold my-2">
                             Share your passion, follow your favorite sports, and connect with fans during live matches.
                         </div>
-                        <div className="flex my-2 gap-2 flex-wrap">
-                            <SquareBox height="auto" width="auto" paddingx="2vw">Tweet</SquareBox>
-                            <SquareBox height="auto" width="auto" paddingx="2vw">Scores</SquareBox>
-                            <SquareBox height="auto" width="auto" paddingx="2vw">Chat</SquareBox>
-                        </div>
                     </div>
                 </SquareBox>
                 <div className="flex h-auto flex-col justify-between gap-4 lg:gap-0">
@@ -108,29 +103,6 @@ export default async function Body() {
                     link={cat.link}
                 />
             ))}
-        </div>
-
-        {/* Join Copmmunity Section */}
-        <div className="my-8 sm:mt-20">
-            {!user?<SquareBox height="auto" width="auto" paddingx="4vw" paddingy="4vh" bg="#181818">
-                <div className="text-2xl sm:text-3xl md:text-4xl italic text-[#cfd2cc] font-semibold my-3 text-center">
-                    Join Community
-                </div>
-                <div className="text-2xl sm:text-3xl md:text-4xl italic text-[#cfd2cc] font-bold my-3 text-center">
-                    Become Part of the Action
-                </div>
-                <div className="my-3 text-sm sm:text-base md:text-lg font-semibold text-[#cfd2cc] text-center max-w-3xl mx-auto">
-                    Sign in to follow your favorite sports, participate in live chats, share your thoughts, and connect with fellow fans from around the world.
-                </div>
-                <div className="flex gap-4 mt-6 justify-center items-center">
-                    <a className="bg-red-600 h-auto w-auto px-6 py-3 font-semibold text-xl rounded-lg flex gap-2 items-center justify-center" href="/auth">
-                        SignIn to get started
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6">
-                            <path fillRule="evenodd" d="M16.72 7.72a.75.75 0 0 1 1.06 0l3.75 3.75a.75.75 0 0 1 0 1.06l-3.75 3.75a.75.75 0 1 1-1.06-1.06l2.47-2.47H3a.75.75 0 0 1 0-1.5h16.19l-2.47-2.47a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
-                        </svg>
-                    </a>
-                </div>
-            </SquareBox>:""}
         </div>
     </div>
 } 
