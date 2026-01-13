@@ -56,24 +56,6 @@ export default function Footer() {
             <li>Privacy Policy</li>
             <li>Terms of Service</li>
           </ul>
-
-          <div className="bg-black/40 rounded-2xl p-4">
-            <h3 className="font-bold mb-2">Stay Updated</h3>
-            <p className="text-gray-400 text-sm mb-3">
-              Get the latest sports news and match updates delivered to your inbox.
-            </p>
-            <ul className="space-y-2 text-sm text-gray-300">
-              <li className="flex items-center gap-2">
-                <Mail className="w-4 h-4" /> Weekly newsletter
-              </li>
-              <li className="flex items-center gap-2">
-                <Bell className="w-4 h-4" /> Match alerts
-              </li>
-              <li className="flex items-center gap-2">
-                <Heart className="w-4 h-4" /> Community highlights
-              </li>
-            </ul>
-          </div>
         </div>
       </div>
     </footer>

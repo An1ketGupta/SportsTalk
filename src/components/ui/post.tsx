@@ -20,6 +20,7 @@ export type FeedPost = {
     name: string | null;
     image: string | null;
     username: string;
+    isVerified?: boolean;
   };
 };
 
@@ -172,7 +173,7 @@ export default function Post({ post, onDelete, showDeleteButton = false }: { pos
             <div className="flex items-center gap-2 text-sm">
               <Link href={`/user/${post.author.id}`} onClick={(e) => e.stopPropagation()} className="flex items-center gap-1 font-semibold hover:underline">
                 <span>{post.author.name ?? post.author.username}</span>
-                <GoCheckCircleFill className="text-blue-500" />
+                {post.author.isVerified && <GoCheckCircleFill className="text-blue-500" />}
               </Link>
               <span className="text-[#4b4d51]">@{post.author.username}</span>
               <span className="text-[#4b4d51] text-xs">· {formatTimeAgo(createdAt)}</span>

@@ -10,13 +10,11 @@ const iconMap = {
     message: MdMessage,
     bell: MdNotifications,
     user: MdPerson,
-    sports: MdSportsSoccer,
 };
 
 const menuItems = [
     { label: "Home", icon: "home", path: "/community" },
     { label: "Explore", icon: "search", path: "/explore" },
-    { label: "Live", icon: "sports", path: "/livematches/nfl" },
     { label: "Alerts", icon: "bell", path: "/notifications" },
     { label: "Messages", icon: "message", path: "/messages" },
     { label: "Profile", icon: "user", path: "/me" },
@@ -24,6 +22,9 @@ const menuItems = [
 
 export default function MobileBottomNav() {
     const pathname = usePathname();
+
+    // Hide on landing page
+    if (pathname === "/") return null;
 
     return (
         <div className="md:hidden fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-xl border-t border-white/10 z-50 pb-safe">

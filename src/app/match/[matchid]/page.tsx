@@ -22,6 +22,27 @@ export default function Match({ params }: any) {
   const [sendmessage, setSendMessage] = useState<string>("")
   const [MatchesDiv, setMatchesDiv] = useState<JSX.Element | null>(null);
 
+  // Load messages from localStorage when matchId is set
+  useEffect(() => {
+    if (matchId) {
+      const savedMessages = localStorage.getItem(`match-chat-${matchId}`);
+      if (savedMessages) {
+        try {
+          setmessages(JSON.parse(savedMessages));
+        } catch (e) {
+          console.error("Failed to parse saved messages:", e);
+        }
+      }
+    }
+  }, [matchId]);
+
+  // Save messages to localStorage whenever they change
+  useEffect(() => {
+    if (matchId && messages.length > 0) {
+      localStorage.setItem(`match-chat-${matchId}`, JSON.stringify(messages));
+    }
+  }, [messages, matchId]);
+
   // Creating the socket client useEffect
   useEffect(() => {
     const socket = io("http://localhost:3001");
@@ -55,7 +76,7 @@ export default function Match({ params }: any) {
     async function MatchesHandler() {
       setLoading(true);
       if (matchId) {
-        let response: JSX.Element = <></>; 
+        let response: JSX.Element = <></>;
 
         const helper = matchId.slice(0, 2)
         if (helper === "nf") {
@@ -68,7 +89,7 @@ export default function Match({ params }: any) {
         else if (helper === "cr") {
           try {
             response = await CricketMatchByIdHandler({
-              id:matchId.slice(2,8)
+              id: matchId.slice(2, 8)
             });
           } catch (err) {
             console.error("Error fetching matches:", err);
@@ -77,7 +98,7 @@ export default function Match({ params }: any) {
         else if (helper === "fo") {
           try {
             response = await FootballMatchByIdHandler({
-              id:matchId.slice(2,9)
+              id: matchId.slice(2, 9)
             });
           } catch (err) {
             console.error("Error fetching matches:", err);
@@ -86,7 +107,7 @@ export default function Match({ params }: any) {
         else if (helper === "nb") {
           try {
             response = await NBAMatchByIdHandler({
-              id:matchId.slice(2,7)
+              id: matchId.slice(2, 7)
             });
           } catch (err) {
             console.error("Error fetching matches:", err);
@@ -95,7 +116,7 @@ export default function Match({ params }: any) {
         else if (helper === "tn") {
           try {
             response = await TennisMatchByIdHandler({
-              id:matchId.slice(2,10)
+              id: matchId.slice(2, 10)
             });
           } catch (err) {
             console.error("Error fetching matches:", err);
@@ -104,7 +125,7 @@ export default function Match({ params }: any) {
         else if (helper === "bb") {
           try {
             response = await BasketballMatchByIdHandler({
-              id:matchId.slice(2,7)
+              id: matchId.slice(2, 7)
             });
           } catch (err) {
             console.error("Error fetching matches:", err);
@@ -113,7 +134,7 @@ export default function Match({ params }: any) {
         else if (helper === "f1") {
           try {
             response = await F1MatchByIdHandler({
-              id:matchId.slice(2,7)
+              id: matchId.slice(2, 7)
             });
           } catch (err) {
             console.error("Error fetching matches:", err);
@@ -129,7 +150,7 @@ export default function Match({ params }: any) {
         else if (helper === "ho") {
           try {
             response = await HockeyMatchByIdHandler({
-              id:matchId.slice(2,7)
+              id: matchId.slice(2, 7)
             });
           } catch (err) {
             console.error("Error fetching matches:", err);
@@ -246,7 +267,7 @@ export default function Match({ params }: any) {
               <div className="flex flex-col items-center justify-center py-32 bg-[#111] rounded-2xl border border-white/5">
                 <div className="relative">
                   <div className="h-10 w-10 rounded-full border-2 border-white/10" />
-                  <div className="absolute inset-0 h-10 w-10 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                  <div className="absolute inset-0 h-10 w-10 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
                 </div>
                 <p className="mt-5 text-sm text-gray-400">Loading match details...</p>
               </div>

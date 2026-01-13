@@ -197,7 +197,7 @@ export default function MessagesPage() {
 
   if (!session) {
     return (
-      <div className="w-full h-[90vh] flex pb-16 md:pb-0">
+      <div className="w-full h-[calc(100dvh-3.5rem)] sm:h-[90vh] flex pb-16 md:pb-0">
         <div className="hidden md:block">
           <Sidebar />
         </div>
@@ -215,7 +215,7 @@ export default function MessagesPage() {
   }
 
   return (
-    <div className="w-full max-h-[90vh] flex pb-16 md:pb-0">
+    <div className="w-full h-[calc(100dvh-3.5rem)] sm:h-[90vh] flex pb-16 md:pb-0">
       <div className="hidden md:block">
         <Sidebar />
       </div>
@@ -223,7 +223,7 @@ export default function MessagesPage() {
       <div className="flex-1 flex border-r border-white border-opacity-20">
         {/* Conversations List */}
         <div className={`w-full md:w-80 border-r border-gray-800 flex flex-col ${selectedUserId ? "hidden md:flex" : "flex"}`}>
-          <div className="p-4 border-b border-gray-800 flex items-center justify-between">
+          <div className="p-4 border-b border-gray-800 flex items-center justify-between shrink-0">
             <h1 className="text-xl font-bold">Messages</h1>
             <button
               onClick={() => setShowNewChat(!showNewChat)}
@@ -341,9 +341,9 @@ export default function MessagesPage() {
                     alt={selectedUser.name ?? selectedUser.username}
                     className="w-10 h-10 rounded-full object-cover"
                   />
-                  <div>
-                    <p className="font-semibold">{selectedUser.name ?? selectedUser.username}</p>
-                    <p className="text-sm text-gray-500">@{selectedUser.username}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold truncate">{selectedUser.name ?? selectedUser.username}</p>
+                    <p className="text-sm text-gray-500 truncate">@{selectedUser.username}</p>
                   </div>
                 </Link>
               </div>

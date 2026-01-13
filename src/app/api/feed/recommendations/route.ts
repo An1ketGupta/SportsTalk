@@ -81,9 +81,9 @@ export async function GET(req: NextRequest) {
         },
         likes: currentUserId
           ? {
-              where: { userId: currentUserId },
-              select: { userId: true },
-            }
+            where: { userId: currentUserId },
+            select: { userId: true },
+          }
           : false,
         _count: {
           select: {

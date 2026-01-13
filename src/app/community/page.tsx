@@ -276,12 +276,14 @@ export default function CommunityPage() {
       {/* Mobile Tweet FAB */}
       <button
         onClick={() => {
-          setTweetBox(true);
-          window.scrollTo({ top: 0, behavior: "smooth" });
+          setTweetBox((prev) => !prev);
+          if (!showTweetBox) {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }
         }}
         className="md:hidden fixed bottom-20 right-4 bg-blue-500 hover:bg-blue-600 text-white p-4 rounded-full shadow-lg z-50 transition-transform active:scale-95"
       >
-        <FiPlus className="w-6 h-6" />
+        {showTweetBox ? <FiX className="w-6 h-6" /> : <FiPlus className="w-6 h-6" />}
       </button>
     </div>
   );

@@ -52,6 +52,8 @@ export default function MePage() {
   const [likedPosts, setLikedPosts] = useState<FeedPost[]>([]);
   const [activeTab, setActiveTab] = useState<TabType>("posts");
   const [loading, setLoading] = useState(true);
+  const [loadingReplies, setLoadingReplies] = useState(false);
+  const [loadingLikes, setLoadingLikes] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [repliesCursor, setRepliesCursor] = useState<string | null>(null);
@@ -105,6 +107,8 @@ export default function MePage() {
     try {
       if (cursor) {
         setLoadingMore(true);
+      } else {
+        setLoadingReplies(true);
       }
 
       const params = new URLSearchParams();
@@ -129,6 +133,7 @@ export default function MePage() {
     } catch (error) {
       console.error("Load replies error:", error);
     } finally {
+      setLoadingReplies(false);
       setLoadingMore(false);
     }
   }, []);
@@ -137,6 +142,8 @@ export default function MePage() {
     try {
       if (cursor) {
         setLoadingMore(true);
+      } else {
+        setLoadingLikes(true);
       }
 
       const params = new URLSearchParams();
@@ -161,6 +168,7 @@ export default function MePage() {
     } catch (error) {
       console.error("Load likes error:", error);
     } finally {
+      setLoadingLikes(false);
       setLoadingMore(false);
     }
   }, []);
@@ -454,7 +462,11 @@ export default function MePage() {
           {/* Replies Tab */}
           {activeTab === "replies" && (
             <>
-              {replies.length === 0 ? (
+              {loadingReplies ? (
+                <div className="flex justify-center py-10">
+                  <div className="w-8 h-8 border-4 border-gray-700 border-t-blue-500 rounded-full animate-spin"></div>
+                </div>
+              ) : replies.length === 0 ? (
                 <div className="text-center text-gray-500 py-10">
                   You haven&apos;t replied to any posts yet
                 </div>
@@ -522,7 +534,11 @@ export default function MePage() {
           {/* Likes Tab */}
           {activeTab === "likes" && (
             <>
-              {likedPosts.length === 0 ? (
+              {loadingLikes ? (
+                <div className="flex justify-center py-10">
+                  <div className="w-8 h-8 border-4 border-gray-700 border-t-blue-500 rounded-full animate-spin"></div>
+                </div>
+              ) : likedPosts.length === 0 ? (
                 <div className="text-center text-gray-500 py-10">
                   You haven&apos;t liked any posts yet
                 </div>
