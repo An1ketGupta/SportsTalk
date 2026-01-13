@@ -32,7 +32,7 @@ export default function Userpage() {
   const params = useParams();
   const router = useRouter();
   const userId = params?.userid?.[0] as string;
-  
+
   const [user, setUser] = useState<UserProfile | null>(null);
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,7 +40,7 @@ export default function Userpage() {
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
-  
+
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
   const loadUserProfile = useCallback(async (cursor?: string) => {
@@ -50,15 +50,15 @@ export default function Userpage() {
       } else {
         setLoading(true);
       }
-      
+
       const params = new URLSearchParams();
       params.set("limit", POSTS_PER_PAGE.toString());
       if (cursor) params.set("cursor", cursor);
-      
+
       const res = await fetch(`/api/users/${userId}?${params.toString()}`);
       if (!res.ok) throw new Error("Failed to load user");
       const data = await res.json();
-      
+
       if (!cursor) {
         setUser(data.user);
         setPosts(data.posts ?? []);
@@ -108,7 +108,7 @@ export default function Userpage() {
     try {
       const previousState = isFollowing;
       const previousCount = followerCount;
-      
+
       // Optimistic update
       setIsFollowing(!isFollowing);
       setFollowerCount(isFollowing ? followerCount - 1 : followerCount + 1);
@@ -146,8 +146,8 @@ export default function Userpage() {
 
   if (loading) {
     return (
-      <div className="w-full h-screen flex text-white">
-        <div>
+      <div className="w-full h-[90vh] flex text-white pb-16 md:pb-0">
+        <div className="hidden md:block">
           <Sidebar />
         </div>
         <div className="flex-1 flex items-center justify-center">
@@ -159,8 +159,8 @@ export default function Userpage() {
 
   if (!user) {
     return (
-      <div className="w-full h-screen flex text-white">
-        <div>
+      <div className="w-full h-[90vh] flex text-white pb-16 md:pb-0">
+        <div className="hidden md:block">
           <Sidebar />
         </div>
         <div className="flex-1 flex items-center justify-center">
@@ -171,8 +171,8 @@ export default function Userpage() {
   }
 
   return (
-    <div className="w-full h-[90vh] flex text-white">
-      <div>
+    <div className="w-full h-[90vh] flex text-white pb-16 md:pb-0">
+      <div className="hidden md:block">
         <Sidebar />
       </div>
       {/* The user profile will be rendered here */}
@@ -207,11 +207,10 @@ export default function Userpage() {
             ) : (
               <button
                 onClick={handleFollow}
-                className={`px-6 py-2 rounded-full font-semibold transition-colors ${
-                  isFollowing
+                className={`px-6 py-2 rounded-full font-semibold transition-colors ${isFollowing
                     ? "bg-transparent border border-gray-600 text-white hover:bg-red-600/10 hover:border-red-600 hover:text-red-600"
                     : "bg-white text-black hover:bg-gray-200"
-                }`}
+                  }`}
               >
                 {isFollowing ? "Following" : "Follow"}
               </button>
@@ -286,7 +285,7 @@ export default function Userpage() {
               />
             ))
           )}
-          
+
           {/* Infinite Scroll Sentinel */}
           <div ref={loadMoreRef} className="py-4">
             {loadingMore && (

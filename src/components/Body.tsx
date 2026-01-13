@@ -7,7 +7,7 @@ export default async function Body() {
     const session = await auth()
     const user = session?.user
     // The Catalogue Section for the sports categories
-    return <div className="min-h-screen py-[8vh] sm:py-[12vh] px-[4vw] sm:px-[2vw]">
+    return <div className="min-h-screen pt-[8vh] pb-20 sm:py-[12vh] px-[4vw] sm:px-[2vw]">
         <div>
             <div className="h-auto w-full flex flex-col gap-6 lg:gap-8 lg:flex-row">
                 <SquareBox height="auto" width="auto" paddingx="1vh" paddingy="6vh">
@@ -66,7 +66,7 @@ export default async function Body() {
                     </div>
                 </div>
             </div>
-            {!user?<div className="mt-8 lg:mt-12">
+            {!user ? <div className="mt-8 lg:mt-12">
                 <SquareBox bg="#0f0f0f" height="auto" width="auto" paddingx="0vh">
                     <div className="px-4 sm:px-6 lg:px-10 py-6" >
                         <div className="flex justify-center leading-none font-bold italic my-4 text-lg sm:text-2xl md:text-2xl lg:text-3xl text-center">
@@ -85,7 +85,7 @@ export default async function Body() {
                         </div>
                     </div>
                 </SquareBox>
-            </div>:""}
+            </div> : ""}
         </div>
         <div className="my-24 text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold italic flex justify-center text-center">
             Explore Sports Categories

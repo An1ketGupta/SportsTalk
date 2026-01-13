@@ -1,6 +1,5 @@
 'use client'
 
-import MobileBottomNav from "@/components/MobileBottomNav";
 import { useState, useEffect, JSX } from "react";
 import HocketMatchesHandler from "../../api/handlers/sports/hockey";
 import MMAMatchesHandler from "../../api/handlers/sports/mma";
@@ -104,7 +103,7 @@ export default function LiveMatches({ params }: any) {
   }, [selectedCategory]);
 
   return (
-    <div className="min-h-screen w-full bg-black text-white flex flex-col">
+    <div className="min-h-[90vh] w-full bg-black text-white flex flex-col">
       {/* Header */}
       <div className="sticky top-0 z-40 border-b border-white/10 bg-black/80 backdrop-blur-md">
         <div className="px-4 py-4 md:px-12 md:py-8">
@@ -162,7 +161,6 @@ export default function LiveMatches({ params }: any) {
           )}
         </div>
       </main>
-      <MobileBottomNav />
     </div>
   );
 }

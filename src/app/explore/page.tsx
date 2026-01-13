@@ -8,7 +8,6 @@ import Post, { FeedPost } from "@/components/ui/post";
 import { FiSearch, FiUsers } from "react-icons/fi";
 import { GoCheckCircleFill } from "react-icons/go";
 import Link from "next/link";
-import MobileBottomNav from "@/components/MobileBottomNav";
 
 interface SearchUser {
   id: string;
@@ -94,8 +93,8 @@ export default function ExplorePage() {
   };
 
   return (
-    <div className="flex w-full h-screen overflow-hidden">
-      <div className="hidden md:flex flex-col h-full sticky top-0 overflow-y-auto w-auto border-r border-white/20">
+    <div className="flex w-full h-[90vh] overflow-hidden">
+      <div className="hidden md:flex flex-col h-full sticky top-0 overflow-y-auto w-auto border-r border-white/20 scrollbar-hide">
         <Sidebar />
       </div>
 
@@ -233,7 +232,6 @@ export default function ExplorePage() {
         <RightSection />
       </div>
 
-      <MobileBottomNav />
     </div>
   );
 }

@@ -76,17 +76,17 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
       } else {
         setLoadingMore(true);
       }
-      
+
       const res = await fetch(`/api/posts/${postId}/comments?page=${pageNum}&limit=10`);
       if (!res.ok) throw new Error("Failed to load comments");
       const data = await res.json();
-      
+
       if (pageNum === 1) {
         setComments(data.comments);
       } else {
         setComments((prev) => [...prev, ...data.comments]);
       }
-      
+
       setHasMore(data.hasMore ?? false);
     } catch (error) {
       console.error("Load comments error:", error);
@@ -100,7 +100,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
     try {
       const previousLiked = isLiked;
       const previousCount = likeCount;
-      
+
       setIsLiked(!isLiked);
       setLikeCount(isLiked ? likeCount - 1 : likeCount + 1);
 
@@ -168,8 +168,10 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
   if (loading) {
     return (
       <div className="w-full h-[90vh] flex">
-        <Sidebar />
-        <div className="border-r max-w-[88vh] border-white border-opacity-20 overflow-y-auto scrollbar-hide flex-1">
+        <div className="hidden md:block">
+          <Sidebar />
+        </div>
+        <div className="border-r max-w-[88vh] border-white border-opacity-20 overflow-y-auto scrollbar-hide flex-1 pb-16 md:pb-0">
           <div className="flex items-center justify-center py-20">
             <div className="h-8 w-8 border-4 border-gray-700 border-t-blue-500 rounded-full animate-spin" />
           </div>
@@ -182,8 +184,10 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
   if (!post) {
     return (
       <div className="w-full h-[90vh] flex">
-        <Sidebar />
-        <div className="border-r max-w-[88vh] border-white border-opacity-20 overflow-y-auto scrollbar-hide flex-1">
+        <div className="hidden md:block">
+          <Sidebar />
+        </div>
+        <div className="border-r max-w-[88vh] border-white border-opacity-20 overflow-y-auto scrollbar-hide flex-1 pb-16 md:pb-0">
           <div className="flex items-center justify-center py-20">
             <div className="text-center text-gray-400">
               <p className="text-xl font-semibold">Post not found</p>
@@ -199,9 +203,11 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
 
   return (
     <div className="w-full h-[90vh] flex">
-      <Sidebar />
+      <div className="hidden md:block">
+        <Sidebar />
+      </div>
 
-      <div className="border-r max-w-[88vh] border-white border-opacity-20 overflow-y-auto scrollbar-hide flex-1">
+      <div className="border-r max-w-[88vh] border-white border-opacity-20 overflow-y-auto scrollbar-hide flex-1 pb-16 md:pb-0">
         {/* Header */}
         <div className="sticky top-0 bg-black/80 backdrop-blur-md z-10 border-b border-gray-800">
           <div className="flex items-center gap-4 p-4">
@@ -269,9 +275,8 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
           <div className="flex justify-around py-2 border-b border-gray-800">
             <button
               onClick={handleLike}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full transition-colors ${
-                isLiked ? "text-red-500 bg-red-500/10" : "hover:bg-gray-800"
-              }`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-full transition-colors ${isLiked ? "text-red-500 bg-red-500/10" : "hover:bg-gray-800"
+                }`}
             >
               {isLiked ? <FaHeart className="w-5 h-5" /> : <FaRegHeart className="w-5 h-5" />}
             </button>
@@ -349,7 +354,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                   </div>
                 </div>
               ))}
-              
+
               {hasMore && (
                 <div className="p-4 flex justify-center">
                   <button

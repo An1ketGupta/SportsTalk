@@ -125,8 +125,10 @@ export default function NotificationsPage() {
 
   if (!session) {
     return (
-      <div className="w-auto h-[90vh] flex">
-        <Sidebar />
+      <div className="w-full h-[90vh] flex pb-16 md:pb-0">
+        <div className="hidden md:block">
+          <Sidebar />
+        </div>
         <div className="flex-1 flex items-center justify-center border-r border-white border-opacity-20">
           <div className="text-center text-gray-400">
             <p className="text-xl font-semibold mb-2">Sign in to see notifications</p>
@@ -139,12 +141,12 @@ export default function NotificationsPage() {
   }
 
   return (
-    <div className="w-full h-[90vh] flex">
-      <div>
+    <div className="w-full h-[90vh] flex pb-16 md:pb-0">
+      <div className="hidden md:block">
         <Sidebar />
       </div>
 
-      <div className="max-w-[1000px] min-w-[655px] border-r border-white border-opacity-20 overflow-y-auto">
+      <div className="flex-1 border-r border-white border-opacity-20 overflow-y-auto scrollbar-hide w-full md:max-w-xl lg:max-w-2xl">
         {/* Header */}
         <div className="sticky top-0 bg-black/80 backdrop-blur-md z-10">
           <div className="p-4 flex items-center justify-between">
@@ -164,21 +166,19 @@ export default function NotificationsPage() {
           <div className="flex border-b border-gray-800">
             <button
               onClick={() => setActiveTab("all")}
-              className={`flex-1 py-3 text-center font-semibold transition-colors ${
-                activeTab === "all"
-                  ? "text-white border-b-2 border-blue-500"
-                  : "text-gray-500 hover:bg-gray-900"
-              }`}
+              className={`flex-1 py-3 text-center font-semibold transition-colors ${activeTab === "all"
+                ? "text-white border-b-2 border-blue-500"
+                : "text-gray-500 hover:bg-gray-900"
+                }`}
             >
               All
             </button>
             <button
               onClick={() => setActiveTab("mentions")}
-              className={`flex-1 py-3 text-center font-semibold transition-colors ${
-                activeTab === "mentions"
-                  ? "text-white border-b-2 border-blue-500"
-                  : "text-gray-500 hover:bg-gray-900"
-              }`}
+              className={`flex-1 py-3 text-center font-semibold transition-colors ${activeTab === "mentions"
+                ? "text-white border-b-2 border-blue-500"
+                : "text-gray-500 hover:bg-gray-900"
+                }`}
             >
               Mentions
             </button>
@@ -206,9 +206,8 @@ export default function NotificationsPage() {
               <div
                 key={notification.id}
                 onClick={() => !notification.read && markAsRead(notification.id)}
-                className={`flex items-start gap-3 p-4 border-b border-gray-800/50 hover:bg-gray-900/50 transition-colors cursor-pointer ${
-                  !notification.read ? "bg-blue-500/5" : ""
-                }`}
+                className={`flex items-start gap-3 p-4 border-b border-gray-800/50 hover:bg-gray-900/50 transition-colors cursor-pointer ${!notification.read ? "bg-blue-500/5" : ""
+                  }`}
               >
                 {/* Icon */}
                 <div className="p-2 bg-gray-800 rounded-full">

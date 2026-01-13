@@ -14,7 +14,7 @@ const iconMap = {
 };
 
 const menuItems = [
-    { label: "Home", icon: "home", path: "/" },
+    { label: "Home", icon: "home", path: "/community" },
     { label: "Explore", icon: "search", path: "/explore" },
     { label: "Live", icon: "sports", path: "/livematches/nfl" },
     { label: "Alerts", icon: "bell", path: "/notifications" },

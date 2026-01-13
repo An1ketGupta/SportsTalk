@@ -57,7 +57,7 @@ export default function MePage() {
   const [repliesCursor, setRepliesCursor] = useState<string | null>(null);
   const [likesCursor, setLikesCursor] = useState<string | null>(null);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
-  
+
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
   const loadMyProfile = useCallback(async (cursor?: string) => {
@@ -67,21 +67,21 @@ export default function MePage() {
       } else {
         setLoading(true);
       }
-      
+
       const params = new URLSearchParams();
       params.set("limit", POSTS_PER_PAGE.toString());
       if (cursor) params.set("cursor", cursor);
-      
+
       const res = await fetch(`/api/users/me?${params.toString()}`);
-      
+
       if (res.status === 401) {
         router.push("/auth");
         return;
       }
-      
+
       if (!res.ok) throw new Error("Failed to load profile");
       const data = await res.json();
-      
+
       if (!cursor) {
         setUser(data.user);
         setPosts(data.posts ?? []);
@@ -106,16 +106,16 @@ export default function MePage() {
       if (cursor) {
         setLoadingMore(true);
       }
-      
+
       const params = new URLSearchParams();
       params.set("limit", POSTS_PER_PAGE.toString());
       if (cursor) params.set("cursor", cursor);
-      
+
       const res = await fetch(`/api/users/me/replies?${params.toString()}`);
-      
+
       if (!res.ok) throw new Error("Failed to load replies");
       const data = await res.json();
-      
+
       if (!cursor) {
         setReplies(data.replies ?? []);
       } else {
@@ -138,16 +138,16 @@ export default function MePage() {
       if (cursor) {
         setLoadingMore(true);
       }
-      
+
       const params = new URLSearchParams();
       params.set("limit", POSTS_PER_PAGE.toString());
       if (cursor) params.set("cursor", cursor);
-      
+
       const res = await fetch(`/api/users/me/likes?${params.toString()}`);
-      
+
       if (!res.ok) throw new Error("Failed to load likes");
       const data = await res.json();
-      
+
       if (!cursor) {
         setLikedPosts(data.posts ?? []);
       } else {
@@ -216,7 +216,7 @@ export default function MePage() {
       });
 
       if (!res.ok) throw new Error("Failed to delete reply");
-      
+
       setReplies(replies.filter((r) => r.id !== replyId));
     } catch (error) {
       console.error("Delete reply error:", error);
@@ -243,10 +243,10 @@ export default function MePage() {
       setUser((prev) =>
         prev
           ? {
-              ...prev,
-              name: updatedData.user.name,
-              bio: updatedData.user.bio,
-            }
+            ...prev,
+            name: updatedData.user.name,
+            bio: updatedData.user.bio,
+          }
           : null
       );
     } catch (error) {
@@ -294,8 +294,8 @@ export default function MePage() {
 
   if (loading) {
     return (
-      <div className="w-full h-[90vh] flex text-white">
-        <div>
+      <div className="w-full h-[90vh] flex text-white pb-16 md:pb-0">
+        <div className="hidden md:block">
           <Sidebar />
         </div>
         <div className="border-r w-full max-w-[88vh] border-white border-opacity-20 flex-1 flex items-center justify-center">
@@ -312,8 +312,8 @@ export default function MePage() {
 
   if (!user) {
     return (
-      <div className="w-full h-[90vh] flex text-white">
-        <div>
+      <div className="w-full h-[90vh] flex text-white pb-16 md:pb-0">
+        <div className="hidden md:block">
           <Sidebar />
         </div>
         <div className="border-r w-full max-w-[88vh] border-white border-opacity-20 flex-1 flex items-center justify-center">
@@ -329,8 +329,8 @@ export default function MePage() {
   }
 
   return (
-    <div className="w-full h-[90vh] flex text-white">
-      <div>
+    <div className="w-full h-[90vh] flex text-white pb-16 md:pb-0">
+      <div className="hidden md:block">
         <Sidebar />
       </div>
       {/* User profile content */}
@@ -400,33 +400,30 @@ export default function MePage() {
 
         {/* Tabs */}
         <div className="flex border-b border-gray-800">
-          <button 
+          <button
             onClick={() => setActiveTab("posts")}
-            className={`flex-1 py-4 text-center font-semibold transition-colors ${
-              activeTab === "posts" 
-                ? "text-white border-b-2 border-blue-500" 
-                : "text-gray-500 hover:bg-gray-900"
-            }`}
+            className={`flex-1 py-4 text-center font-semibold transition-colors ${activeTab === "posts"
+              ? "text-white border-b-2 border-blue-500"
+              : "text-gray-500 hover:bg-gray-900"
+              }`}
           >
             Posts
           </button>
-          <button 
+          <button
             onClick={() => setActiveTab("replies")}
-            className={`flex-1 py-4 text-center font-semibold transition-colors ${
-              activeTab === "replies" 
-                ? "text-white border-b-2 border-blue-500" 
-                : "text-gray-500 hover:bg-gray-900"
-            }`}
+            className={`flex-1 py-4 text-center font-semibold transition-colors ${activeTab === "replies"
+              ? "text-white border-b-2 border-blue-500"
+              : "text-gray-500 hover:bg-gray-900"
+              }`}
           >
             Replies
           </button>
-          <button 
+          <button
             onClick={() => setActiveTab("likes")}
-            className={`flex-1 py-4 text-center font-semibold transition-colors ${
-              activeTab === "likes" 
-                ? "text-white border-b-2 border-blue-500" 
-                : "text-gray-500 hover:bg-gray-900"
-            }`}
+            className={`flex-1 py-4 text-center font-semibold transition-colors ${activeTab === "likes"
+              ? "text-white border-b-2 border-blue-500"
+              : "text-gray-500 hover:bg-gray-900"
+              }`}
           >
             Likes
           </button>
@@ -471,7 +468,7 @@ export default function MePage() {
                         @{reply.post.author.username}
                       </Link>
                     </div>
-                    
+
                     {/* The reply itself */}
                     <div className="px-4 py-2 bg-gray-900/50 rounded-lg mx-2">
                       <div className="flex items-start gap-3">
@@ -541,7 +538,7 @@ export default function MePage() {
               )}
             </>
           )}
-          
+
           {/* Infinite Scroll Sentinel */}
           <div ref={loadMoreRef} className="py-4">
             {loadingMore && (

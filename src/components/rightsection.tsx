@@ -3,7 +3,7 @@ import WhoToFollow from "./whotofollow";
 import TrendingSports from "./TrendingSports";
 
 export default function RightSection() {
-    return <div className="pl-8 overflow-y-auto scrollbar-hide hidden lg:block">
+    return <div className="pl-8 overflow-y-auto h-[90vh] scrollbar-hide hidden lg:block">
         <SearchBar />
         <TrendingSports />
         <WhoToFollow />

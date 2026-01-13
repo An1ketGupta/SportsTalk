@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { FiRefreshCw, FiFilter, FiX, FiUsers, FiStar, FiPlus } from "react-icons/fi";
-import MobileBottomNav from "@/components/MobileBottomNav";
 
 type Tab = "foryou" | "following";
 
@@ -167,7 +166,7 @@ export default function CommunityPage() {
 
   return (
     <div className="flex w-full h-[90vh] overflow-hidden">
-      <div className="hidden md:flex flex-col h-full sticky top-0 overflow-y-auto w-auto border-r border-white/20">
+      <div className="hidden md:flex flex-col h-full sticky top-0 overflow-y-auto w-auto border-r border-white/20 scrollbar-hide">
         <Sidebar setAddPost={setTweetBox} />
       </div>
 
@@ -274,7 +273,6 @@ export default function CommunityPage() {
         <RightSection />
       </div>
 
-      <MobileBottomNav />
       {/* Mobile Tweet FAB */}
       <button
         onClick={() => {

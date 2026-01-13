@@ -45,14 +45,14 @@ export default function Post({ post, onDelete, showDeleteButton = false }: { pos
   const [commentText, setCommentText] = useState("");
   const [isLoadingComments, setIsLoadingComments] = useState(false);
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
-  
+
   const createdAt = typeof post.createdAt === "string" ? new Date(post.createdAt) : post.createdAt;
 
   const handleLike = async () => {
     try {
       const previousLiked = isLiked;
       const previousCount = likeCount;
-      
+
       setIsLiked(!isLiked);
       setLikeCount(isLiked ? likeCount - 1 : likeCount + 1);
 
@@ -104,7 +104,7 @@ export default function Post({ post, onDelete, showDeleteButton = false }: { pos
       });
 
       if (!res.ok) throw new Error("Failed to post comment");
-      
+
       const data = await res.json();
       setComments([data.comment, ...comments]);
       setCommentCount(commentCount + 1);
@@ -126,7 +126,7 @@ export default function Post({ post, onDelete, showDeleteButton = false }: { pos
       });
 
       if (!res.ok) throw new Error("Failed to delete post");
-      
+
       if (onDelete) onDelete();
     } catch (error) {
       console.error("Delete error:", error);
@@ -157,17 +157,17 @@ export default function Post({ post, onDelete, showDeleteButton = false }: { pos
       paddingy="3vh"
       rounded="0vh"
     >
-      <div className="grid grid-cols-12 gap-3 w-full">
-        <div className="col-span-1 flex justify-center">
+      <div className="flex gap-3 w-full">
+        <div className="flex-shrink-0">
           <Link href={`/user/${post.author.id}`} onClick={(e) => e.stopPropagation()}>
             <img
-              className="w-11 h-11 rounded-full object-cover hover:opacity-80 transition-opacity"
+              className="w-10 h-10 md:w-12 md:h-12 rounded-full object-cover hover:opacity-80 transition-opacity"
               src={post.author.image ?? "/default-avatar.png"}
               alt={post.author.name ?? post.author.username}
             />
           </Link>
         </div>
-        <div className="col-span-11 pl-1 space-y-2">
+        <div className="flex-1 min-w-0 space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm">
               <Link href={`/user/${post.author.id}`} onClick={(e) => e.stopPropagation()} className="flex items-center gap-1 font-semibold hover:underline">
@@ -197,9 +197,9 @@ export default function Post({ post, onDelete, showDeleteButton = false }: { pos
 
           {/* Action Buttons */}
           <div className="flex gap-8 text-sm text-[#71767b] mt-3">
-            <Link 
-              href={`/post/${post.id}`} 
-              onClick={(e) => e.stopPropagation()} 
+            <Link
+              href={`/post/${post.id}`}
+              onClick={(e) => e.stopPropagation()}
               className="flex items-center gap-2 hover:text-blue-500 transition-colors group"
             >
               <div className="p-2 rounded-full group-hover:bg-blue-500/10 transition-colors">
@@ -210,9 +210,8 @@ export default function Post({ post, onDelete, showDeleteButton = false }: { pos
 
             <button
               onClick={(e) => { e.stopPropagation(); handleLike(); }}
-              className={`flex items-center gap-2 transition-colors group ${
-                isLiked ? "text-red-500" : "hover:text-red-500"
-              }`}
+              className={`flex items-center gap-2 transition-colors group ${isLiked ? "text-red-500" : "hover:text-red-500"
+                }`}
             >
               <div className="p-2 rounded-full group-hover:bg-red-500/10 transition-colors">
                 {isLiked ? (

@@ -6,6 +6,7 @@ import Avatar from "@/components/Avatar";
 import SignInButton from "@/components/SignInButton";
 import Providers from "@/components/Providers";
 import { auth } from "@/auth";
+import MobileBottomNav from "@/components/MobileBottomNav";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,8 +41,9 @@ export default async function RootLayout({
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Providers>
-          <NavBar authComponent={session?.user ? <Avatar /> : <SignInButton/> }/>
+          <NavBar authComponent={session?.user ? <Avatar /> : <SignInButton />} />
           {children}
+          <MobileBottomNav />
         </Providers>
       </body>
     </html>

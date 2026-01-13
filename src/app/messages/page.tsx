@@ -129,7 +129,7 @@ export default function MessagesPage() {
       if (!res.ok) throw new Error("Failed to send message");
 
       const data = await res.json();
-      
+
       // Replace temp message with real one
       setMessages((prev) =>
         prev.map((m) => (m.id === tempMessage.id ? data.message : m))
@@ -197,28 +197,32 @@ export default function MessagesPage() {
 
   if (!session) {
     return (
-      <div className="w-full h-[90vh] flex">
-        <Sidebar />
+      <div className="w-full h-[90vh] flex pb-16 md:pb-0">
+        <div className="hidden md:block">
+          <Sidebar />
+        </div>
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center text-gray-400">
             <p className="text-xl font-semibold mb-2">Sign in to view messages</p>
             <p className="text-sm">Connect with other sports fans</p>
           </div>
         </div>
-        <RightSection />
+        <div className="hidden xl:block">
+          <RightSection />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full h-[90vh] flex">
-      <div>
+    <div className="w-full max-h-[90vh] flex pb-16 md:pb-0">
+      <div className="hidden md:block">
         <Sidebar />
       </div>
 
       <div className="flex-1 flex border-r border-white border-opacity-20">
         {/* Conversations List */}
-        <div className={`w-80 border-r border-gray-800 flex flex-col ${selectedUserId ? "hidden md:flex" : "flex"}`}>
+        <div className={`w-full md:w-80 border-r border-gray-800 flex flex-col ${selectedUserId ? "hidden md:flex" : "flex"}`}>
           <div className="p-4 border-b border-gray-800 flex items-center justify-between">
             <h1 className="text-xl font-bold">Messages</h1>
             <button
@@ -244,7 +248,7 @@ export default function MessagesPage() {
                 />
               </div>
               {searchResults.length > 0 && (
-                <div className="mt-2 max-h-48 overflow-y-auto">
+                <div className="mt-2 max-h-48 overflow-y-auto scrollbar-hide">
                   {searchResults.map((user) => (
                     <button
                       key={user.id}
@@ -268,7 +272,7 @@ export default function MessagesPage() {
           )}
 
           {/* Conversations */}
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto scrollbar-hide">
             {loadingConversations ? (
               <div className="flex items-center justify-center py-8">
                 <div className="h-6 w-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
@@ -283,9 +287,8 @@ export default function MessagesPage() {
                 <button
                   key={conv.user.id}
                   onClick={() => setSelectedUserId(conv.user.id)}
-                  className={`w-full flex items-center gap-3 p-4 hover:bg-gray-900 transition-colors border-b border-gray-800/50 ${
-                    selectedUserId === conv.user.id ? "bg-gray-900" : ""
-                  }`}
+                  className={`w-full flex items-center gap-3 p-4 hover:bg-gray-900 transition-colors border-b border-gray-800/50 ${selectedUserId === conv.user.id ? "bg-gray-900" : ""
+                    }`}
                 >
                   <img
                     src={conv.user.image ?? "/default-avatar.png"}
@@ -346,7 +349,7 @@ export default function MessagesPage() {
               </div>
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide">
                 {loadingMessages ? (
                   <div className="flex items-center justify-center py-8">
                     <div className="h-6 w-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
@@ -363,11 +366,10 @@ export default function MessagesPage() {
                       className={`flex ${msg.isMine ? "justify-end" : "justify-start"}`}
                     >
                       <div
-                        className={`max-w-[70%] rounded-2xl px-4 py-2 ${
-                          msg.isMine
-                            ? "bg-blue-600 text-white"
-                            : "bg-gray-800 text-white"
-                        }`}
+                        className={`max-w-[70%] rounded-2xl px-4 py-2 ${msg.isMine
+                          ? "bg-blue-600 text-white"
+                          : "bg-gray-800 text-white"
+                          }`}
                       >
                         <p>{msg.content}</p>
                         <p className={`text-xs mt-1 ${msg.isMine ? "text-blue-200" : "text-gray-500"}`}>
