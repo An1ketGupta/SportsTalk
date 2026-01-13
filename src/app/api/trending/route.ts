@@ -11,7 +11,7 @@ export async function GET() {
     });
 
     const tagCounts = new Map<string, number>();
-    
+
     postsWithTags.forEach((post) => {
       if (post.sport) {
         const tags = post.sport.split(',').map(t => t.trim()).filter(Boolean);
@@ -31,6 +31,9 @@ export async function GET() {
     });
   } catch (error) {
     console.error("Trending API error:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    // Return empty trends as fallback instead of failing
+    return NextResponse.json({ trends: [], error: error instanceof Error ? error.message : "Unknown error" }, {
+      headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120' },
+    });
   }
 }
