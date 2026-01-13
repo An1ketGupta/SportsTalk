@@ -3,9 +3,11 @@ import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
 import { useState, useRef } from "react";
 import { FiImage, FiSmile, FiX, FiHash } from "react-icons/fi";
 import { useSession } from "next-auth/react";
+import { useToast } from "@/components/ToastProvider";
 
 export default function TweetBox({ onPostCreated }: { onPostCreated?: () => void }) {
   const { data: session } = useSession();
+  const { showToast } = useToast();
   const [text, setText] = useState("");
   const [mediaUrl, setMediaUrl] = useState("");
   const [mediaPreview, setMediaPreview] = useState("");
@@ -75,23 +77,23 @@ export default function TweetBox({ onPostCreated }: { onPostCreated?: () => void
       }
 
       const data = await response.json();
-      
+
       // Reset form
       setText("");
       setMediaUrl("");
       setMediaPreview("");
       setTags([]);
       setCustomTag("");
-      
+
       // Notify parent
       if (onPostCreated) {
         onPostCreated();
       }
-      
-      alert(data.message || "Post created successfully!");
+
+      showToast(data.message || "Post created successfully!", "success");
     } catch (error: any) {
       console.error("Post error:", error);
-      alert(error.message || "Failed to create post. Please try again.");
+      showToast(error.message || "Failed to create post. Please try again.", "error");
     } finally {
       setIsPosting(false);
     }
@@ -180,7 +182,7 @@ export default function TweetBox({ onPostCreated }: { onPostCreated?: () => void
           {tags.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {tags.map((tag) => (
-                <div 
+                <div
                   key={tag}
                   className="inline-flex items-center gap-1 bg-blue-500/20 text-blue-400 px-3 py-1 rounded-full text-sm"
                 >
@@ -256,9 +258,8 @@ export default function TweetBox({ onPostCreated }: { onPostCreated?: () => void
 
           <button
             onClick={() => setShowTagInput(!showTagInput)}
-            className={`flex items-center gap-1 text-sm hover:bg-blue-500/10 px-3 py-1.5 rounded-full transition-colors ${
-              showTagInput ? 'bg-blue-500/20' : ''
-            }`}
+            className={`flex items-center gap-1 text-sm hover:bg-blue-500/10 px-3 py-1.5 rounded-full transition-colors ${showTagInput ? 'bg-blue-500/20' : ''
+              }`}
           >
             <FiHash className="w-4 h-4" />
             {tags.length > 0 ? `${tags.length} tag${tags.length > 1 ? 's' : ''}` : 'Add Tags'}
@@ -269,11 +270,10 @@ export default function TweetBox({ onPostCreated }: { onPostCreated?: () => void
         <button
           onClick={handlePost}
           disabled={!text.trim() || charCount > MAX_CHARS || isPosting}
-          className={`px-6 py-2 rounded-full font-semibold transition-colors ${
-            text.trim() && charCount <= MAX_CHARS && !isPosting
+          className={`px-6 py-2 rounded-full font-semibold transition-colors ${text.trim() && charCount <= MAX_CHARS && !isPosting
               ? "bg-blue-500 text-white hover:bg-blue-600"
               : "bg-gray-600 text-gray-300 cursor-not-allowed"
-          }`}
+            }`}
         >
           {isPosting ? "Posting..." : "Post"}
         </button>

@@ -13,6 +13,7 @@ import EditProfileModal from "@/components/EditProfileModal";
 import { GoCheckCircleFill } from "react-icons/go";
 import { FiCalendar } from "react-icons/fi";
 import { FaTrash } from "react-icons/fa";
+import { useToast } from "@/components/ToastProvider";
 
 const POSTS_PER_PAGE = 10;
 
@@ -46,6 +47,7 @@ interface Reply {
 
 export default function MePage() {
   const router = useRouter();
+  const { showToast } = useToast();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [replies, setReplies] = useState<Reply[]>([]);
@@ -228,7 +230,7 @@ export default function MePage() {
       setReplies(replies.filter((r) => r.id !== replyId));
     } catch (error) {
       console.error("Delete reply error:", error);
-      alert("Failed to delete reply. Please try again.");
+      showToast("Failed to delete reply. Please try again.", "error");
     }
   };
 

@@ -7,6 +7,7 @@ import RightSection from "@/components/rightsection";
 import Link from "next/link";
 import { GoCheckCircleFill } from "react-icons/go";
 import { FaHeart, FaRegHeart, FaShare, FaArrowLeft } from "react-icons/fa";
+import { useToast } from "@/components/ToastProvider";
 
 function formatTimeAgo(date: Date) {
   const diff = Date.now() - date.getTime();
@@ -23,6 +24,7 @@ function formatTimeAgo(date: Date) {
 
 export default function PostDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
+  const { showToast } = useToast();
   const [post, setPost] = useState<any>(null);
   const [comments, setComments] = useState<any[]>([]);
   const [commentText, setCommentText] = useState("");
@@ -155,7 +157,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
       });
     } else {
       navigator.clipboard.writeText(url);
-      alert("Link copied to clipboard!");
+      showToast("Link copied to clipboard!", "success");
     }
   };
 

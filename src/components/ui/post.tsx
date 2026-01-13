@@ -4,6 +4,7 @@ import { useState } from "react";
 import SquareBox from "./squarebox";
 import { GoCheckCircleFill } from "react-icons/go";
 import { FaHeart, FaRegHeart, FaRegComment, FaShare, FaTrash } from "react-icons/fa";
+import { useToast } from "@/components/ToastProvider";
 
 export type FeedPost = {
   id: string;
@@ -38,6 +39,7 @@ function formatTimeAgo(date: Date) {
 }
 
 export default function Post({ post, onDelete, showDeleteButton = false }: { post: FeedPost; onDelete?: () => void; showDeleteButton?: boolean }) {
+  const { showToast } = useToast();
   const [isLiked, setIsLiked] = useState(post.isLiked ?? false);
   const [likeCount, setLikeCount] = useState(post.likeCount);
   const [commentCount, setCommentCount] = useState(post.commentCount);
@@ -112,7 +114,7 @@ export default function Post({ post, onDelete, showDeleteButton = false }: { pos
       setCommentText("");
     } catch (error) {
       console.error("Comment error:", error);
-      alert("Failed to post comment. Please try again.");
+      showToast("Failed to post comment. Please try again.", "error");
     } finally {
       setIsSubmittingComment(false);
     }
@@ -131,7 +133,7 @@ export default function Post({ post, onDelete, showDeleteButton = false }: { pos
       if (onDelete) onDelete();
     } catch (error) {
       console.error("Delete error:", error);
-      alert("Failed to delete post. Please try again.");
+      showToast("Failed to delete post. Please try again.", "error");
     }
   };
 
@@ -145,7 +147,7 @@ export default function Post({ post, onDelete, showDeleteButton = false }: { pos
       });
     } else {
       navigator.clipboard.writeText(url);
-      alert("Link copied to clipboard!");
+      showToast("Link copied to clipboard!", "success");
     }
   };
 
