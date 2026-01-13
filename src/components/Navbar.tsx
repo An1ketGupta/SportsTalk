@@ -24,7 +24,7 @@ export default function NavBar({ authComponent }: any) {
         {/* Desktop Navigation */}
         <div className="hidden md:flex gap-4">
           <Link
-            className="flex justify-center gap-2 items-center hover:bg-[#515a67] h-[5vh] py-1 px-4 text-lg rounded-lg"
+            className="flex justify-center gap-2 items-center hover:bg-gray-800 h-[5vh] py-1 px-4 text-lg rounded-lg"
             href="/"
           >
             <Lottie
@@ -37,7 +37,7 @@ export default function NavBar({ authComponent }: any) {
             Categories
           </Link>
           <Link
-            className="flex justify-center gap-2 items-center hover:bg-[#515a67] h-[5vh] py-1 px-4 text-lg rounded-lg"
+            className="flex justify-center gap-2 items-center hover:bg-gray-800 h-[5vh] py-1 px-4 text-lg rounded-lg"
             href="/community"
           >
             <Lottie
@@ -50,7 +50,7 @@ export default function NavBar({ authComponent }: any) {
             Community
           </Link>
           <Link
-            className="text-white flex justify-center gap-2 items-center hover:bg-[#515a67] h-[5vh] py-1 px-4 text-lg rounded-lg"
+            className="text-white flex justify-center gap-2 items-center hover:bg-gray-800 h-[5vh] py-1 px-4 text-lg rounded-lg"
             href="/livematches/nfl"
           >
             <Lottie

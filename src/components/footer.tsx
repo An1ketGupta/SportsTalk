@@ -3,7 +3,7 @@ import { Mail, Bell, Heart } from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="bg-black border-t-[0.5px] border-gray-600 pt-12 sm:pt-20 text-gray-200 px-4 sm:px-6 lg:px-10 py-6">
+    <footer className="bg-black mb-20 border-t-[0.5px] border-gray-600 pt-12 sm:pt-20 text-gray-200 px-4 sm:px-6 lg:px-10 py-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-10 max-w-7xl mx-auto">
         <div className="sm:col-span-2 lg:col-span-2">
           <div className="flex items-center gap-2 mb-4">
