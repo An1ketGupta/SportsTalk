@@ -54,6 +54,7 @@ export async function GET(req: NextRequest) {
         email: true,
         image: true,
         bio: true,
+        isVerified: true,
         _count: {
           select: { followers: true },
         },
@@ -73,6 +74,7 @@ export async function GET(req: NextRequest) {
           name: p.author.name,
           image: p.author.image,
           username: p.author.email?.split("@")[0] ?? "user",
+          isVerified: p.author.isVerified,
         },
         likeCount: p._count.likes,
         commentCount: p._count.comments,
@@ -84,6 +86,7 @@ export async function GET(req: NextRequest) {
         username: u.email?.split("@")[0] ?? "user",
         image: u.image,
         bio: u.bio,
+        isVerified: u.isVerified,
         followerCount: u._count.followers,
       })),
     });

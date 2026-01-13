@@ -44,6 +44,7 @@ export async function GET(req: NextRequest, { params }: Params) {
           name: comment.author.name,
           image: comment.author.image,
           username: comment.author.email?.split("@")[0] ?? "user",
+          isVerified: comment.author.isVerified,
         },
       })),
       hasMore: skip + comments.length < totalCount,
@@ -122,6 +123,7 @@ export async function POST(req: NextRequest, { params }: Params) {
           name: comment.author.name,
           image: comment.author.image,
           username: comment.author.email?.split("@")[0] ?? "user",
+          isVerified: comment.author.isVerified,
         },
       },
     });

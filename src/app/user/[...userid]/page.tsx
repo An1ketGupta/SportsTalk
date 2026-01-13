@@ -26,6 +26,7 @@ interface UserProfile {
   postCount: number;
   isFollowing: boolean;
   isOwnProfile: boolean;
+  isVerified: boolean;
 }
 
 export default function Userpage() {
@@ -208,8 +209,8 @@ export default function Userpage() {
               <button
                 onClick={handleFollow}
                 className={`px-6 py-2 rounded-full font-semibold transition-colors ${isFollowing
-                    ? "bg-transparent border border-gray-600 text-white hover:bg-red-600/10 hover:border-red-600 hover:text-red-600"
-                    : "bg-white text-black hover:bg-gray-200"
+                  ? "bg-transparent border border-gray-600 text-white hover:bg-red-600/10 hover:border-red-600 hover:text-red-600"
+                  : "bg-white text-black hover:bg-gray-200"
                   }`}
               >
                 {isFollowing ? "Following" : "Follow"}
@@ -224,7 +225,7 @@ export default function Userpage() {
             <h1 className="text-2xl font-bold">
               {user.name ?? user.username}
             </h1>
-            <GoCheckCircleFill className="text-blue-500 text-xl" />
+            {user.isVerified && <GoCheckCircleFill className="text-blue-500 text-xl" />}
           </div>
           <p className="text-gray-500">@{user.username}</p>
 

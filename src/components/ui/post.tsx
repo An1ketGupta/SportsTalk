@@ -292,6 +292,7 @@ export default function Post({ post, onDelete, showDeleteButton = false }: { pos
                           <span className="font-semibold">
                             {comment.author.name ?? comment.author.username}
                           </span>
+                          {comment.author.isVerified && <GoCheckCircleFill className="text-blue-500 w-3 h-3" />}
                           <span className="text-gray-500">
                             @{comment.author.username}
                           </span>

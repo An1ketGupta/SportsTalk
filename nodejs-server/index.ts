@@ -1,8 +1,11 @@
 import { createServer } from "http";
 import {Server} from "socket.io"
 
-const httpserver = createServer()
-
+const httpserver = createServer((req, res) => {
+    // If someone calls the root URL, say "I am alive"
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('SportsTalk Socket Server is Running!');
+});
 const io = new Server(httpserver , {
     cors:{
         origin:"*",
@@ -29,4 +32,6 @@ io.on("connection" , (socket)=>{
     })
 })
 
-httpserver.listen(3001)
+httpserver.listen(3001, "0.0.0.0", () => {
+    console.log("Server is running on port 3001");
+});

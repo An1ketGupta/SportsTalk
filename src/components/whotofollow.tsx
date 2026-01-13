@@ -41,7 +41,7 @@ export default function WhoToFollow() {
       const data = await res.json();
       setFollowingStates({ ...followingStates, [userId]: data.isFollowing });
       setUsers(users.map((u) => u.id === userId ? { ...u, followerCount: data.followerCount } : u));
-      
+
       if (data.isFollowing) {
         setTimeout(() => loadSuggestedUsers(true), 1000);
       }
@@ -75,7 +75,7 @@ export default function WhoToFollow() {
                 <div className="flex flex-col overflow-hidden min-w-0 flex-1">
                   <span className="text-white font-semibold flex items-center gap-1 truncate">
                     <span className="truncate">{user.name ?? user.username}</span>
-                    <GoCheckCircleFill className="text-blue-500 flex-shrink-0 w-4 h-4" />
+                    {user.isVerified && <GoCheckCircleFill className="text-blue-500 flex-shrink-0 w-4 h-4" />}
                   </span>
                   <span className="text-gray-500 text-sm truncate">@{user.username}</span>
                 </div>

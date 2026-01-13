@@ -6,12 +6,14 @@ import Sidebar from "../../components/sidebar";
 import RightSection from "@/components/rightsection";
 import Link from "next/link";
 import { FiHeart, FiMessageCircle, FiUserPlus, FiCheckCircle } from "react-icons/fi";
+import { GoCheckCircleFill } from "react-icons/go";
 
 interface NotificationActor {
   id: string;
   name: string | null;
   username: string;
   image: string | null;
+  isVerified: boolean;
 }
 
 interface Notification {
@@ -86,19 +88,25 @@ export default function NotificationsPage() {
       case "like":
         return (
           <>
-            <span className="font-semibold">{actorName}</span> liked your post
+            <span className="font-semibold">{actorName}</span>
+            {notification.actor.isVerified && <GoCheckCircleFill className="inline text-blue-500 ml-1" />}
+            {" "}liked your post
           </>
         );
       case "comment":
         return (
           <>
-            <span className="font-semibold">{actorName}</span> commented on your post
+            <span className="font-semibold">{actorName}</span>
+            {notification.actor.isVerified && <GoCheckCircleFill className="inline text-blue-500 ml-1" />}
+            {" "}commented on your post
           </>
         );
       case "follow":
         return (
           <>
-            <span className="font-semibold">{actorName}</span> started following you
+            <span className="font-semibold">{actorName}</span>
+            {notification.actor.isVerified && <GoCheckCircleFill className="inline text-blue-500 ml-1" />}
+            {" "}started following you
           </>
         );
       default:

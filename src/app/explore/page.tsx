@@ -16,6 +16,7 @@ interface SearchUser {
   image: string | null;
   bio: string | null;
   followerCount: number;
+  isVerified: boolean;
 }
 
 type SearchTab = "posts" | "users";
@@ -197,7 +198,7 @@ export default function ExplorePage() {
                             <span className="font-semibold text-white">
                               {user.name ?? user.username}
                             </span>
-                            <GoCheckCircleFill className="text-blue-500" />
+                            {user.isVerified && <GoCheckCircleFill className="text-blue-500" />}
                           </div>
                           <p className="text-gray-500 text-sm">@{user.username}</p>
                           {user.bio && (

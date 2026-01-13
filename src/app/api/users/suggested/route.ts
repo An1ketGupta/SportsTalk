@@ -33,6 +33,7 @@ interface ScoredUser {
   email: string | null;
   image: string | null;
   bio: string | null;
+  isVerified: boolean;
   followerCount: number;
   postCount: number;
   score: number;
@@ -70,11 +71,11 @@ export async function GET(req: NextRequest) {
       const mutualConnections = await prisma.userFollow.findMany({
         where: {
           followerId: { in: Array.from(followingIds) },
-          followingId: { 
-            notIn: [currentUserId, ...Array.from(followingIds)] 
+          followingId: {
+            notIn: [currentUserId, ...Array.from(followingIds)]
           },
         },
-        select: { 
+        select: {
           followingId: true,
         },
       });
@@ -83,7 +84,7 @@ export async function GET(req: NextRequest) {
       const mutualFollowerCounts = new Map<string, number>();
       mutualConnections.forEach((rel) => {
         mutualFollowerCounts.set(
-          rel.followingId, 
+          rel.followingId,
           (mutualFollowerCounts.get(rel.followingId) ?? 0) + 1
         );
       });
@@ -124,6 +125,7 @@ export async function GET(req: NextRequest) {
           image: true,
           bio: true,
           createdAt: true,
+          isVerified: true,
           posts: {
             select: { sport: true },
             take: 20,
@@ -160,7 +162,7 @@ export async function GET(req: NextRequest) {
 
         // Engagement score (activity level)
         const engagementScore = Math.min(
-          (user._count.posts + user._count.likes) / 50, 
+          (user._count.posts + user._count.likes) / 50,
           1
         );
         score += engagementScore * USER_WEIGHTS.ENGAGEMENT;
@@ -184,6 +186,7 @@ export async function GET(req: NextRequest) {
           email: user.email,
           image: user.image,
           bio: user.bio,
+          isVerified: user.isVerified,
           followerCount: user._count.followers,
           postCount: user._count.posts,
           score,
@@ -201,6 +204,7 @@ export async function GET(req: NextRequest) {
           username: u.email?.split("@")[0] ?? "user",
           image: u.image,
           bio: u.bio,
+          isVerified: u.isVerified,
           followerCount: u.followerCount,
           postCount: u.postCount,
           reason: u.reason,
@@ -229,6 +233,7 @@ export async function GET(req: NextRequest) {
           email: true,
           image: true,
           bio: true,
+          isVerified: true,
           _count: {
             select: {
               followers: true,
@@ -245,6 +250,7 @@ export async function GET(req: NextRequest) {
           username: u.email?.split("@")[0] ?? "user",
           image: u.image,
           bio: u.bio,
+          isVerified: u.isVerified,
           followerCount: u._count.followers,
           postCount: u._count.posts,
           reason: u._count.followers > 5 ? "Popular in the community" : null,
@@ -260,11 +266,4 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// Export a function to invalidate cache for a user (can be called after follow/unfollow)
-export function invalidateSuggestedUsersCache(userId: string) {
-  for (const [key] of suggestedUsersCache.entries()) {
-    if (key.startsWith(userId)) {
-      suggestedUsersCache.delete(key);
-    }
-  }
-}
+

@@ -30,6 +30,7 @@ interface UserProfile {
   followerCount: number;
   followingCount: number;
   postCount: number;
+  isVerified: boolean;
 }
 
 interface Reply {
@@ -41,6 +42,7 @@ interface Reply {
     name: string | null;
     image: string | null;
     username: string;
+    isVerified: boolean;
   };
   post: FeedPost;
 }
@@ -381,7 +383,7 @@ export default function MePage() {
             <h1 className="text-2xl font-bold">
               {user.name ?? user.username}
             </h1>
-            <GoCheckCircleFill className="text-blue-500 text-xl" />
+            {user.isVerified && <GoCheckCircleFill className="text-blue-500 text-xl" />}
           </div>
           <p className="text-gray-500">@{user.username}</p>
 
@@ -495,7 +497,7 @@ export default function MePage() {
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2 text-sm">
                               <span className="font-semibold">{reply.author.name ?? reply.author.username}</span>
-                              <GoCheckCircleFill className="text-blue-500" />
+                              {reply.author.isVerified && <GoCheckCircleFill className="text-blue-500" />}
                               <span className="text-gray-500">@{reply.author.username}</span>
                               <span className="text-gray-500 text-xs">· {formatTimeAgo(reply.createdAt)}</span>
                             </div>

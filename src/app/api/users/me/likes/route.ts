@@ -55,6 +55,7 @@ export async function GET(req: NextRequest) {
           name: like.post.author.name,
           image: like.post.author.image,
           username: like.post.author.email?.split("@")[0] ?? "user",
+          isVerified: like.post.author.isVerified,
         },
         likeCount: like.post._count.likes,
         commentCount: like.post._count.comments,

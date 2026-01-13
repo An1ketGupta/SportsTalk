@@ -237,7 +237,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
               <Link href={`/user/${post.author.id}`} className="hover:underline">
                 <div className="flex items-center gap-1">
                   <span className="font-semibold">{post.author.name ?? post.author.username}</span>
-                  <GoCheckCircleFill className="text-blue-500 w-4 h-4" />
+                  {post.author.isVerified && <GoCheckCircleFill className="text-blue-500 w-4 h-4" />}
                 </div>
                 <span className="text-gray-500 text-sm">@{post.author.username}</span>
               </Link>
