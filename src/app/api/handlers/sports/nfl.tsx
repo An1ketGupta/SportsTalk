@@ -15,7 +15,6 @@ export async function NFLMatchesHandler() {
         {sortedGames.length === 0 ? (
           <div className="col-span-full text-center py-20">
             <div className="text-gray-400 text-lg font-medium">No live NFL games available</div>
-            <p className="text-gray-500 text-sm mt-2">No live NFL games right now</p>
           </div>
         ) : (
           sortedGames.map((item: any) => {

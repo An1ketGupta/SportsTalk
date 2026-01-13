@@ -1,6 +1,6 @@
 'use client'
 
-import Footer from "@/components/footer";
+import MobileBottomNav from "@/components/MobileBottomNav";
 import { useState, useEffect, JSX } from "react";
 import HocketMatchesHandler from "../../api/handlers/sports/hockey";
 import MMAMatchesHandler from "../../api/handlers/sports/mma";
@@ -13,87 +13,87 @@ import CricketMatchHandler from "../../api/handlers/sports/cricket";
 import { NFLMatchesHandler } from "../../api/handlers/sports/nfl";
 import Link from "next/link";
 
-export default function LiveMatches({params} : any) {
+export default function LiveMatches({ params }: any) {
   const categories = ["NFL", "Cricket", "Football", "NBA", "Tennis", "Basketball", "Formula_1", "MMA", "Hockey"];
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [MatchesDiv, setMatchesDiv] = useState<JSX.Element | null>(null);
 
-  useEffect(()=>{
-    async function GetSportsCategory(){
-      const category:string[] = (await params).sportscategory
+  useEffect(() => {
+    async function GetSportsCategory() {
+      const category: string[] = (await params).sportscategory
       setSelectedCategory(category[0])
     }
     GetSportsCategory()
-  },[])
-  
+  }, [])
+
   useEffect(() => {
     async function MatchesHandler() {
       setLoading(true);
-      if(selectedCategory){
-        let response:JSX.Element = <></>;
-        if(selectedCategory === "nfl"){
-          try{
-              response = await NFLMatchesHandler();
-            } catch (err) {
-              console.error("Error fetching matches:", err);
-            }
-        }
-        else if(selectedCategory === "cricket"){
+      if (selectedCategory) {
+        let response: JSX.Element = <></>;
+        if (selectedCategory === "nfl") {
           try {
-              response = await CricketMatchHandler();
-            } catch (err) {
-              console.error("Error fetching matches:", err);
-            }
+            response = await NFLMatchesHandler();
+          } catch (err) {
+            console.error("Error fetching matches:", err);
+          }
         }
-        else if(selectedCategory === "football"){
+        else if (selectedCategory === "cricket") {
           try {
-              response = await FootballMatchesHandler();
-            } catch (err) {
-              console.error("Error fetching matches:", err);
-            }
+            response = await CricketMatchHandler();
+          } catch (err) {
+            console.error("Error fetching matches:", err);
+          }
         }
-        else if(selectedCategory === "nba"){
+        else if (selectedCategory === "football") {
           try {
-              response = await NBAMatchesHandler();
-            } catch (err) {
-              console.error("Error fetching matches:", err);
-            }
+            response = await FootballMatchesHandler();
+          } catch (err) {
+            console.error("Error fetching matches:", err);
+          }
         }
-        else if(selectedCategory === "tennis"){
+        else if (selectedCategory === "nba") {
           try {
-              response = await TennisMatchesHandler();
-            } catch (err) {
-              console.error("Error fetching matches:", err);
-            }
+            response = await NBAMatchesHandler();
+          } catch (err) {
+            console.error("Error fetching matches:", err);
+          }
         }
-        else if(selectedCategory === "basketball"){
+        else if (selectedCategory === "tennis") {
           try {
-              response = await BasketballMatchesHandler();
-            } catch (err) {
-              console.error("Error fetching matches:", err);
-            }
+            response = await TennisMatchesHandler();
+          } catch (err) {
+            console.error("Error fetching matches:", err);
+          }
         }
-        else if(selectedCategory === "formula_1"){
+        else if (selectedCategory === "basketball") {
           try {
-              response = await F1MatchesHandler();
-            } catch (err) {
-              console.error("Error fetching matches:", err);
-            }
+            response = await BasketballMatchesHandler();
+          } catch (err) {
+            console.error("Error fetching matches:", err);
+          }
         }
-        else if(selectedCategory === "mma"){
+        else if (selectedCategory === "formula_1") {
           try {
-              response = await MMAMatchesHandler();
-            } catch (err) {
-              console.error("Error fetching matches:", err);
-            }
+            response = await F1MatchesHandler();
+          } catch (err) {
+            console.error("Error fetching matches:", err);
+          }
         }
-        else if(selectedCategory === "hockey"){
+        else if (selectedCategory === "mma") {
           try {
-              response = await HocketMatchesHandler();
-            } catch (err) {
-              console.error("Error fetching matches:", err);
-            }
+            response = await MMAMatchesHandler();
+          } catch (err) {
+            console.error("Error fetching matches:", err);
+          }
+        }
+        else if (selectedCategory === "hockey") {
+          try {
+            response = await HocketMatchesHandler();
+          } catch (err) {
+            console.error("Error fetching matches:", err);
+          }
         }
         setMatchesDiv(response);
         setLoading(false);
@@ -107,28 +107,27 @@ export default function LiveMatches({params} : any) {
     <div className="min-h-screen w-full bg-black text-white flex flex-col">
       {/* Header */}
       <div className="sticky top-0 z-40 border-b border-white/10 bg-black/80 backdrop-blur-md">
-        <div className="px-6 py-5 md:px-12 md:py-8">
+        <div className="px-4 py-4 md:px-12 md:py-8">
           {/* Title with accent line */}
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-1 h-8 bg-gradient-to-b from-blue-600 to-blue-400 rounded"></div>
-            <h1 className="text-3xl md:text-4xl font-bold">Live Matches</h1>
+          <div className="flex items-center gap-2 md:gap-3 mb-1 md:mb-2">
+            <div className="w-1 h-6 md:h-8 bg-gradient-to-b from-blue-600 to-blue-400 rounded"></div>
+            <h1 className="text-xl md:text-4xl font-bold">Live Matches</h1>
           </div>
-          <p className="text-sm text-gray-400 ml-4 mb-5">
-            Follow live scores and join real-time discussions with fans worldwide
+          <p className="text-xs md:text-sm text-gray-400 ml-3 md:ml-4 mb-4 md:mb-5">
+            Follow live scores and join real-time discussions
           </p>
 
           {/* Category Tabs */}
-          <div className="overflow-x-auto scrollbar-hide -mx-6 md:-mx-12 px-6 md:px-12">
-            <div className="flex gap-2 min-w-max pb-1">
+          <div className="overflow-x-auto scrollbar-hide -mx-4 md:-mx-12 px-4 md:px-12">
+            <div className="flex gap-1.5 md:gap-2 min-w-max pb-1">
               {categories.map((cat) => (
                 <Link
                   key={cat}
                   href={`/livematches/${cat.toLowerCase()}`}
-                  className={`px-4 py-2 rounded-full text-xs md:text-sm font-semibold whitespace-nowrap transition-all duration-200 border ${
-                    selectedCategory === cat.toLowerCase()
-                      ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white border-transparent shadow-lg shadow-blue-500/30"
-                      : "bg-gray-900/60 text-gray-300 border-gray-700 hover:bg-gray-800 hover:border-gray-600"
-                  }`}
+                  className={`px-3 md:px-4 py-1.5 md:py-2 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 border ${selectedCategory === cat.toLowerCase()
+                    ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white border-transparent shadow-lg shadow-blue-500/30"
+                    : "bg-gray-900/60 text-gray-300 border-gray-700 hover:bg-gray-800 hover:border-gray-600"
+                    }`}
                 >
                   {cat.replace("_", " ")}
                 </Link>
@@ -139,15 +138,15 @@ export default function LiveMatches({params} : any) {
       </div>
 
       {/* Matches Content */}
-      <main className="flex-1">
-        <div className="max-w-6xl mx-auto w-full px-6 md:px-12 py-8">
+      <main className="flex-1 pb-20 md:pb-0">
+        <div className="max-w-6xl mx-auto w-full px-4 md:px-12 py-4 md:py-8">
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-20 text-gray-400">
-              <div className="w-12 h-12 rounded-full border-2 border-gray-700 border-t-blue-500 animate-spin mb-4"></div>
-              <p className="text-sm font-medium">Loading {selectedCategory} matches...</p>
+            <div className="flex flex-col items-center justify-center py-12 md:py-20 text-gray-400">
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-gray-700 border-t-blue-500 animate-spin mb-4"></div>
+              <p className="text-xs md:text-sm font-medium">Loading {selectedCategory} matches...</p>
             </div>
           ) : MatchesDiv ? (
-            <div className="space-y-6 md:space-y-7">
+            <div className="space-y-4 md:space-y-7">
               {MatchesDiv}
             </div>
           ) : (
@@ -163,8 +162,7 @@ export default function LiveMatches({params} : any) {
           )}
         </div>
       </main>
-
-      <Footer />
+      <MobileBottomNav />
     </div>
   );
 }

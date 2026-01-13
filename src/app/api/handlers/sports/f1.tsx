@@ -27,7 +27,6 @@ export default async function F1MatchesHandler() {
                                 {sortedRaces.length === 0 ? (
                                     <div className="col-span-full text-center py-20">
                                         <div className="text-gray-400 text-lg font-medium">No upcoming F1 races</div>
-                                        <p className="text-gray-500 text-sm mt-2">No upcoming or live F1 races right now</p>
                                     </div>
                         ) : (
                             sortedRaces.map((race: any) => {

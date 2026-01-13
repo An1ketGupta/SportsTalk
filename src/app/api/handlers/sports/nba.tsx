@@ -17,7 +17,6 @@ export default async function NBAMatchesHandler() {
         {sortedGames.length === 0 ? (
           <div className="col-span-full text-center py-20">
             <div className="text-gray-400 text-lg font-medium">No live games available</div>
-            <p className="text-gray-500 text-sm mt-2">No live NBA games right now</p>
           </div>
         ) : (
           sortedGames.map((game: any) => {

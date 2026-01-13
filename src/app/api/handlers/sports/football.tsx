@@ -16,7 +16,6 @@ export default async function FootballMatchesHandler() {
         {sortedMatches.length === 0 ? (
           <div className="col-span-full text-center py-20">
             <div className="text-gray-400 text-lg font-medium">No live matches available</div>
-            <p className="text-gray-500 text-sm mt-2">No live football matches right now</p>
           </div>
         ) : (
           sortedMatches.map((match: any) => (

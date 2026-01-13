@@ -8,6 +8,7 @@ import Post, { FeedPost } from "@/components/ui/post";
 import { FiSearch, FiUsers } from "react-icons/fi";
 import { GoCheckCircleFill } from "react-icons/go";
 import Link from "next/link";
+import MobileBottomNav from "@/components/MobileBottomNav";
 
 interface SearchUser {
   id: string;
@@ -93,12 +94,12 @@ export default function ExplorePage() {
   };
 
   return (
-    <div className="w-full min-h-screen flex">
-      <div>
+    <div className="flex w-full h-screen overflow-hidden">
+      <div className="hidden md:flex flex-col h-full sticky top-0 overflow-y-auto w-auto border-r border-white/20">
         <Sidebar />
       </div>
 
-      <div className="border-r border-white border-opacity-20 overflow-y-auto scrollbar-hide flex-1 w-full md:max-w-xl lg:max-w-2xl">
+      <div className="flex-1 h-full flex flex-col w-full md:max-w-xl lg:max-w-2xl border-r border-white/20 overflow-y-auto scrollbar-hide pb-20 md:pb-0">
         {/* Search Header */}
         <div className="sticky top-0 bg-black/80 backdrop-blur-md z-10 p-4">
           <div className="relative">
@@ -122,8 +123,8 @@ export default function ExplorePage() {
             <button
               onClick={() => setActiveTab("posts")}
               className={`flex-1 py-3 text-center font-semibold transition-colors ${activeTab === "posts"
-                  ? "text-white border-b-2 border-blue-500"
-                  : "text-gray-500 hover:bg-gray-900"
+                ? "text-white border-b-2 border-blue-500"
+                : "text-gray-500 hover:bg-gray-900"
                 }`}
             >
               Posts ({posts.length})
@@ -131,8 +132,8 @@ export default function ExplorePage() {
             <button
               onClick={() => setActiveTab("users")}
               className={`flex-1 py-3 text-center font-semibold transition-colors ${activeTab === "users"
-                  ? "text-white border-b-2 border-blue-500"
-                  : "text-gray-500 hover:bg-gray-900"
+                ? "text-white border-b-2 border-blue-500"
+                : "text-gray-500 hover:bg-gray-900"
                 }`}
             >
               Users ({users.length})
@@ -213,8 +214,8 @@ export default function ExplorePage() {
                       <button
                         onClick={() => handleFollow(user.id)}
                         className={`px-4 py-2 rounded-full font-semibold transition-colors ${followingStates[user.id]
-                            ? "bg-transparent border border-gray-600 text-white hover:bg-red-600/10 hover:border-red-600 hover:text-red-600"
-                            : "bg-white text-black hover:bg-gray-200"
+                          ? "bg-transparent border border-gray-600 text-white hover:bg-red-600/10 hover:border-red-600 hover:text-red-600"
+                          : "bg-white text-black hover:bg-gray-200"
                           }`}
                       >
                         {followingStates[user.id] ? "Following" : "Follow"}
@@ -228,7 +229,11 @@ export default function ExplorePage() {
         </div>
       </div>
 
-      <RightSection />
+      <div className="hidden lg:block h-full overflow-y-auto w-80 xl:w-96 border-l border-white/20 scrollbar-hide">
+        <RightSection />
+      </div>
+
+      <MobileBottomNav />
     </div>
   );
 }

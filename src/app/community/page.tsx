@@ -7,7 +7,8 @@ import RightSection from "@/components/rightsection";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
-import { FiRefreshCw, FiFilter, FiX, FiUsers, FiStar } from "react-icons/fi";
+import { FiRefreshCw, FiFilter, FiX, FiUsers, FiStar, FiPlus } from "react-icons/fi";
+import MobileBottomNav from "@/components/MobileBottomNav";
 
 type Tab = "foryou" | "following";
 
@@ -37,7 +38,6 @@ export default function CommunityPage() {
   const [followingCount, setFollowingCount] = useState<number | null>(null);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [selectedSport, setSelectedSport] = useState<string>("All");
-  const [showFilterMenu, setShowFilterMenu] = useState<boolean>(false);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loadingMore, setLoadingMore] = useState<boolean>(false);
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -144,10 +144,6 @@ export default function CommunityPage() {
     }
   }, [posts, selectedSport]);
 
-  const handleRefresh = () => {
-    loadFeed(activeTab, true);
-  };
-
   const handlePostCreated = () => {
     loadFeed(activeTab, true);
     setTweetBox(false);
@@ -170,18 +166,18 @@ export default function CommunityPage() {
   }, [activeTab, loadFeed]);
 
   return (
-    <div className="w-full min-h-screen flex">
-      <div>
+    <div className="flex w-full h-[90vh] overflow-hidden">
+      <div className="hidden md:flex flex-col h-full sticky top-0 overflow-y-auto w-auto border-r border-white/20">
         <Sidebar setAddPost={setTweetBox} />
       </div>
 
-      <div className="border-r border-white border-opacity-20 overflow-y-auto scrollbar-hide flex-1 w-full md:max-w-xl lg:max-w-2xl">
+      <div className="flex-1 h-full flex flex-col w-full md:max-w-xl lg:max-w-2xl border-r border-white/20 overflow-y-auto scrollbar-hide">
         <div className="sticky top-0 bg-black/20 backdrop-blur-md border-none flex items-center z-10">
           <Button
             onClick={() => setActiveTab("foryou")}
             className={`${activeTab === "foryou"
-                ? "bg-[#dfe6e9] text-black"
-                : "bg-black/20 text-white"
+              ? "bg-[#dfe6e9] text-black"
+              : "bg-black/20 text-white"
               } w-full hover:bg-[#dfe6e9] hover:text-black rounded-sm flex items-center justify-center gap-1`}
           >
             <FiStar className="w-4 h-4" />
@@ -191,8 +187,8 @@ export default function CommunityPage() {
           <Button
             onClick={() => setActiveTab("following")}
             className={`${activeTab === "following"
-                ? "bg-[#dfe6e9] text-black"
-                : "bg-black/20 text-white"
+              ? "bg-[#dfe6e9] text-black"
+              : "bg-black/20 text-white"
               } w-full hover:bg-[#dfe6e9] hover:text-black rounded-sm flex items-center justify-center gap-1`}
           >
             <FiUsers className="w-4 h-4" />
@@ -200,79 +196,95 @@ export default function CommunityPage() {
           </Button>
         </div>
 
-        <div className="mx-2 mt-2">
-          {showTweetBox && <TweetBox onPostCreated={handlePostCreated} />}
-        </div>
+        <div className="flex-1 w-full pb-20 md:pb-0">
+          <div className="mx-2 mt-2">
+            {showTweetBox && <TweetBox onPostCreated={handlePostCreated} />}
+          </div>
 
-        <div className="w-full px-2 pb-6 mt-2">
-          {loading && (
-            <div className="flex justify-center py-6">
-              <div className="w-8 h-8 border-4 border-gray-700 border-t-blue-500 rounded-full animate-spin"></div>
-            </div>
-          )}
-
-          {!loading && filteredPosts.length === 0 && activeTab === "foryou" && (
-            <div className="flex flex-col items-center justify-center py-10 text-center text-gray-400">
-              <FiStar className="w-12 h-12 mb-4 text-gray-600" />
-              <p className="font-semibold text-lg">
-                {selectedSport !== "All"
-                  ? `No ${selectedSport} posts yet`
-                  : "No posts yet"}
-              </p>
-              <p className="text-sm mt-1">
-                Be the first to share what&apos;s happening in sports.
-              </p>
-            </div>
-          )}
-
-          {!loading &&
-            filteredPosts.length === 0 &&
-            activeTab === "following" &&
-            hasTriedFollowing && (
-              <div className="flex flex-col items-center justify-center py-10 text-center text-gray-400">
-                <FiUsers className="w-12 h-12 mb-4 text-gray-600" />
-                <p className="font-semibold text-lg">
-                  {followingCount === 0
-                    ? "You're not following anyone yet"
-                    : selectedSport !== "All"
-                      ? `No ${selectedSport} posts from people you follow`
-                      : "No posts from people you follow"}
-                </p>
-                <p className="text-sm mt-1 max-w-xs">
-                  Follow other fans to see their posts in your Following feed.
-                </p>
-              </div>
-            )}
-
-          {!loading &&
-            filteredPosts.map((p) => (
-              <Post
-                key={p.id}
-                post={p}
-                onDelete={() => handlePostDeleted(p.id)}
-              />
-            ))}
-
-          {/* Infinite Scroll Sentinel */}
-          <div ref={loadMoreRef} className="py-4">
-            {loadingMore && (
-              <div className="flex justify-center">
+          <div className="w-full px-2 pb-6 mt-2">
+            {loading && (
+              <div className="flex justify-center py-6">
                 <div className="w-8 h-8 border-4 border-gray-700 border-t-blue-500 rounded-full animate-spin"></div>
               </div>
             )}
-          </div>
 
-          {/* End of Feed Message */}
-          {!loading && filteredPosts.length > 0 && !nextCursor && !loadingMore && (
-            <div className="flex justify-center py-4 text-gray-500 text-sm">
-              You&apos;ve reached the end of the feed
+            {!loading && filteredPosts.length === 0 && activeTab === "foryou" && (
+              <div className="flex flex-col items-center justify-center py-10 text-center text-gray-400">
+                <FiStar className="w-12 h-12 mb-4 text-gray-600" />
+                <p className="font-semibold text-lg">
+                  {selectedSport !== "All"
+                    ? `No ${selectedSport} posts yet`
+                    : "No posts yet"}
+                </p>
+                <p className="text-sm mt-1">
+                  Be the first to share what&apos;s happening in sports.
+                </p>
+              </div>
+            )}
+
+            {!loading &&
+              filteredPosts.length === 0 &&
+              activeTab === "following" &&
+              hasTriedFollowing && (
+                <div className="flex flex-col items-center justify-center py-10 text-center text-gray-400">
+                  <FiUsers className="w-12 h-12 mb-4 text-gray-600" />
+                  <p className="font-semibold text-lg">
+                    {followingCount === 0
+                      ? "You're not following anyone yet"
+                      : selectedSport !== "All"
+                        ? `No ${selectedSport} posts from people you follow`
+                        : "No posts from people you follow"}
+                  </p>
+                  <p className="text-sm mt-1 max-w-xs">
+                    Follow other fans to see their posts in your Following feed.
+                  </p>
+                </div>
+              )}
+
+            {!loading &&
+              filteredPosts.map((p) => (
+                <Post
+                  key={p.id}
+                  post={p}
+                  onDelete={() => handlePostDeleted(p.id)}
+                />
+              ))}
+
+            {/* Infinite Scroll Sentinel */}
+            <div ref={loadMoreRef} className="py-4">
+              {loadingMore && (
+                <div className="flex justify-center">
+                  <div className="w-8 h-8 border-4 border-gray-700 border-t-blue-500 rounded-full animate-spin"></div>
+                </div>
+              )}
             </div>
-          )}
+
+            {/* End of Feed Message */}
+            {!loading && filteredPosts.length > 0 && !nextCursor && !loadingMore && (
+              <div className="flex justify-center py-4 text-gray-500 text-sm">
+                You&apos;ve reached the end of the feed
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Right Section */}
-      <RightSection />
+      <div className="hidden lg:block h-full overflow-y-auto w-80 xl:w-96 border-l border-white/20 scrollbar-hide">
+        <RightSection />
+      </div>
+
+      <MobileBottomNav />
+      {/* Mobile Tweet FAB */}
+      <button
+        onClick={() => {
+          setTweetBox(true);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }}
+        className="md:hidden fixed bottom-20 right-4 bg-blue-500 hover:bg-blue-600 text-white p-4 rounded-full shadow-lg z-50 transition-transform active:scale-95"
+      >
+        <FiPlus className="w-6 h-6" />
+      </button>
     </div>
   );
 }
