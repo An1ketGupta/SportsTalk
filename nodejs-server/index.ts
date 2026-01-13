@@ -2,7 +2,6 @@ import { createServer } from "http";
 import {Server} from "socket.io"
 
 const httpserver = createServer((req, res) => {
-    // If someone calls the root URL, say "I am alive"
     res.writeHead(200, { 'Content-Type': 'text/plain' });
     res.end('SportsTalk Socket Server is Running!');
 });

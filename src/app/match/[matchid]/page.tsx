@@ -45,7 +45,7 @@ export default function Match({ params }: any) {
 
   // Creating the socket client useEffect
   useEffect(() => {
-    const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:3001");
+    const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL);
     socketref.current = socket
     async function getMatchId() {
       const matchId = (await params).matchid
