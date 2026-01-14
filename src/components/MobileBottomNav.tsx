@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { MdHome, MdSearch, MdNotifications, MdPerson, MdMessage, MdTrendingUp, MdClose, MdLogout } from "react-icons/md";
 import { signOut } from "next-auth/react";
+import { useGlobalCache } from "@/context/GlobalCacheContext";
 
 const iconMap = {
     home: MdHome,
@@ -35,6 +36,7 @@ export default function MobileBottomNav() {
     const [showProfileMenu, setShowProfileMenu] = useState(false);
     const [trends, setTrends] = useState<any[]>(cachedTrends ?? []);
     const [loadingTrends, setLoadingTrends] = useState(false);
+    const { unreadNotificationCount, unreadMessageCount } = useGlobalCache();
 
     // Hide on landing page
     if (pathname === "/") return null;
@@ -223,15 +225,23 @@ export default function MobileBottomNav() {
                         }
 
                         const Icon = iconMap[item.icon as keyof typeof iconMap] || MdHome;
+                        const badgeCount = item.icon === "bell" ? unreadNotificationCount : item.icon === "message" ? unreadMessageCount : 0;
 
                         return (
                             <Link
                                 key={item.label}
                                 href={item.path!}
-                                className={`flex flex-col items-center justify-center w-full h-full ${isActive ? "text-white" : "text-gray-500"
+                                className={`flex flex-col items-center justify-center w-full h-full relative ${isActive ? "text-white" : "text-gray-500"
                                     }`}
                             >
-                                <Icon size={28} />
+                                <div className="relative">
+                                    <Icon size={28} />
+                                    {badgeCount > 0 && (
+                                        <span className="absolute -top-1 -right-2 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                                            {badgeCount > 9 ? '9+' : badgeCount}
+                                        </span>
+                                    )}
+                                </div>
                             </Link>
                         );
                     })}

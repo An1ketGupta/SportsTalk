@@ -11,6 +11,7 @@ import FootballMatchesHandler from "../../api/handlers/sports/football";
 import CricketMatchHandler from "../../api/handlers/sports/cricket";
 import { NFLMatchesHandler } from "../../api/handlers/sports/nfl";
 import Link from "next/link";
+import Loader from "@/components/ui/loader";
 
 // Sport icons mapping
 const sportIcons: { [key: string]: string } = {
@@ -118,25 +119,25 @@ export default function LiveMatches({ params }: any) {
   return (
     <div className="min-h-[90vh] w-full bg-black text-white flex flex-col">
       {/* Header */}
-      <div className="sticky top-0 z-40 border-b border-white/10 bg-black/90 backdrop-blur-md">
-        <div className="px-4 py-4 md:px-12 md:py-6">
+      <div className="sticky top-0 z-40 border-b border-white/10 bg-black/80 backdrop-blur-xl">
+        <div className="px-4 py-4 md:px-8 lg:px-12">
           {/* Title Section */}
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-1.5 h-8 md:h-10 bg-gradient-to-b from-[#f35730] to-red-600 rounded-full"></div>
+            <div className="w-1 h-8 bg-blue-500 rounded-full"></div>
             <div>
-              <h1 className="text-2xl md:text-4xl font-bold">Live Matches</h1>
-              <p className="text-xs md:text-sm text-[#9ca3af] mt-0.5">
+              <h1 className="text-xl md:text-2xl font-bold">Live Matches</h1>
+              <p className="text-xs text-gray-500 mt-0.5">
                 Follow live scores and join real-time discussions
               </p>
             </div>
-            <div className="ml-auto flex items-center gap-2 px-3 py-1.5 bg-red-500/10 border border-red-500/20 rounded-full">
-              <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-              <span className="text-xs font-medium text-red-400">Live</span>
+            <div className="ml-auto flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-full">
+              <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+              <span className="text-xs font-medium text-emerald-400">Live</span>
             </div>
           </div>
 
           {/* Category Tabs */}
-          <div className="overflow-x-auto scrollbar-hide -mx-4 md:-mx-12 px-4 md:px-12">
+          <div className="overflow-x-auto scrollbar-hide -mx-4 md:-mx-8 lg:-mx-12 px-4 md:px-8 lg:px-12">
             <div className="flex gap-2 min-w-max pb-1">
               {categories.map((cat) => {
                 const isActive = selectedCategory === cat.toLowerCase();
@@ -145,9 +146,9 @@ export default function LiveMatches({ params }: any) {
                   <Link
                     key={cat}
                     href={`/livematches/${cat.toLowerCase()}`}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-200 border ${isActive
-                      ? "bg-[#f35730] text-white border-[#f35730] shadow-lg"
-                      : "bg-[#0f0f0f] text-[#9ca3af] border-white/10 hover:bg-[#181818] hover:text-white hover:border-white/20"
+                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200 ${isActive
+                      ? "bg-white text-black"
+                      : "bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white"
                       }`}
                   >
                     <span className="text-base">{icon}</span>
@@ -162,35 +163,30 @@ export default function LiveMatches({ params }: any) {
 
       {/* Matches Content */}
       <main className="flex-1 pb-20 md:pb-0">
-        <div className="max-w-6xl mx-auto w-full px-4 md:px-12 py-6 md:py-8">
+        <div className="max-w-5xl mx-auto w-full px-4 md:px-8 lg:px-12 py-6">
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-16 md:py-24">
-              <div className="relative">
-                <div className="w-16 h-16 rounded-full border-4 border-[#181818] border-t-[#f35730] animate-spin"></div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-2xl">{sportIcons[selectedCategory] || "🏅"}</span>
-                </div>
-              </div>
-              <p className="text-sm font-medium text-[#9ca3af] mt-6">
+            <div className="flex flex-col items-center justify-center py-20">
+              <Loader size="lg" />
+              <p className="text-sm text-gray-500 mt-6">
                 Loading {selectedCategory.replace("_", " ")} matches...
               </p>
             </div>
           ) : MatchesDiv ? (
-            <div className="space-y-4 md:space-y-6">
+            <div className="space-y-4">
               {MatchesDiv}
             </div>
           ) : (
             <div className="py-20 text-center">
-              <div className="inline-flex items-center justify-center w-20 h-20 mb-6 bg-[#0f0f0f] rounded-2xl border border-white/10">
+              <div className="inline-flex items-center justify-center w-20 h-20 mb-6 bg-white/5 rounded-2xl border border-white/10">
                 <span className="text-4xl">{sportIcons[selectedCategory] || "🏅"}</span>
               </div>
               <p className="text-white font-semibold text-xl mb-2">No matches available</p>
-              <p className="text-[#9ca3af] text-sm max-w-sm mx-auto">
+              <p className="text-gray-500 text-sm max-w-sm mx-auto">
                 There are no {selectedCategory.replace("_", " ")} matches scheduled right now. Check back soon!
               </p>
               <Link
                 href="/community"
-                className="inline-flex items-center gap-2 mt-6 px-6 py-3 bg-[#181818] hover:bg-[#252525] border border-white/10 rounded-xl text-sm font-medium transition-colors"
+                className="inline-flex items-center gap-2 mt-6 px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full text-sm font-medium transition-colors"
               >
                 Join Community Discussions
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">

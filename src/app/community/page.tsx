@@ -169,6 +169,24 @@ export default function CommunityPage() {
     }
   }, [activeTab, loadFeed]);
 
+  // Infinite scroll with Intersection Observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !loadingMore && !loading && nextCursor && selectedSport !== "Trending") {
+          loadFeed(activeTab, false, nextCursor);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [activeTab, nextCursor, loadingMore, loading, loadFeed, selectedSport]);
+
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (showTweetBox && scrollContainerRef.current) {
