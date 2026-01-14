@@ -1,7 +1,7 @@
 "use client";
 import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
 import { useState, useRef } from "react";
-import { FiImage, FiSmile, FiX, FiHash } from "react-icons/fi";
+import { FiImage, FiSmile, FiX, FiHash, FiUpload, FiVideo } from "react-icons/fi";
 import { useSession } from "next-auth/react";
 import { useToast } from "@/components/ToastProvider";
 
@@ -11,10 +11,13 @@ export default function TweetBox({ onPostCreated }: { onPostCreated?: () => void
   const [text, setText] = useState("");
   const [mediaUrl, setMediaUrl] = useState("");
   const [mediaPreview, setMediaPreview] = useState("");
+  const [mediaType, setMediaType] = useState<"image" | "video" | null>(null);
   const [customTag, setCustomTag] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [emojiselected, setEmojiSelected] = useState(false);
   const [isPosting, setIsPosting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [showTagInput, setShowTagInput] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -28,17 +31,94 @@ export default function TweetBox({ onPostCreated }: { onPostCreated?: () => void
     setEmojiSelected(false);
   };
 
-  const handleMediaUrlChange = (url: string) => {
-    setMediaUrl(url);
-    if (url.trim()) {
-      setMediaPreview(url);
-    } else {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const validImageTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    const validVideoTypes = ["video/mp4", "video/webm", "video/quicktime"];
+    const isImage = validImageTypes.includes(file.type);
+    const isVideo = validVideoTypes.includes(file.type);
+
+    if (!isImage && !isVideo) {
+      showToast("Invalid file type. Only images and videos are allowed.", "error");
+      return;
+    }
+
+    // Validate file size
+    const maxImageSize = 10 * 1024 * 1024; // 10MB
+    const maxVideoSize = 100 * 1024 * 1024; // 100MB
+    const maxSize = isVideo ? maxVideoSize : maxImageSize;
+
+    if (file.size > maxSize) {
+      showToast(`File too large. Maximum size is ${isVideo ? "100MB" : "10MB"}.`, "error");
+      return;
+    }
+
+    // Show local preview first
+    const objectUrl = URL.createObjectURL(file);
+    setMediaPreview(objectUrl);
+    setMediaType(isVideo ? "video" : "image");
+
+    // Upload to Cloudinary
+    try {
+      setIsUploading(true);
+      setUploadProgress(10);
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      // Simulate progress (since fetch doesn't support progress)
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => Math.min(prev + 10, 90));
+      }, 500);
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      clearInterval(progressInterval);
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Upload failed");
+      }
+
+      const data = await response.json();
+      setMediaUrl(data.url);
+      setUploadProgress(100);
+      showToast("Media uploaded successfully!", "success");
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      showToast(error.message || "Failed to upload media", "error");
+      // Clear preview on error
       setMediaPreview("");
+      setMediaType(null);
+      URL.revokeObjectURL(objectUrl);
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
+    }
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
 
+  const handleRemoveMedia = () => {
+    if (mediaPreview && mediaPreview.startsWith("blob:")) {
+      URL.revokeObjectURL(mediaPreview);
+    }
+    setMediaUrl("");
+    setMediaPreview("");
+    setMediaType(null);
+  };
+
   const handleAddTag = () => {
-    const trimmedTag = customTag.trim().replace(/^#/, ''); // Remove leading # if present
+    const trimmedTag = customTag.trim().replace(/^#/, '');
     if (trimmedTag && tags.length < MAX_TAGS && !tags.includes(trimmedTag)) {
       setTags([...tags, trimmedTag]);
       setCustomTag("");
@@ -57,7 +137,7 @@ export default function TweetBox({ onPostCreated }: { onPostCreated?: () => void
   };
 
   const handlePost = async () => {
-    if (!text.trim() || isPosting) return;
+    if (!text.trim() || isPosting || isUploading) return;
 
     try {
       setIsPosting(true);
@@ -67,7 +147,7 @@ export default function TweetBox({ onPostCreated }: { onPostCreated?: () => void
         body: JSON.stringify({
           content: text.trim(),
           mediaUrl: mediaUrl.trim() || null,
-          sport: tags.length > 0 ? tags.join(',') : null, // Store tags as comma-separated
+          sport: tags.length > 0 ? tags.join(',') : null,
         }),
       });
 
@@ -80,8 +160,7 @@ export default function TweetBox({ onPostCreated }: { onPostCreated?: () => void
 
       // Reset form
       setText("");
-      setMediaUrl("");
-      setMediaPreview("");
+      handleRemoveMedia();
       setTags([]);
       setCustomTag("");
 
@@ -161,20 +240,62 @@ export default function TweetBox({ onPostCreated }: { onPostCreated?: () => void
           {/* Media Preview */}
           {mediaPreview && (
             <div className="relative rounded-2xl overflow-hidden">
-              <img
-                src={mediaPreview}
-                alt="Preview"
-                className="w-full max-h-64 object-cover"
-              />
-              <button
-                onClick={() => {
-                  setMediaUrl("");
-                  setMediaPreview("");
-                }}
-                className="absolute top-2 right-2 bg-black/70 rounded-full p-2 hover:bg-black/90 transition-colors"
-              >
-                <FiX className="w-4 h-4" />
-              </button>
+              {mediaType === "video" ? (
+                <video
+                  src={mediaPreview}
+                  controls
+                  className="w-full max-h-64 object-cover"
+                />
+              ) : (
+                <img
+                  src={mediaPreview}
+                  alt="Preview"
+                  className="w-full max-h-64 object-cover"
+                />
+              )}
+
+              {/* Upload Progress Overlay */}
+              {isUploading && (
+                <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center">
+                  <div className="w-16 h-16 relative">
+                    <svg className="transform -rotate-90 w-16 h-16">
+                      <circle
+                        cx="32"
+                        cy="32"
+                        r="28"
+                        stroke="#2f3336"
+                        strokeWidth="4"
+                        fill="none"
+                      />
+                      <circle
+                        cx="32"
+                        cy="32"
+                        r="28"
+                        stroke="#1d9bf0"
+                        strokeWidth="4"
+                        fill="none"
+                        strokeDasharray={`${2 * Math.PI * 28}`}
+                        strokeDashoffset={`${2 * Math.PI * 28 * (1 - uploadProgress / 100)}`}
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    <span className="absolute inset-0 flex items-center justify-center text-sm font-bold">
+                      {uploadProgress}%
+                    </span>
+                  </div>
+                  <p className="text-sm mt-2">Uploading...</p>
+                </div>
+              )}
+
+              {/* Remove Button */}
+              {!isUploading && (
+                <button
+                  onClick={handleRemoveMedia}
+                  className="absolute top-2 right-2 bg-black/70 rounded-full p-2 hover:bg-black/90 transition-colors"
+                >
+                  <FiX className="w-4 h-4" />
+                </button>
+              )}
             </div>
           )}
 
@@ -230,25 +351,33 @@ export default function TweetBox({ onPostCreated }: { onPostCreated?: () => void
         </div>
       )}
 
-      {/* Media URL Input */}
-      {!mediaPreview && (
-        <div className="pl-14">
-          <input
-            type="text"
-            value={mediaUrl}
-            onChange={(e) => handleMediaUrlChange(e.target.value)}
-            placeholder="Paste image URL (optional)"
-            className="w-full bg-gray-900 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-      )}
+      {/* Hidden File Input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/quicktime"
+        onChange={handleFileSelect}
+        className="hidden"
+      />
 
       {/* Divider */}
       <div className="border-t border-gray-700"></div>
 
       {/* Bottom actions */}
       <div className="flex justify-between items-center pl-12">
-        <div className="flex items-center gap-4 text-blue-400">
+        <div className="flex items-center gap-2 text-blue-400">
+          {/* Upload Media Button */}
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading || !!mediaPreview}
+            className={`flex items-center gap-1 hover:bg-blue-500/10 px-3 py-1.5 rounded-full transition-colors ${(isUploading || mediaPreview) ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+            title="Upload image or video"
+          >
+            <FiImage className="w-5 h-5" />
+            <FiVideo className="w-4 h-4 -ml-1" />
+          </button>
+
           <button
             onClick={() => setEmojiSelected(!emojiselected)}
             className="hover:bg-blue-500/10 p-2 rounded-full transition-colors"
@@ -269,13 +398,13 @@ export default function TweetBox({ onPostCreated }: { onPostCreated?: () => void
         {/* Post Button */}
         <button
           onClick={handlePost}
-          disabled={!text.trim() || charCount > MAX_CHARS || isPosting}
-          className={`px-6 py-2 rounded-full font-semibold transition-colors ${text.trim() && charCount <= MAX_CHARS && !isPosting
-              ? "bg-blue-500 text-white hover:bg-blue-600"
-              : "bg-gray-600 text-gray-300 cursor-not-allowed"
+          disabled={!text.trim() || charCount > MAX_CHARS || isPosting || isUploading}
+          className={`px-6 py-2 rounded-full font-semibold transition-colors ${text.trim() && charCount <= MAX_CHARS && !isPosting && !isUploading
+            ? "bg-blue-500 text-white hover:bg-blue-600"
+            : "bg-gray-600 text-gray-300 cursor-not-allowed"
             }`}
         >
-          {isPosting ? "Posting..." : "Post"}
+          {isPosting ? "Posting..." : isUploading ? "Uploading..." : "Post"}
         </button>
       </div>
 

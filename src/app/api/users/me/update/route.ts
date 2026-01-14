@@ -13,7 +13,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { name, bio } = body;
+    const { name, bio, image, coverImage } = body;
 
     // Validation
     if (name !== undefined && (!name.trim() || name.trim().length === 0)) {
@@ -43,6 +43,8 @@ export async function PATCH(req: NextRequest) {
       data: {
         ...(name !== undefined && { name: name.trim() }),
         ...(bio !== undefined && { bio: bio.trim() || null }),
+        ...(image !== undefined && { image: image || null }),
+        ...(coverImage !== undefined && { coverImage: coverImage || null }),
       },
       select: {
         id: true,
@@ -50,6 +52,7 @@ export async function PATCH(req: NextRequest) {
         email: true,
         image: true,
         bio: true,
+        coverImage: true,
       },
     });
 
@@ -61,6 +64,7 @@ export async function PATCH(req: NextRequest) {
         username: updatedUser.email?.split("@")[0] ?? "user",
         image: updatedUser.image,
         bio: updatedUser.bio,
+        coverImage: updatedUser.coverImage,
       },
     });
   } catch (error) {

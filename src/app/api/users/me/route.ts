@@ -66,6 +66,7 @@ export async function GET(req: NextRequest) {
         email: user.email,
         image: user.image,
         bio: user.bio,
+        coverImage: user.coverImage,
         isVerified: user.isVerified,
         createdAt: user.createdAt,
         followerCount: user._count.followers,

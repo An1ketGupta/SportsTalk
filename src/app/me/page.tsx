@@ -26,6 +26,7 @@ interface UserProfile {
   email: string;
   image: string | null;
   bio: string | null;
+  coverImage?: string | null;
   createdAt: string;
   followerCount: number;
   followingCount: number;
@@ -236,7 +237,7 @@ export default function MePage() {
     }
   };
 
-  const handleSaveProfile = async (data: { name: string; bio: string }) => {
+  const handleSaveProfile = async (data: { name: string; bio: string; image?: string; coverImage?: string }) => {
     try {
       const res = await fetch("/api/users/me/update", {
         method: "PATCH",
@@ -258,6 +259,8 @@ export default function MePage() {
             ...prev,
             name: updatedData.user.name,
             bio: updatedData.user.bio,
+            image: updatedData.user.image,
+            coverImage: updatedData.user.coverImage,
           }
           : null
       );
@@ -354,7 +357,15 @@ export default function MePage() {
         {/* Profile Header */}
         <div className="relative">
           {/* Cover Image */}
-          <div className="h-48 bg-gradient-to-r from-blue-600 to-purple-600"></div>
+          <div className="h-48 bg-gradient-to-r from-blue-600 to-purple-600 overflow-hidden">
+            {user.coverImage && (
+              <img
+                src={user.coverImage}
+                alt="Cover"
+                className="w-full h-full object-cover"
+              />
+            )}
+          </div>
 
           {/* Profile Picture */}
           <div className="absolute -bottom-16 left-4">

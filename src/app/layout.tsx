@@ -48,16 +48,15 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "SportsTalk - Your Sports Community Awaits",
     description: "Join thousands of fans discussing live matches, sharing passion, and connecting over the sports you love.",
-    images: ["/logo.png"],
+    images: ["/logo.svg"],
     creator: "@sportstalk",
   },
   icons: {
     icon: [
-      { url: "/favicon.ico" },
-      { url: "/logo.png", type: "image/png" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
     ],
     apple: [
-      { url: "/logo.png" },
+      { url: "/logo.svg" },
     ],
   },
   manifest: "/manifest.json",

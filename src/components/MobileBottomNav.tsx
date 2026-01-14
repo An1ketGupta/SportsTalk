@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { MdHome, MdSearch, MdNotifications, MdPerson, MdMessage, MdTrendingUp, MdClose } from "react-icons/md";
+import { MdHome, MdSearch, MdNotifications, MdPerson, MdMessage, MdTrendingUp, MdClose, MdLogout } from "react-icons/md";
+import { signOut } from "next-auth/react";
 
 const iconMap = {
     home: MdHome,
@@ -18,7 +19,7 @@ const menuItems = [
     { label: "Explore", icon: "search", path: "/explore" },
     { label: "Trending", icon: "trending", path: null }, // Special item for trending panel
     { label: "Alerts", icon: "bell", path: "/notifications" },
-    { label: "Profile", icon: "user", path: "/me" },
+    { label: "Profile", icon: "user", path: null }, // Changed to null for menu
 ];
 
 // Cache trending data globally
@@ -30,6 +31,7 @@ export default function MobileBottomNav() {
     const pathname = usePathname();
     const router = useRouter();
     const [showTrending, setShowTrending] = useState(false);
+    const [showProfileMenu, setShowProfileMenu] = useState(false);
     const [trends, setTrends] = useState<any[]>(cachedTrends ?? []);
     const [loadingTrends, setLoadingTrends] = useState(false);
 
@@ -61,13 +63,24 @@ export default function MobileBottomNav() {
     };
 
     const handleTrendingClick = () => {
+        setShowProfileMenu(false);
         setShowTrending(true);
         loadTrends();
+    };
+
+    const handleProfileClick = () => {
+        setShowTrending(false);
+        setShowProfileMenu(true);
     };
 
     const handleTrendClick = (tag: string) => {
         setShowTrending(false);
         router.push(`/community?sport=${encodeURIComponent(tag)}`);
+    };
+
+    const handleLogout = () => {
+        setShowProfileMenu(false);
+        signOut({ callbackUrl: "/" });
     };
 
     return (
@@ -77,6 +90,14 @@ export default function MobileBottomNav() {
                 <div
                     className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[60]"
                     onClick={() => setShowTrending(false)}
+                />
+            )}
+
+            {/* Profile Menu Overlay */}
+            {showProfileMenu && (
+                <div
+                    className="md:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[60]"
+                    onClick={() => setShowProfileMenu(false)}
                 />
             )}
 
@@ -126,11 +147,51 @@ export default function MobileBottomNav() {
                 </div>
             </div>
 
+            {/* Profile Menu Slide-up Panel */}
+            <div
+                className={`md:hidden fixed left-0 right-0 bottom-0 bg-black border-t border-gray-800 rounded-t-3xl z-[70] transform transition-transform duration-300 ease-out ${showProfileMenu ? 'translate-y-0' : 'translate-y-full'
+                    }`}
+            >
+                <div className="px-4 pb-20">
+                    {/* Drag handle indicator */}
+                    <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-1 bg-gray-700 rounded-full" />
+
+                    <div className="flex items-center justify-between mb-4 pt-4">
+                        <h2 className="text-white text-lg font-bold">Account</h2>
+                        <button
+                            onClick={() => setShowProfileMenu(false)}
+                            className="text-gray-400 hover:text-white p-1"
+                        >
+                            <MdClose size={24} />
+                        </button>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Link
+                            href="/me"
+                            onClick={() => setShowProfileMenu(false)}
+                            className="flex items-center gap-4 p-4 hover:bg-gray-800 rounded-xl transition-colors"
+                        >
+                            <MdPerson size={24} className="text-white" />
+                            <span className="text-white font-medium">My Profile</span>
+                        </Link>
+
+                        <button
+                            onClick={handleLogout}
+                            className="flex items-center gap-4 p-4 hover:bg-gray-800 rounded-xl transition-colors w-full text-left"
+                        >
+                            <MdLogout size={24} className="text-red-400" />
+                            <span className="text-red-400 font-medium">Logout</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             {/* Bottom Navigation Bar */}
             <div className="md:hidden fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-xl border-t border-white/10 z-50 pb-safe">
                 <div className="flex justify-around items-center h-[3.5rem] px-2">
                     {menuItems.map((item) => {
-                        const isActive = item.path ? pathname === item.path : showTrending;
+                        const isActive = item.path ? pathname === item.path : (item.icon === "trending" ? showTrending : showProfileMenu);
 
                         // Special handling for Trending button
                         if (item.icon === "trending") {
@@ -142,6 +203,20 @@ export default function MobileBottomNav() {
                                         }`}
                                 >
                                     <MdTrendingUp size={28} />
+                                </button>
+                            );
+                        }
+
+                        // Special handling for Profile button
+                        if (item.icon === "user") {
+                            return (
+                                <button
+                                    key={item.label}
+                                    onClick={handleProfileClick}
+                                    className={`flex flex-col items-center justify-center w-full h-full ${isActive ? "text-white" : "text-gray-500"
+                                        }`}
+                                >
+                                    <MdPerson size={28} />
                                 </button>
                             );
                         }
@@ -164,3 +239,4 @@ export default function MobileBottomNav() {
         </>
     );
 }
+
