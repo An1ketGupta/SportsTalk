@@ -59,22 +59,35 @@ export default function MessagesPage() {
   const searchParams = useSearchParams();
   const userIdParam = searchParams.get("userId");
 
-  // Connect to socket server on mount
+  const currentRoomRef = useRef<string | null>(null);
+
   useEffect(() => {
+    if (!myUserId) return;
+
     const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL as string);
     socketRef.current = socket;
 
+    socket.on("connect", () => {
+      console.log("Socket connected:", socket.id);
+    });
+
     socket.on("receive-dm", (message: Message) => {
-      // Only add message if it's not from myself (prevents duplicates)
+      console.log("Received DM:", message);
       if (!message.isMine) {
         setMessages((prev) => [...prev, message]);
+        loadConversations();
       }
+    });
+
+    socket.on("disconnect", () => {
+      console.log("Socket disconnected");
     });
 
     return () => {
       socket.disconnect();
+      socketRef.current = null;
     };
-  }, []);
+  }, [myUserId]);
 
   useEffect(() => {
     loadConversations();
@@ -86,11 +99,20 @@ export default function MessagesPage() {
     }
   }, [userIdParam]);
 
-  // Join DM room when selecting a user
   useEffect(() => {
-    if (selectedUserId && myUserId) {
+    if (selectedUserId && myUserId && socketRef.current?.connected) {
+      if (currentRoomRef.current) {
+        console.log("Leaving room:", currentRoomRef.current);
+        socketRef.current.emit("leave-dm", { roomId: currentRoomRef.current });
+      }
+
+      // Create consistent room ID
+      const roomId = [myUserId, selectedUserId].sort().join("-");
+      currentRoomRef.current = roomId;
+
+      console.log("Joining DM room:", roomId);
+      socketRef.current.emit("join-dm", { myUserId, otherUserId: selectedUserId });
       loadMessages(selectedUserId);
-      socketRef.current?.emit("join-dm", { myUserId, otherUserId: selectedUserId });
     }
   }, [selectedUserId, myUserId]);
 

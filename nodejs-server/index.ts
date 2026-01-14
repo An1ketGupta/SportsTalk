@@ -38,6 +38,12 @@ io.on("connection", (socket: Socket) => {
         console.log("DM sent in room: " + roomId);
     })
 
+    // Handler for leaving a DM room
+    socket.on("leave-dm", (data: { roomId: string }) => {
+        socket.leave(data.roomId);
+        console.log("Left DM room: " + data.roomId);
+    })
+
     socket.on("message", (data: any) => {
         console.log("got the message: " + data.message)
         const roomid = data.roomid
