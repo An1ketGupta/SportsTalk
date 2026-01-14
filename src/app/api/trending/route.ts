@@ -13,19 +13,25 @@ export async function GET() {
       throw new Error("Prisma client failed to initialize");
     }
 
-    // Fetch posts with tags
-    const postsWithTags = await prisma.post.findMany({
+    // Fetch posts with tags, with a timeout to prevent hanging
+    const timeoutPromise = new Promise<any[]>((_, reject) =>
+      setTimeout(() => reject(new Error('Database query timed out')), 4000)
+    );
+
+    const dbPromise = prisma.post.findMany({
       where: { sport: { not: null } },
       select: { sport: true },
     });
+
+    const postsWithTags = await Promise.race([dbPromise, timeoutPromise]);
 
     const tagCounts = new Map<string, number>();
 
     postsWithTags.forEach((post) => {
       // Defensive check for sport
       if (post && typeof post.sport === 'string') {
-        const tags = post.sport.split(',').map(t => t.trim()).filter(Boolean);
-        tags.forEach((tag) => {
+        const tags = post.sport.split(',').map((t: string) => t.trim()).filter(Boolean);
+        tags.forEach((tag: string) => {
           tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
         });
       }
