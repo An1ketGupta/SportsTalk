@@ -164,13 +164,20 @@ export default function CommunityPage() {
     }
   }, [activeTab, loadFeed]);
 
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (showTweetBox && scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [showTweetBox]);
+
   return (
     <div className="flex w-full h-[90vh] overflow-hidden">
       <div className="hidden md:flex flex-col h-full sticky top-0 overflow-y-auto w-auto border-r border-white/20 scrollbar-hide">
         <Sidebar setAddPost={setTweetBox} />
       </div>
 
-      <div className="flex-1 h-full flex flex-col w-full md:max-w-xl lg:max-w-2xl border-r border-white/20 overflow-y-auto scrollbar-hide">
+      <div ref={scrollContainerRef} className="flex-1 h-full flex flex-col w-full md:max-w-xl lg:max-w-2xl border-r border-white/20 overflow-y-auto scrollbar-hide">
         <div className="sticky top-0 bg-black/20 backdrop-blur-md border-none flex items-center z-10">
           <Button
             onClick={() => setActiveTab("foryou")}
