@@ -9,9 +9,11 @@ import WhoToFollow from "@/components/whotofollow";
 import TrendingSports from "@/components/TrendingSports";
 import Post, { FeedPost } from "@/components/ui/post";
 import { GoCheckCircleFill } from "react-icons/go";
-import { FiCalendar } from "react-icons/fi";
+import { FiCalendar, FiMessageCircle, FiHeart } from "react-icons/fi";
 
 const POSTS_PER_PAGE = 10;
+
+type TabType = "posts" | "replies" | "likes";
 
 interface UserProfile {
   id: string;
@@ -29,6 +31,23 @@ interface UserProfile {
   isVerified: boolean;
 }
 
+interface Reply {
+  id: string;
+  content: string;
+  createdAt: string;
+  author: {
+    id: string;
+    name: string | null;
+    image: string | null;
+    username: string;
+    isVerified: boolean;
+  };
+  likeCount: number;
+  replyCount: number;
+  isLiked: boolean;
+  parentPost: FeedPost;
+}
+
 export default function Userpage() {
   const params = useParams();
   const router = useRouter();
@@ -36,11 +55,15 @@ export default function Userpage() {
 
   const [user, setUser] = useState<UserProfile | null>(null);
   const [posts, setPosts] = useState<FeedPost[]>([]);
+  const [replies, setReplies] = useState<Reply[]>([]);
+  const [likedPosts, setLikedPosts] = useState<FeedPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
+  const [activeTab, setActiveTab] = useState<TabType>("posts");
+  const [loadingTab, setLoadingTab] = useState(false);
 
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
@@ -81,18 +104,107 @@ export default function Userpage() {
     }
   }, [userId]);
 
+  const loadReplies = useCallback(async (cursor?: string) => {
+    try {
+      if (cursor) {
+        setLoadingMore(true);
+      } else {
+        setLoadingTab(true);
+      }
+
+      const params = new URLSearchParams();
+      params.set("limit", POSTS_PER_PAGE.toString());
+      if (cursor) params.set("cursor", cursor);
+
+      const res = await fetch(`/api/users/${userId}/replies?${params.toString()}`);
+      if (!res.ok) throw new Error("Failed to load replies");
+      const data = await res.json();
+
+      if (!cursor) {
+        setReplies(data.replies ?? []);
+      } else {
+        setReplies(prev => {
+          const existingIds = new Set(prev.map(r => r.id));
+          const newReplies = (data.replies ?? []).filter((r: Reply) => !existingIds.has(r.id));
+          return [...prev, ...newReplies];
+        });
+      }
+      setNextCursor(data.nextCursor ?? null);
+    } catch (error) {
+      console.error("Load replies error:", error);
+    } finally {
+      setLoadingMore(false);
+      setLoadingTab(false);
+    }
+  }, [userId]);
+
+  const loadLikedPosts = useCallback(async (cursor?: string) => {
+    try {
+      if (cursor) {
+        setLoadingMore(true);
+      } else {
+        setLoadingTab(true);
+      }
+
+      const params = new URLSearchParams();
+      params.set("limit", POSTS_PER_PAGE.toString());
+      if (cursor) params.set("cursor", cursor);
+
+      const res = await fetch(`/api/users/${userId}/likes?${params.toString()}`);
+      if (!res.ok) throw new Error("Failed to load liked posts");
+      const data = await res.json();
+
+      if (!cursor) {
+        setLikedPosts(data.posts ?? []);
+      } else {
+        setLikedPosts(prev => {
+          const existingIds = new Set(prev.map(p => p.id));
+          const newPosts = (data.posts ?? []).filter((p: FeedPost) => !existingIds.has(p.id));
+          return [...prev, ...newPosts];
+        });
+      }
+      setNextCursor(data.nextCursor ?? null);
+    } catch (error) {
+      console.error("Load liked posts error:", error);
+    } finally {
+      setLoadingMore(false);
+      setLoadingTab(false);
+    }
+  }, [userId]);
+
   useEffect(() => {
     if (userId) {
       loadUserProfile();
     }
   }, [userId, loadUserProfile]);
 
+  // Load content when tab changes
+  useEffect(() => {
+    if (!userId) return;
+
+    setNextCursor(null);
+
+    if (activeTab === "posts") {
+      loadUserProfile();
+    } else if (activeTab === "replies") {
+      loadReplies();
+    } else if (activeTab === "likes") {
+      loadLikedPosts();
+    }
+  }, [activeTab, userId]);
+
   // Infinite scroll with Intersection Observer
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && nextCursor && !loadingMore && !loading) {
-          loadUserProfile(nextCursor);
+          if (activeTab === "posts") {
+            loadUserProfile(nextCursor);
+          } else if (activeTab === "replies") {
+            loadReplies(nextCursor);
+          } else if (activeTab === "likes") {
+            loadLikedPosts(nextCursor);
+          }
         }
       },
       { threshold: 0.1 }
@@ -103,7 +215,7 @@ export default function Userpage() {
     }
 
     return () => observer.disconnect();
-  }, [nextCursor, loadingMore, loading, loadUserProfile]);
+  }, [nextCursor, loadingMore, loading, activeTab, loadUserProfile, loadReplies, loadLikedPosts]);
 
   const handleFollow = async () => {
     try {
@@ -135,6 +247,7 @@ export default function Userpage() {
 
   const handlePostDeleted = (postId: string) => {
     setPosts(posts.filter((p) => p.id !== postId));
+    setLikedPosts(likedPosts.filter((p) => p.id !== postId));
   };
 
   const formatJoinDate = (dateString: string) => {
@@ -145,14 +258,158 @@ export default function Userpage() {
     });
   };
 
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (diffInSeconds < 60) return `${diffInSeconds}s`;
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h`;
+    return `${Math.floor(diffInSeconds / 86400)}d`;
+  };
+
+  const handleTabChange = (tab: TabType) => {
+    if (tab !== activeTab) {
+      setActiveTab(tab);
+      // Reset content for new tab
+      if (tab === "replies") {
+        setReplies([]);
+      } else if (tab === "likes") {
+        setLikedPosts([]);
+      }
+    }
+  };
+
+  const renderContent = () => {
+    if (activeTab === "posts") {
+      return (
+        <>
+          {posts.length === 0 && !loading ? (
+            <div className="text-center text-gray-500 py-10">
+              No posts yet
+            </div>
+          ) : (
+            posts.map((post) => (
+              <Post
+                key={post.id}
+                post={post}
+                onDelete={() => handlePostDeleted(post.id)}
+              />
+            ))
+          )}
+        </>
+      );
+    }
+
+    if (activeTab === "replies") {
+      if (loadingTab) {
+        return (
+          <div className="flex justify-center py-16">
+            <div className="w-10 h-10 border-4 border-gray-700 border-t-blue-500 rounded-full animate-spin"></div>
+          </div>
+        );
+      }
+      return (
+        <>
+          {replies.length === 0 && !loadingMore ? (
+            <div className="text-center text-gray-500 py-10">
+              <FiMessageCircle className="w-12 h-12 mx-auto mb-3 opacity-50" />
+              <p>No replies yet</p>
+            </div>
+          ) : (
+            replies.map((reply) => (
+              <div key={reply.id} className="border-b border-white/10">
+                {/* Parent post preview */}
+                <div
+                  className="px-4 py-3 bg-white/[0.02] cursor-pointer hover:bg-white/[0.04] transition-colors"
+                  onClick={() => router.push(`/post/${reply.parentPost.id}`)}
+                >
+                  <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
+                    <span>Replying to</span>
+                    <span className="text-blue-400">@{reply.parentPost.author.username}</span>
+                  </div>
+                  <p className="text-gray-400 text-sm line-clamp-2">{reply.parentPost.content}</p>
+                </div>
+                {/* Reply content */}
+                <div className="px-4 py-3">
+                  <div className="flex gap-3">
+                    <img
+                      src={reply.author.image ?? "/default-avatar.svg"}
+                      alt={reply.author.name ?? reply.author.username}
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-white">{reply.author.name}</span>
+                        {reply.author.isVerified && <GoCheckCircleFill className="text-blue-500 text-sm" />}
+                        <span className="text-gray-500 text-sm">@{reply.author.username}</span>
+                        <span className="text-gray-600">·</span>
+                        <span className="text-gray-500 text-sm">{formatTimeAgo(reply.createdAt)}</span>
+                      </div>
+                      <p className="text-white mt-1">{reply.content}</p>
+                      <div className="flex items-center gap-6 mt-3 text-gray-500 text-sm">
+                        <div className="flex items-center gap-1">
+                          <FiHeart className={reply.isLiked ? "text-red-500 fill-red-500" : ""} />
+                          <span>{reply.likeCount}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <FiMessageCircle />
+                          <span>{reply.replyCount}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </>
+      );
+    }
+
+    if (activeTab === "likes") {
+      if (loadingTab) {
+        return (
+          <div className="flex justify-center py-16">
+            <div className="w-10 h-10 border-4 border-gray-700 border-t-blue-500 rounded-full animate-spin"></div>
+          </div>
+        );
+      }
+      return (
+        <>
+          {likedPosts.length === 0 && !loadingMore ? (
+            <div className="text-center text-gray-500 py-10">
+              <FiHeart className="w-12 h-12 mx-auto mb-3 opacity-50" />
+              <p>No liked posts yet</p>
+            </div>
+          ) : (
+            likedPosts.map((post) => (
+              <Post
+                key={post.id}
+                post={post}
+                onDelete={() => handlePostDeleted(post.id)}
+              />
+            ))
+          )}
+        </>
+      );
+    }
+  };
+
   if (loading) {
     return (
       <div className="w-full h-[90vh] flex text-white pb-16 md:pb-0">
         <div className="hidden md:block">
           <Sidebar />
         </div>
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-gray-400">Loading profile...</div>
+        <div className="border-r w-full max-w-[88vh] border-white border-opacity-20 flex-1 flex items-center justify-center">
+          <div className="w-10 h-10 border-4 border-gray-700 border-t-blue-500 rounded-full animate-spin"></div>
+        </div>
+        <div className="pl-8 overflow-y-auto scrollbar-hide hidden lg:block">
+          <SearchBar />
+          <TrendingSports />
+          <WhoToFollow />
         </div>
       </div>
     );
@@ -164,8 +421,18 @@ export default function Userpage() {
         <div className="hidden md:block">
           <Sidebar />
         </div>
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-gray-400">User not found</div>
+        <div className="border-r w-full max-w-[88vh] border-white border-opacity-20 flex-1 flex items-center justify-center">
+          <div className="text-center text-gray-400">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-16 h-16 mx-auto mb-4 opacity-50">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+            </svg>
+            <p className="text-lg">User not found</p>
+          </div>
+        </div>
+        <div className="pl-8 overflow-y-auto scrollbar-hide hidden lg:block">
+          <SearchBar />
+          <TrendingSports />
+          <WhoToFollow />
         </div>
       </div>
     );
@@ -255,37 +522,37 @@ export default function Userpage() {
         {/* Tabs */}
         <div className="flex border-b border-gray-800">
           <button
-            className="flex-1 py-4 text-center font-semibold text-white border-b-2 border-blue-500"
+            onClick={() => handleTabChange("posts")}
+            className={`flex-1 py-4 text-center font-semibold transition-colors ${activeTab === "posts"
+              ? "text-white border-b-2 border-blue-500"
+              : "text-gray-500 hover:bg-gray-900"
+              }`}
           >
             Posts
           </button>
           <button
-            className="flex-1 py-4 text-center font-semibold text-gray-500 hover:bg-gray-900"
+            onClick={() => handleTabChange("replies")}
+            className={`flex-1 py-4 text-center font-semibold transition-colors ${activeTab === "replies"
+              ? "text-white border-b-2 border-blue-500"
+              : "text-gray-500 hover:bg-gray-900"
+              }`}
           >
             Replies
           </button>
           <button
-            className="flex-1 py-4 text-center font-semibold text-gray-500 hover:bg-gray-900"
+            onClick={() => handleTabChange("likes")}
+            className={`flex-1 py-4 text-center font-semibold transition-colors ${activeTab === "likes"
+              ? "text-white border-b-2 border-blue-500"
+              : "text-gray-500 hover:bg-gray-900"
+              }`}
           >
-            Media
+            Likes
           </button>
         </div>
 
-        {/* Posts */}
+        {/* Content based on active tab */}
         <div className="px-2 py-2 space-y-3">
-          {posts.length === 0 && !loading ? (
-            <div className="text-center text-gray-500 py-10">
-              No posts yet
-            </div>
-          ) : (
-            posts.map((post) => (
-              <Post
-                key={post.id}
-                post={post}
-                onDelete={() => handlePostDeleted(post.id)}
-              />
-            ))
-          )}
+          {renderContent()}
 
           {/* Infinite Scroll Sentinel */}
           <div ref={loadMoreRef} className="py-4">
@@ -296,12 +563,16 @@ export default function Userpage() {
             )}
           </div>
 
-          {/* End of Posts Message */}
-          {!loading && posts.length > 0 && !nextCursor && !loadingMore && (
-            <div className="flex justify-center py-4 text-gray-500 text-sm">
-              No more posts
-            </div>
-          )}
+          {/* End of Content Message */}
+          {!loading && !loadingMore && !nextCursor && (
+            (activeTab === "posts" && posts.length > 0) ||
+            (activeTab === "replies" && replies.length > 0) ||
+            (activeTab === "likes" && likedPosts.length > 0)
+          ) && (
+              <div className="flex justify-center py-4 text-gray-500 text-sm">
+                No more {activeTab}
+              </div>
+            )}
         </div>
       </div>
 

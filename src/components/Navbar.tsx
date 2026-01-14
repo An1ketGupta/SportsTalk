@@ -80,7 +80,7 @@ export default function NavBar({ authComponent }: any) {
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden fixed top-14 sm:top-[10vh] left-0 right-0 bg-black/20 backdrop-blur-md border-b border-white/10 z-40 shadow-xl">
+        <div className="md:hidden fixed top-14 sm:top-[10vh] left-0 right-0 bg-black/20 backdrop-blur-md border-b border-white/10 z-50 shadow-xl">
           <div className="px-4 py-3 space-y-1">
             <Link
               href="/"

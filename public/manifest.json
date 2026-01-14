@@ -1,0 +1,25 @@
+{
+    "name": "SportsTalk",
+    "short_name": "SportsTalk",
+    "description": "Your ultimate sports community platform. Join thousands of fans discussing live matches, sharing passion, and connecting over the sports you love.",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#000000",
+    "theme_color": "#000000",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "/logo.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "categories": [
+        "sports",
+        "social",
+        "entertainment"
+    ],
+    "lang": "en",
+    "dir": "ltr"
+}

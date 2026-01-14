@@ -19,8 +19,62 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SportsTalk - Sports Community",
-  description: "Join the sports community to discuss your favorite teams and events",
+  title: {
+    default: "SportsTalk - Sports Community",
+    template: "%s | SportsTalk",
+  },
+  description: "Join thousands of fans discussing live matches, sharing passion, and connecting over the sports you love. Your ultimate sports community platform.",
+  keywords: ["sports", "community", "live matches", "sports discussion", "sports social media", "NFL", "NBA", "football", "cricket", "tennis"],
+  authors: [{ name: "SportsTalk Team" }],
+  creator: "SportsTalk",
+  publisher: "SportsTalk",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://letsportstalk.vercel.app",
+    siteName: "SportsTalk",
+    title: "SportsTalk - Your Sports Community Awaits",
+    description: "Join thousands of fans discussing live matches, sharing passion, and connecting over the sports you love.",
+    images: [
+      {
+        url: "/logo.png",
+        width: 512,
+        height: 512,
+        alt: "SportsTalk Logo",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "SportsTalk - Your Sports Community Awaits",
+    description: "Join thousands of fans discussing live matches, sharing passion, and connecting over the sports you love.",
+    images: ["/logo.png"],
+    creator: "@sportstalk",
+  },
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/logo.png", type: "image/png" },
+    ],
+    apple: [
+      { url: "/logo.png" },
+    ],
+  },
+  manifest: "/manifest.json",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  verification: {
+    google: "google-site-verification-code",
+  },
 };
 
 export default async function RootLayout({
@@ -38,6 +92,9 @@ export default async function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap"
           rel="stylesheet"
         />
+        <meta name="theme-color" content="#000000" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Providers>
