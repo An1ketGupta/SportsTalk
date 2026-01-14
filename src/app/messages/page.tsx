@@ -456,7 +456,7 @@ export default function MessagesPage() {
                 <div className="flex items-center gap-2">
                   <input
                     type="text"
-                    placeholder="Start a new message"
+                    placeholder="Type your message"
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSendMessage()}
