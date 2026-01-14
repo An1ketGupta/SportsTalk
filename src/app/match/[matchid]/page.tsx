@@ -201,7 +201,7 @@ export default function Match({ params }: any) {
   const sportInfo = getSportInfo();
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
+    <div className="min-h-screen  bg-[#0a0a0a] text-white">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-[#0a0a0a]/90 backdrop-blur-md border-b border-white/5">
         <div className="max-w-[1800px] mx-auto px-3 sm:px-6 lg:px-8">
@@ -279,7 +279,7 @@ export default function Match({ params }: any) {
           </div>
 
           {/* Chat Section */}
-          <div className="xl:col-span-5 2xl:col-span-4 min-w-0">
+          <div className="xl:col-span-5 pb-10 2xl:col-span-4 min-w-0">
             <div className="xl:sticky xl:top-24">
               <div className="animate-in fade-in slide-in-from-right-4 duration-500 delay-150">
                 <ChatBox

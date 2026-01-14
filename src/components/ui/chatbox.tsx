@@ -28,7 +28,7 @@ export default function ChatBox({
   }, [messages]);
 
   return (
-    <div className="w-full max-w-full h-[400px] sm:h-[500px] xl:h-[550px] flex flex-col bg-[#111] border border-white/5 rounded-2xl overflow-hidden">
+    <div className="w-full  max-w-full h-[400px] sm:h-[500px] xl:h-[550px] flex flex-col bg-[#111] border border-white/5 rounded-2xl overflow-hidden">
       {/* Header */}
       <div className="px-4 py-3 border-b border-white/5 flex items-center justify-between">
         <div className="flex items-center gap-2">
