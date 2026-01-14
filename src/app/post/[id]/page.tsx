@@ -7,9 +7,10 @@ import RightSection from "@/components/rightsection";
 import Link from "next/link";
 import { GoCheckCircleFill } from "react-icons/go";
 import { FaHeart, FaRegHeart, FaShare, FaArrowLeft } from "react-icons/fa";
-import { FiImage, FiX } from "react-icons/fi";
+import { FiImage, FiX, FiSmile } from "react-icons/fi";
 import { useToast } from "@/components/ToastProvider";
 import Loader from "@/components/ui/loader";
+import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
 
 function formatTimeAgo(date: Date) {
   const diff = Date.now() - date.getTime();
@@ -46,6 +47,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
   const [replyMediaPreview, setReplyMediaPreview] = useState("");
   const [replyMediaType, setReplyMediaType] = useState<"image" | "video" | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -426,14 +428,35 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
               />
 
               <div className="flex justify-between items-center mt-2">
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading || !!replyMediaPreview}
-                  className={`p-2 hover:bg-gray-800 rounded-full transition-colors text-blue-500 ${(isUploading || replyMediaPreview) ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  title="Add image or video"
-                >
-                  <FiImage className="w-5 h-5" />
-                </button>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading || !!replyMediaPreview}
+                    className={`p-2 hover:bg-gray-800 rounded-full transition-colors text-blue-500 ${(isUploading || replyMediaPreview) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    title="Add image or video"
+                  >
+                    <FiImage className="w-5 h-5" />
+                  </button>
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                      className="p-2 hover:bg-gray-800 rounded-full transition-colors text-blue-500"
+                      title="Add emoji"
+                    >
+                      <FiSmile className="w-5 h-5" />
+                    </button>
+                    {showEmojiPicker && (
+                      <div className="absolute bottom-10 left-0 z-50">
+                        <EmojiPicker
+                          onEmojiClick={(emojiData: EmojiClickData) => {
+                            setCommentText(prev => prev + emojiData.emoji);
+                            setShowEmojiPicker(false);
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
                 <button
                   onClick={handleComment}
                   disabled={!commentText.trim() || isSubmitting || isUploading}

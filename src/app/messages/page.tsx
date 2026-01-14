@@ -100,19 +100,33 @@ export default function MessagesPage() {
   }, [userIdParam]);
 
   useEffect(() => {
-    if (selectedUserId && myUserId && socketRef.current?.connected) {
-      if (currentRoomRef.current) {
-        console.log("Leaving room:", currentRoomRef.current);
-        socketRef.current.emit("leave-dm", { roomId: currentRoomRef.current });
-      }
-
-      // Create consistent room ID
-      const roomId = [myUserId, selectedUserId].sort().join("-");
-      currentRoomRef.current = roomId;
-
-      console.log("Joining DM room:", roomId);
-      socketRef.current.emit("join-dm", { myUserId, otherUserId: selectedUserId });
+    if (selectedUserId && myUserId) {
+      // Load messages regardless of socket connection (uses HTTP API)
       loadMessages(selectedUserId);
+
+      // Mark this conversation as read (update local state)
+      setConversations(prev =>
+        prev.map(conv =>
+          conv.user.id === selectedUserId
+            ? { ...conv, unreadCount: 0 }
+            : conv
+        )
+      );
+
+      // Socket room management (only if connected)
+      if (socketRef.current?.connected) {
+        if (currentRoomRef.current) {
+          console.log("Leaving room:", currentRoomRef.current);
+          socketRef.current.emit("leave-dm", { roomId: currentRoomRef.current });
+        }
+
+        // Create consistent room ID
+        const roomId = [myUserId, selectedUserId].sort().join("-");
+        currentRoomRef.current = roomId;
+
+        console.log("Joining DM room:", roomId);
+        socketRef.current.emit("join-dm", { myUserId, otherUserId: selectedUserId });
+      }
     }
   }, [selectedUserId, myUserId]);
 

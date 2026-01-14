@@ -38,7 +38,7 @@ export default function CommunityPage() {
   const [selectedSport, setSelectedSport] = useState<string>("All");
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loadingMore, setLoadingMore] = useState<boolean>(false);
-  const loadMoreRef = useRef<HTMLDivElement>(null);
+  const [loadMoreNode, setLoadMoreNode] = useState<HTMLDivElement | null>(null);
 
   const { trendingData, trendingFetched, setTrendingData, setTrendingFetched, trendingTimestamp, setTrendingTimestamp } = useGlobalCache();
   const router = useRouter(); // Ensure useRouter is imported
@@ -175,23 +175,23 @@ export default function CommunityPage() {
     }
   }, [activeTab, loadFeed]);
 
-  // Infinite scroll with Intersection Observer
+  // Infinite scroll with Intersection Observer using callback ref
   useEffect(() => {
+    if (!loadMoreNode || !nextCursor || loading || loadingMore || selectedSport === "Trending") return;
+
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && !loadingMore && !loading && nextCursor && selectedSport !== "Trending") {
+        if (entries[0].isIntersecting) {
           loadFeed(activeTab, false, nextCursor);
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1, rootMargin: "200px" }
     );
 
-    if (loadMoreRef.current) {
-      observer.observe(loadMoreRef.current);
-    }
+    observer.observe(loadMoreNode);
 
     return () => observer.disconnect();
-  }, [activeTab, nextCursor, loadingMore, loading, loadFeed, selectedSport]);
+  }, [loadMoreNode, activeTab, nextCursor, loadingMore, loading, loadFeed, selectedSport]);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -321,13 +321,11 @@ export default function CommunityPage() {
                     ))}
 
                     {/* Infinite Scroll Loader */}
-                    {nextCursor && (
-                      <div ref={loadMoreRef} className="h-20 flex items-center justify-center">
-                        {loadingMore && (
-                          <Loader size="sm" />
-                        )}
-                      </div>
-                    )}
+                    <div ref={setLoadMoreNode} className={`h-20 flex items-center justify-center ${!nextCursor ? 'hidden' : ''}`}>
+                      {loadingMore && (
+                        <Loader size="sm" />
+                      )}
+                    </div>
                   </>
                 )}
               </div>

@@ -79,7 +79,7 @@ export async function GET() {
               isMine: lastMessage.senderId === userId,
             }
             : null,
-          unreadCount: 0, // Set to 0 since we don't track read status yet
+          unreadCount: lastMessage && lastMessage.senderId === otherUserId ? 1 : 0,
         };
       })
     );

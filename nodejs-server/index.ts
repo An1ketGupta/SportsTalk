@@ -8,8 +8,8 @@ const httpserver = createServer((req, res) => {
 
 const io = new Server(httpserver, {
     cors: {
-        // Replace with your actual Vercel frontend URL
-        origin: "https://letsportstalk.vercel.app",
+        // Allow both production and development origins
+        origin: ["https://letsportstalk.vercel.app", "http://localhost:3000"],
         methods: ["GET", "POST"]
     }
 });

@@ -58,16 +58,16 @@ export default function ChatBox({
           return (
             <div key={i} className={`flex ${isSent ? "justify-end" : "justify-start"}`}>
               <div
-                className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${isSent
+                className={`max-w-[75%] rounded-xl px-3 py-1.5 text-xs ${isSent
                   ? "bg-white text-black rounded-br-sm"
                   : "bg-white/5 text-gray-200 rounded-bl-sm"
                   }`}
               >
                 {!isSent && msg.username && (
-                  <p className="text-blue-400 text-xs font-semibold mb-1">@{msg.username}</p>
+                  <p className="text-blue-400 text-[10px] font-semibold mb-0.5">@{msg.username}</p>
                 )}
                 <p>{msg.text}</p>
-                <p className={`text-[10px] mt-1 ${isSent ? "text-gray-500" : "text-gray-600"}`}>
+                <p className={`text-[9px] mt-0.5 ${isSent ? "text-gray-500" : "text-gray-600"}`}>
                   {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </p>
               </div>
