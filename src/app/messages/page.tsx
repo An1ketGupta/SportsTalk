@@ -65,7 +65,10 @@ export default function MessagesPage() {
     socketRef.current = socket;
 
     socket.on("receive-dm", (message: Message) => {
-      setMessages((prev) => [...prev, message]);
+      // Only add message if it's not from myself (prevents duplicates)
+      if (!message.isMine) {
+        setMessages((prev) => [...prev, message]);
+      }
     });
 
     return () => {

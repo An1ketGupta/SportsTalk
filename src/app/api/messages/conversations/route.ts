@@ -25,13 +25,13 @@ export async function GET() {
       distinct: ["senderId"],
     });
 
-    // Combine unique user IDs
+    // Combine unique user IDs and filter out self
     const userIds = [
       ...new Set([
         ...sentMessages.map((m) => m.receiverId),
         ...receivedMessages.map((m) => m.senderId),
       ]),
-    ];
+    ].filter((id) => id !== userId);
 
     // Get conversation details for each user
     const conversations = await Promise.all(
@@ -74,10 +74,10 @@ export async function GET() {
           },
           lastMessage: lastMessage
             ? {
-                content: lastMessage.content,
-                createdAt: lastMessage.createdAt,
-                isMine: lastMessage.senderId === userId,
-              }
+              content: lastMessage.content,
+              createdAt: lastMessage.createdAt,
+              isMine: lastMessage.senderId === userId,
+            }
             : null,
           unreadCount: 0, // Set to 0 since we don't track read status yet
         };
