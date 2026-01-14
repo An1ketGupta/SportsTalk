@@ -54,9 +54,6 @@ export async function GET() {
 
     // Construct a safe error message
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
-
-    // Return empty trends with error details for debugging
-    // This ensures client handles it gracefully
     return NextResponse.json(
       {
         trends: [],
@@ -64,7 +61,7 @@ export async function GET() {
         debug: process.env.NODE_ENV === 'development' ? String(error) : undefined
       },
       {
-        status: 200, // Still return 200 to prevent client crash
+        status: 200,
         headers: {
           'Cache-Control': 'no-store',
           'Content-Type': 'application/json',

@@ -19,6 +19,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://letsportstalk.vercel.app"),
   title: {
     default: "SportsTalk - Sports Community",
     template: "%s | SportsTalk",
@@ -37,10 +38,10 @@ export const metadata: Metadata = {
     description: "Join thousands of fans discussing live matches, sharing passion, and connecting over the sports you love.",
     images: [
       {
-        url: "/logo.png",
-        width: 512,
-        height: 512,
-        alt: "SportsTalk Logo",
+        url: "/preview.png",
+        width: 1200,
+        height: 630,
+        alt: "SportsTalk Preview",
       },
     ],
   },
@@ -48,7 +49,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "SportsTalk - Your Sports Community Awaits",
     description: "Join thousands of fans discussing live matches, sharing passion, and connecting over the sports you love.",
-    images: ["/logo.svg"],
+    images: ["/preview.png"],
     creator: "@sportstalk",
   },
   icons: {
