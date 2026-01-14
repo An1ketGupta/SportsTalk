@@ -256,7 +256,6 @@ export default function CommunityPage() {
                 />
               ))}
 
-            {/* Infinite Scroll Sentinel */}
             <div ref={loadMoreRef} className="py-4">
               {loadingMore && (
                 <div className="flex justify-center">

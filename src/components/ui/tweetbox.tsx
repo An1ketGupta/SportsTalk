@@ -1,7 +1,7 @@
 "use client";
-import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
 import { useState, useRef } from "react";
-import { FiImage, FiSmile, FiX, FiHash, FiUpload, FiVideo } from "react-icons/fi";
+import { FiImage, FiSmile, FiVideo, FiX, FiHash, FiUpload } from "react-icons/fi";
+import { GoCheckCircleFill } from "react-icons/go";
 import { useSession } from "next-auth/react";
 import { useToast } from "@/components/ToastProvider";
 
@@ -21,6 +21,13 @@ export default function TweetBox({ onPostCreated }: { onPostCreated?: () => void
   const [showTagInput, setShowTagInput] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // New state for Drag & Drop and Mentions
+  const [isDragging, setIsDragging] = useState(false);
+  const [mentionQuery, setMentionQuery] = useState("");
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [cursorPosition, setCursorPosition] = useState(0);
+
   const MAX_CHARS = 280;
   const MAX_TAGS = 5;
   const charCount = text.length;
@@ -31,10 +38,7 @@ export default function TweetBox({ onPostCreated }: { onPostCreated?: () => void
     setEmojiSelected(false);
   };
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  const processFile = async (file: File) => {
     // Validate file type
     const validImageTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
     const validVideoTypes = ["video/mp4", "video/webm", "video/quicktime"];
@@ -101,12 +105,78 @@ export default function TweetBox({ onPostCreated }: { onPostCreated?: () => void
       setIsUploading(false);
       setUploadProgress(0);
     }
+  };
 
-    // Reset file input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    await processFile(file);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) await processFile(file);
+  };
+
+  const handleTextChange = async (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newText = e.target.value;
+    if (newText.length > MAX_CHARS) return;
+
+    setText(newText);
+    setCursorPosition(e.target.selectionStart);
+
+    // Detect Mention
+    const lastAtPos = newText.lastIndexOf("@", e.target.selectionStart - 1);
+    if (lastAtPos !== -1) {
+      const query = newText.substring(lastAtPos + 1, e.target.selectionStart);
+      // Check if query contains space (end of mention)
+      if (!/\s/.test(query) && query.length > 0) {
+        setMentionQuery(query);
+        setShowSuggestions(true);
+        // Fetch suggestions
+        try {
+          const res = await fetch(`/api/users/search?q=${query}`);
+          if (res.ok) {
+            const data = await res.json();
+            setSuggestions(data.users);
+          }
+        } catch (err) {
+          console.error("Failed to fetch suggestions", err);
+        }
+      } else {
+        setShowSuggestions(false);
+      }
+    } else {
+      setShowSuggestions(false);
     }
   };
+
+  const handleSelectUser = (username: string) => {
+    const lastAtPos = text.lastIndexOf("@", cursorPosition - 1);
+    if (lastAtPos !== -1) {
+      const prefix = text.substring(0, lastAtPos);
+      const suffix = text.substring(cursorPosition);
+      const newText = `${prefix}@${username} ${suffix}`;
+      setText(newText);
+      setShowSuggestions(false);
+      // Focus back on textarea (helper needed if losing focus)
+    }
+  };
+
+  // ... (keeping existing handlers like handleRemoveMedia, handleAddTag, handlePost) ...
 
   const handleRemoveMedia = () => {
     if (mediaPreview && mediaPreview.startsWith("blob:")) {
@@ -179,9 +249,15 @@ export default function TweetBox({ onPostCreated }: { onPostCreated?: () => void
   };
 
   return (
-    <div className="text-white w-full rounded-2xl p-3 space-y-2 bg-black/10 backdrop-blur-lg border border-gray-800">
+    <div
+      className={`text-white w-full rounded-2xl p-3 space-y-2 backdrop-blur-lg border transition-colors ${isDragging ? "bg-blue-500/20 border-blue-500" : "bg-black/10 border-gray-800"
+        }`}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
       {/* Top section */}
-      <div className="flex items-start space-x-3">
+      <div className="flex items-start space-x-3 relative">
         {/* Avatar */}
         <img
           className="w-10 h-10 rounded-full object-cover bg-gray-700"
@@ -190,18 +266,37 @@ export default function TweetBox({ onPostCreated }: { onPostCreated?: () => void
         />
 
         {/* Input area */}
-        <div className="flex-1 space-y-2">
+        <div className="flex-1 space-y-2 relative">
           <textarea
             value={text}
-            onChange={(e) => {
-              if (e.target.value.length <= MAX_CHARS) {
-                setText(e.target.value);
-              }
-            }}
-            placeholder="What's happening in sports?"
+            onChange={handleTextChange}
+            onSelect={(e) => setCursorPosition(e.currentTarget.selectionStart)}
+            placeholder={isDragging ? "Drop media here..." : "What's happening in sports?"}
             className="w-full bg-transparent resize-none outline-none text-lg placeholder-gray-400"
             rows={3}
           />
+
+          {/* Suggestions Dropdown */}
+          {showSuggestions && suggestions.length > 0 && (
+            <div className="absolute top-full left-0 bg-black border border-gray-800 rounded-xl w-64 shadow-xl z-50 max-h-60 overflow-y-auto">
+              {suggestions.map(user => (
+                <button
+                  key={user.id}
+                  onClick={() => handleSelectUser(user.username)}
+                  className="flex items-center gap-3 w-full p-3 hover:bg-gray-900 text-left transition-colors"
+                >
+                  <img src={user.image ?? "/default-avatar.png"} className="w-8 h-8 rounded-full object-cover" />
+                  <div>
+                    <div className="flex items-center gap-1">
+                      <p className="font-bold text-sm">{user.name}</p>
+                      {user.isVerified && <GoCheckCircleFill className="text-blue-500 w-3 h-3" />}
+                    </div>
+                    <p className="text-gray-500 text-xs">@{user.username}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Character Counter */}
           {charCount > 0 && (

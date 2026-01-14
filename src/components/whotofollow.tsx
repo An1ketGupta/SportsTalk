@@ -2,15 +2,18 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { GoCheckCircleFill } from "react-icons/go";
+import { useGlobalCache } from "@/context/GlobalCacheContext";
 
 export default function WhoToFollow() {
-  const [users, setUsers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { whoToFollowData, setWhoToFollowData, whoToFollowFetched, setWhoToFollowFetched } = useGlobalCache();
+  const [loading, setLoading] = useState(!whoToFollowFetched);
   const [followingStates, setFollowingStates] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    loadSuggestedUsers();
-  }, []);
+    if (!whoToFollowFetched) {
+      loadSuggestedUsers();
+    }
+  }, [whoToFollowFetched]);
 
   const loadSuggestedUsers = async (isRefresh = false) => {
     try {
@@ -18,7 +21,8 @@ export default function WhoToFollow() {
       const res = await fetch("/api/users/suggested");
       if (!res.ok) throw new Error("Failed to load users");
       const data = await res.json();
-      setUsers(data.users ?? []);
+      setWhoToFollowData(data.users ?? []);
+      setWhoToFollowFetched(true);
     } catch (error) {
       console.error("Load users error:", error);
     } finally {
@@ -40,7 +44,12 @@ export default function WhoToFollow() {
 
       const data = await res.json();
       setFollowingStates({ ...followingStates, [userId]: data.isFollowing });
-      setUsers(users.map((u) => u.id === userId ? { ...u, followerCount: data.followerCount } : u));
+
+      // OPTIONAL: Update local data immediately if desired (omitted for strict cache usage or requires cache update)
+      // For now, simpler to just re-fetch or let optimistic UI handle it
+      if (whoToFollowData) {
+        setWhoToFollowData(whoToFollowData.map((u) => u.id === userId ? { ...u, followerCount: data.followerCount } : u));
+      }
 
       if (data.isFollowing) {
         setTimeout(() => loadSuggestedUsers(true), 1000);
@@ -50,7 +59,7 @@ export default function WhoToFollow() {
     }
   };
 
-  if (loading) return (
+  if (loading && (!whoToFollowData || whoToFollowData.length === 0)) return (
     <div className="bg-black border border-gray-800 rounded-2xl p-4 w-full max-w-80 mt-4">
       <h2 className="text-white text-lg font-bold mb-4">Who to follow</h2>
       <div className="flex justify-center py-4 text-gray-500">
@@ -59,7 +68,7 @@ export default function WhoToFollow() {
     </div>
   );
 
-  if (users.length === 0) return null;
+  if (!whoToFollowData || whoToFollowData.length === 0) return null;
 
   return (
     <div className="bg-black mb-6 border border-gray-800 rounded-2xl p-4 w-full max-w-80 mt-4">
@@ -67,7 +76,7 @@ export default function WhoToFollow() {
         <h2 className="text-white text-lg font-bold">Who to follow</h2>
       </div>
       <div className="space-y-3">
-        {users.map((user) => (
+        {whoToFollowData.map((user) => (
           <div key={user.id} className="hover:bg-gray-800/50 p-2 rounded-xl transition-colors">
             <div className="flex items-center justify-between gap-2">
               <Link href={`/user/${user.id}`} className="flex items-center space-x-3 flex-1 min-w-0">

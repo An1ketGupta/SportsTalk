@@ -19,6 +19,7 @@ const menuItems = [
     { label: "Explore", icon: "search", path: "/explore" },
     { label: "Trending", icon: "trending", path: null }, // Special item for trending panel
     { label: "Alerts", icon: "bell", path: "/notifications" },
+    { label: "Messages", icon: "message", path: "/messages" },
     { label: "Profile", icon: "user", path: null }, // Changed to null for menu
 ];
 

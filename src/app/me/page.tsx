@@ -377,7 +377,7 @@ export default function MePage() {
           </div>
 
           {/* Edit Profile Button */}
-          <div className="absolute bottom-4 right-4">
+          <div className="absolute top-52 right-4">
             <button
               onClick={() => setIsEditingProfile(true)}
               disabled={isEditingProfile}
@@ -410,14 +410,14 @@ export default function MePage() {
           </div>
 
           <div className="flex gap-4 mt-3 text-sm">
-            <button className="hover:underline">
+            <Link href={`/user/${user.id}/following`} className="hover:underline">
               <span className="font-bold text-white">{user.followingCount}</span>{" "}
               <span className="text-gray-500">Following</span>
-            </button>
-            <button className="hover:underline">
+            </Link>
+            <Link href={`/user/${user.id}/followers`} className="hover:underline">
               <span className="font-bold text-white">{user.followerCount}</span>{" "}
               <span className="text-gray-500">Followers</span>
-            </button>
+            </Link>
           </div>
         </div>
 

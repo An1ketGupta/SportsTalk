@@ -1,6 +1,6 @@
 'use client'
 
-import { MdHome, MdSearch, MdNotifications, MdPerson, MdPostAdd, MdMessage, MdLogout } from "react-icons/md";
+import { MdHome, MdSearch, MdNotifications, MdPerson, MdPostAdd, MdMessage, MdLogout, MdTrendingUp } from "react-icons/md";
 import { Button } from "./ui/button";
 import sidebarData from "../public/sidebar.json";
 import { Dispatch, SetStateAction, useState, useRef, useEffect } from "react";
@@ -14,12 +14,13 @@ const iconMap: { [key: string]: any } = {
     "message": MdMessage,
     "bell": MdNotifications,
     "user": MdPerson,
+    "trending": MdTrendingUp,
 };
 
 export default function Sidebar({
     setAddPost
-}:{
-    setAddPost?:Dispatch<SetStateAction<boolean>>
+}: {
+    setAddPost?: Dispatch<SetStateAction<boolean>>
 }) {
     const pathname = usePathname();
     const isMessagesPage = pathname?.startsWith("/messages");
@@ -46,49 +47,7 @@ export default function Sidebar({
 
         {sidebarData.menuItems.map((item) => {
             const Icon = iconMap[item.icon];
-            
-            // Special handling for Profile button
-            if (item.icon === "user") {
-                return (
-                    <div key={item.label} className="relative" ref={profileMenuRef}>
-                        <Button 
-                            onClick={() => setShowProfileMenu(!showProfileMenu)}
-                            className="w-auto px-3 h-14 hover:bg-[#181818] font-medium"
-                            size={"lg"}
-                        >
-                            <div className="flex gap-3 items-center">
-                                <Icon size={'37px'} />
-                                <div className={`transition ease-in-out transition-transform duration-100 hidden ${isMessagesPage ? "" : "xl:block"}`}>{item.label}</div>
-                            </div>
-                        </Button>
-                        
-                        {/* Profile Dropdown Menu */}
-                        {showProfileMenu && (
-                            <div className="absolute left-0 xl:left-auto xl:right-0 bottom-full mb-2 w-48 bg-[#111] border border-white/10 rounded-xl shadow-xl overflow-hidden z-50">
-                                <Link 
-                                    href="/me" 
-                                    onClick={() => setShowProfileMenu(false)}
-                                    className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-white"
-                                >
-                                    <MdPerson size={20} />
-                                    <span>My Profile</span>
-                                </Link>
-                                <button 
-                                    onClick={() => {
-                                        setShowProfileMenu(false);
-                                        signOut({ callbackUrl: "/" });
-                                    }}
-                                    className="flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-red-400 w-full text-left border-t border-white/5"
-                                >
-                                    <MdLogout size={20} />
-                                    <span>Logout</span>
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                );
-            }
-            
+
             return (
                 <Link href={item.path} key={item.label}>
                     <Button className="w-auto px-3 h-14 hover:bg-[#181818] font-medium" size={"lg"}>
@@ -101,9 +60,9 @@ export default function Sidebar({
             );
         })}
 
-        <Button onClick={()=>{
-            if(setAddPost)
-            setAddPost((c)=>!c)
+        <Button onClick={() => {
+            if (setAddPost)
+                setAddPost((c) => !c)
         }} className="w-auto bg-white text-black px-4 h-14 hover:bg-gray-300 text-lg font-medium">
             <div className="flex gap-3">
                 <MdPostAdd size={'28px'} />

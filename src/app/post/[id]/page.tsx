@@ -249,11 +249,21 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
           </div>
 
           {post.mediaUrl && (
-            <img
-              className="rounded-2xl mt-3 w-full object-cover"
-              src={post.mediaUrl}
-              alt="Post media"
-            />
+            <div className="mt-3 rounded-2xl overflow-hidden w-full">
+              {/\.(mp4|webm|ogg|mov)$/i.test(post.mediaUrl) ? (
+                <video
+                  src={post.mediaUrl}
+                  controls
+                  className="w-full max-h-[500px] object-cover"
+                />
+              ) : (
+                <img
+                  src={post.mediaUrl}
+                  alt="Post media"
+                  className="w-full max-h-[500px] object-cover"
+                />
+              )}
+            </div>
           )}
 
           <div className="mt-3 text-gray-500 text-sm">

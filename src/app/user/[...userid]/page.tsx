@@ -2,11 +2,8 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
-import SearchBar from "@/components/ui/searchbar";
-import Sidebar from "@/components/sidebar";
+import Link from "next/link";
 import Userpagenavbar from "@/components/ui/ProfilePageNavbar";
-import WhoToFollow from "@/components/whotofollow";
-import TrendingSports from "@/components/TrendingSports";
 import Post, { FeedPost } from "@/components/ui/post";
 import { GoCheckCircleFill } from "react-icons/go";
 import { FiCalendar, FiMessageCircle, FiHeart } from "react-icons/fi";
@@ -399,188 +396,156 @@ export default function Userpage() {
 
   if (loading) {
     return (
-      <div className="w-full h-[90vh] flex text-white pb-16 md:pb-0">
-        <div className="hidden md:block">
-          <Sidebar />
-        </div>
-        <div className="border-r w-full max-w-[88vh] border-white border-opacity-20 flex-1 flex items-center justify-center">
-          <div className="w-10 h-10 border-4 border-gray-700 border-t-blue-500 rounded-full animate-spin"></div>
-        </div>
-        <div className="pl-8 overflow-y-auto scrollbar-hide hidden lg:block">
-          <SearchBar />
-          <TrendingSports />
-          <WhoToFollow />
-        </div>
+      <div className="w-full h-full flex items-center justify-center">
+        <div className="w-10 h-10 border-4 border-gray-700 border-t-blue-500 rounded-full animate-spin"></div>
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="w-full h-[90vh] flex text-white pb-16 md:pb-0">
-        <div className="hidden md:block">
-          <Sidebar />
-        </div>
-        <div className="border-r w-full max-w-[88vh] border-white border-opacity-20 flex-1 flex items-center justify-center">
-          <div className="text-center text-gray-400">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-16 h-16 mx-auto mb-4 opacity-50">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-            </svg>
-            <p className="text-lg">User not found</p>
-          </div>
-        </div>
-        <div className="pl-8 overflow-y-auto scrollbar-hide hidden lg:block">
-          <SearchBar />
-          <TrendingSports />
-          <WhoToFollow />
+      <div className="w-full h-full flex items-center justify-center">
+        <div className="text-center text-gray-400">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-16 h-16 mx-auto mb-4 opacity-50">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+          </svg>
+          <p className="text-lg">User not found</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full h-[90vh] flex text-white pb-16 md:pb-0">
-      <div className="hidden md:block">
-        <Sidebar />
+    <>
+      <div className="w-full sticky top-0 z-10 bg-black/80 backdrop-blur-md">
+        <Userpagenavbar name={user.name ?? user.username} numberofposts={user.postCount} />
       </div>
-      {/* The user profile will be rendered here */}
-      <div className="border-r w-full max-w-[88vh] border-white border-opacity-20 overflow-y-auto scrollbar-hide flex-1">
-        <div className="w-full sticky top-0 z-10 bg-black/80 backdrop-blur-md">
-          <Userpagenavbar name={user.name ?? user.username} numberofposts={user.postCount} />
+
+      {/* Profile Header */}
+      <div className="relative">
+        {/* Cover Image */}
+        <div className="h-48 bg-gradient-to-r from-blue-600 to-purple-600"></div>
+
+        {/* Profile Picture */}
+        <div className="absolute -bottom-16 left-4">
+          <img
+            src={user.image ?? "/default-avatar.svg"}
+            alt={user.name ?? user.username}
+            className="w-32 h-32 rounded-full border-4 border-black object-cover"
+          />
         </div>
 
-        {/* Profile Header */}
-        <div className="relative">
-          {/* Cover Image */}
-          <div className="h-48 bg-gradient-to-r from-blue-600 to-purple-600"></div>
-
-          {/* Profile Picture */}
-          <div className="absolute -bottom-16 left-4">
-            <img
-              src={user.image ?? "/default-avatar.svg"}
-              alt={user.name ?? user.username}
-              className="w-32 h-32 rounded-full border-4 border-black object-cover"
-            />
-          </div>
-
-          {/* Action Button */}
-          <div className="absolute bottom-4 right-4">
-            {user.isOwnProfile ? (
-              <button
-                onClick={() => router.push("/me")}
-                className="px-6 py-2 rounded-full font-semibold transition-colors bg-transparent border border-gray-600 text-white hover:bg-white/10"
-              >
-                Edit profile
-              </button>
-            ) : (
-              <button
-                onClick={handleFollow}
-                className={`px-6 py-2 rounded-full font-semibold transition-colors ${isFollowing
-                  ? "bg-transparent border border-gray-600 text-white hover:bg-red-600/10 hover:border-red-600 hover:text-red-600"
-                  : "bg-white text-black hover:bg-gray-200"
-                  }`}
-              >
-                {isFollowing ? "Following" : "Follow"}
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Profile Info */}
-        <div className="px-4 pt-20 pb-4">
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold">
-              {user.name ?? user.username}
-            </h1>
-            {user.isVerified && <GoCheckCircleFill className="text-blue-500 text-xl" />}
-          </div>
-          <p className="text-gray-500">@{user.username}</p>
-
-          {user.bio && (
-            <p className="mt-3 text-gray-200">{user.bio}</p>
+        {/* Action Button */}
+        <div className="absolute top-52 right-4">
+          {user.isOwnProfile ? (
+            <button
+              onClick={() => router.push("/me")}
+              className="px-6 py-2 rounded-full font-semibold transition-colors bg-transparent border border-gray-600 text-white hover:bg-white/10"
+            >
+              Edit profile
+            </button>
+          ) : (
+            <button
+              onClick={handleFollow}
+              className={`px-6 py-2 rounded-full font-semibold transition-colors ${isFollowing
+                ? "bg-transparent border border-gray-600 text-white hover:bg-red-600/10 hover:border-red-600 hover:text-red-600"
+                : "bg-white text-black hover:bg-gray-200"
+                }`}
+            >
+              {isFollowing ? "Following" : "Follow"}
+            </button>
           )}
+        </div>
+      </div>
 
-          <div className="flex items-center gap-4 mt-3 text-gray-500 text-sm">
-            <div className="flex items-center gap-1">
-              <FiCalendar />
-              <span>Joined {formatJoinDate(user.createdAt)}</span>
+      {/* Profile Info */}
+      <div className="px-4 pt-20 pb-4">
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-bold">
+            {user.name ?? user.username}
+          </h1>
+          {user.isVerified && <GoCheckCircleFill className="text-blue-500 text-xl" />}
+        </div>
+        <p className="text-gray-500">@{user.username}</p>
+
+        {user.bio && (
+          <p className="mt-3 text-gray-200">{user.bio}</p>
+        )}
+
+        <div className="flex items-center gap-4 mt-3 text-gray-500 text-sm">
+          <div className="flex items-center gap-1">
+            <FiCalendar />
+            <span>Joined {formatJoinDate(user.createdAt)}</span>
+          </div>
+        </div>
+
+        <div className="flex gap-4 mt-3 text-sm">
+          <Link href={`/user/${user.id}/following`} className="hover:underline">
+            <span className="font-bold text-white">{user.followingCount}</span>{" "}
+            <span className="text-gray-500">Following</span>
+          </Link>
+          <Link href={`/user/${user.id}/followers`} className="hover:underline">
+            <span className="font-bold text-white">{followerCount}</span>{" "}
+            <span className="text-gray-500">Followers</span>
+          </Link>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex border-b border-gray-800">
+        <button
+          onClick={() => handleTabChange("posts")}
+          className={`flex-1 py-4 text-center font-semibold transition-colors ${activeTab === "posts"
+            ? "text-white border-b-2 border-blue-500"
+            : "text-gray-500 hover:bg-gray-900"
+            }`}
+        >
+          Posts
+        </button>
+        <button
+          onClick={() => handleTabChange("replies")}
+          className={`flex-1 py-4 text-center font-semibold transition-colors ${activeTab === "replies"
+            ? "text-white border-b-2 border-blue-500"
+            : "text-gray-500 hover:bg-gray-900"
+            }`}
+        >
+          Replies
+        </button>
+        <button
+          onClick={() => handleTabChange("likes")}
+          className={`flex-1 py-4 text-center font-semibold transition-colors ${activeTab === "likes"
+            ? "text-white border-b-2 border-blue-500"
+            : "text-gray-500 hover:bg-gray-900"
+            }`}
+        >
+          Likes
+        </button>
+      </div>
+
+      {/* Content based on active tab */}
+      <div className="px-2 py-2 space-y-3">
+        {renderContent()}
+
+        {/* Infinite Scroll Sentinel */}
+        <div ref={loadMoreRef} className="py-4">
+          {loadingMore && (
+            <div className="flex justify-center">
+              <div className="w-8 h-8 border-4 border-gray-700 border-t-blue-500 rounded-full animate-spin"></div>
             </div>
-          </div>
-
-          <div className="flex gap-4 mt-3 text-sm">
-            <button className="hover:underline">
-              <span className="font-bold text-white">{user.followingCount}</span>{" "}
-              <span className="text-gray-500">Following</span>
-            </button>
-            <button className="hover:underline">
-              <span className="font-bold text-white">{followerCount}</span>{" "}
-              <span className="text-gray-500">Followers</span>
-            </button>
-          </div>
+          )}
         </div>
 
-        {/* Tabs */}
-        <div className="flex border-b border-gray-800">
-          <button
-            onClick={() => handleTabChange("posts")}
-            className={`flex-1 py-4 text-center font-semibold transition-colors ${activeTab === "posts"
-              ? "text-white border-b-2 border-blue-500"
-              : "text-gray-500 hover:bg-gray-900"
-              }`}
-          >
-            Posts
-          </button>
-          <button
-            onClick={() => handleTabChange("replies")}
-            className={`flex-1 py-4 text-center font-semibold transition-colors ${activeTab === "replies"
-              ? "text-white border-b-2 border-blue-500"
-              : "text-gray-500 hover:bg-gray-900"
-              }`}
-          >
-            Replies
-          </button>
-          <button
-            onClick={() => handleTabChange("likes")}
-            className={`flex-1 py-4 text-center font-semibold transition-colors ${activeTab === "likes"
-              ? "text-white border-b-2 border-blue-500"
-              : "text-gray-500 hover:bg-gray-900"
-              }`}
-          >
-            Likes
-          </button>
-        </div>
-
-        {/* Content based on active tab */}
-        <div className="px-2 py-2 space-y-3">
-          {renderContent()}
-
-          {/* Infinite Scroll Sentinel */}
-          <div ref={loadMoreRef} className="py-4">
-            {loadingMore && (
-              <div className="flex justify-center">
-                <div className="w-8 h-8 border-4 border-gray-700 border-t-blue-500 rounded-full animate-spin"></div>
-              </div>
-            )}
-          </div>
-
-          {/* End of Content Message */}
-          {!loading && !loadingMore && !nextCursor && (
-            (activeTab === "posts" && posts.length > 0) ||
-            (activeTab === "replies" && replies.length > 0) ||
-            (activeTab === "likes" && likedPosts.length > 0)
-          ) && (
-              <div className="flex justify-center py-4 text-gray-500 text-sm">
-                No more {activeTab}
-              </div>
-            )}
-        </div>
+        {/* End of Content Message */}
+        {!loading && !loadingMore && !nextCursor && (
+          (activeTab === "posts" && posts.length > 0) ||
+          (activeTab === "replies" && replies.length > 0) ||
+          (activeTab === "likes" && likedPosts.length > 0)
+        ) && (
+            <div className="flex justify-center py-4 text-gray-500 text-sm">
+              No more {activeTab}
+            </div>
+          )}
       </div>
-
-      <div className="pl-8 overflow-y-auto scrollbar-hide hidden lg:block">
-        <SearchBar />
-        <TrendingSports />
-        <WhoToFollow />
-      </div>
-    </div>
+    </>
   );
 }

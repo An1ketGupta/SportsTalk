@@ -21,9 +21,9 @@
       "path": "/notifications"
     },
     {
-      "icon": "user",
-      "label": "Profile",
-      "path": "/me"
+      "icon": "trending",
+      "label": "Trending",
+      "path": "/community"
     }
   ]
 }

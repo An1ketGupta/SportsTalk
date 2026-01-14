@@ -173,12 +173,11 @@ export default function Post({ post, onDelete, showDeleteButton = false }: { pos
         <div className="flex-1 min-w-0 space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm">
-              <Link href={`/user/${post.author.id}`} onClick={(e) => e.stopPropagation()} className="flex items-center gap-1 font-semibold hover:underline">
+              <Link href={`/user/${post.author.id}`} onClick={(e) => e.stopPropagation()} className="flex items-center gap-1 font-bold text-base mr-1 hover:underline truncate">
                 <span>{post.author.name ?? post.author.username}</span>
-                {post.author.isVerified && <GoCheckCircleFill className="text-blue-500" />}
+                {post.author.isVerified && <GoCheckCircleFill className="text-blue-500 w-3 h-3" />}
               </Link>
-              <span className="text-[#4b4d51]">@{post.author.username}</span>
-              <span className="text-[#4b4d51] text-xs">· {formatTimeAgo(createdAt)}</span>
+              <span className="text-gray-500 text-sm truncate">@{post.author.username} · {formatTimeAgo(createdAt)}</span>
             </div>
           </div>
 
@@ -189,13 +188,23 @@ export default function Post({ post, onDelete, showDeleteButton = false }: { pos
           </Link>
 
           {post.mediaUrl && (
-            <Link href={`/post/${post.id}`}>
-              <img
-                className="rounded-3xl mt-2 w-full object-cover max-h-96 hover:opacity-95 transition-opacity cursor-pointer"
-                src={post.mediaUrl}
-                alt="Post media"
-              />
-            </Link>
+            <div className="mt-2">
+              {/\.(mp4|webm|ogg|mov)$/i.test(post.mediaUrl) ? (
+                <video
+                  src={post.mediaUrl}
+                  controls
+                  className="rounded-3xl w-full max-h-96 object-cover"
+                />
+              ) : (
+                <Link href={`/post/${post.id}`}>
+                  <img
+                    className="rounded-3xl w-full object-cover max-h-96 hover:opacity-95 transition-opacity cursor-pointer"
+                    src={post.mediaUrl}
+                    alt="Post media"
+                  />
+                </Link>
+              )}
+            </div>
           )}
 
           {/* Action Buttons */}
@@ -307,7 +316,7 @@ export default function Post({ post, onDelete, showDeleteButton = false }: { pos
           )}
         </div>
       </div>
-    </SquareBox>
+    </SquareBox >
   );
 }
 

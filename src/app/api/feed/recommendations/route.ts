@@ -2,18 +2,16 @@ import { auth } from "@/auth";
 import prisma from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 
-// Recommendation weights
 const WEIGHTS = {
   RECENCY: 1.0,           // Base weight for time decay
   ENGAGEMENT: 0.4,         // Weight for likes/comments
   SPORT_INTEREST: 0.3,     // Weight for matching user's sport interests
   SECOND_DEGREE: 0.25,     // Weight for 2nd degree connections (friends of friends)
-  VIRAL_BONUS: 0.2,        // Bonus for viral/trending posts
-  FOLLOWING_BOOST: 0.5,    // Boost for posts from people you follow
+  VIRAL_BONUS: 0.2,
+  FOLLOWING_BOOST: 0.5,
 };
 
-// Time decay constants (in hours)
-const DECAY_HALF_LIFE = 24; // Score halves every 24 hours
+const DECAY_HALF_LIFE = 24;
 
 interface ScoredPost {
   id: string;
@@ -27,6 +25,7 @@ interface ScoredPost {
     name: string | null;
     email: string | null;
     image: string | null;
+    isVerified: boolean;
   };
   _count: {
     likes: number;
@@ -80,6 +79,7 @@ export async function GET(req: NextRequest) {
             name: true,
             email: true,
             image: true,
+            isVerified: true,
           },
         },
         likes: currentUserId
@@ -286,6 +286,7 @@ function formatPost(post: ScoredPost) {
       name: post.author.name,
       image: post.author.image,
       username: post.author.email?.split("@")[0] ?? "user",
+      isVerified: post.author.isVerified,
     },
     likeCount: post._count.likes,
     commentCount: post._count.comments,

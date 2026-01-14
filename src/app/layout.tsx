@@ -4,7 +4,7 @@ import "./globals.css";
 import NavBar from "@/components/Navbar";
 import Avatar from "@/components/Avatar";
 import SignInButton from "@/components/SignInButton";
-import Providers from "@/components/Providers";
+import { Providers } from "@/components/Providers";
 import { auth } from "@/auth";
 import MobileBottomNav from "@/components/MobileBottomNav";
 
@@ -77,6 +77,10 @@ export const metadata: Metadata = {
   },
 };
 
+import ProfileMenu from "@/components/ProfileMenu";
+
+// ... existing imports ...
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -98,7 +102,7 @@ export default async function RootLayout({
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Providers>
-          <NavBar authComponent={session?.user ? <Avatar /> : <SignInButton />} />
+          <NavBar authComponent={session?.user ? <ProfileMenu user={session.user} /> : <SignInButton />} />
           {children}
           <MobileBottomNav />
         </Providers>
