@@ -2,6 +2,7 @@
 import { useState, useRef } from "react";
 import { FiImage, FiSmile, FiVideo, FiX, FiHash, FiUpload } from "react-icons/fi";
 import { GoCheckCircleFill } from "react-icons/go";
+import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
 import { useSession } from "next-auth/react";
 import { useToast } from "@/components/ToastProvider";
 
