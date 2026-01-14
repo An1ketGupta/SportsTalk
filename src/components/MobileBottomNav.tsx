@@ -47,7 +47,7 @@ export default function MobileBottomNav() {
 
         setLoadingTrends(true);
         try {
-            const res = await fetch("/api/trending", { cache: 'force-cache' });
+            const res = await fetch("/api/trending", { cache: 'no-store' });
             if (res.ok) {
                 const data = await res.json();
                 const newTrends = data.trends ?? [];
