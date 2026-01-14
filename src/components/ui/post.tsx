@@ -160,7 +160,7 @@ export default function Post({ post, onDelete, showDeleteButton = false }: { pos
       paddingy="3vh"
       rounded="0vh"
     >
-      <div className="flex gap-3 w-full">
+      <div className="flex gap-3 w-full sticky">
         <div className="flex-shrink-0">
           <Link href={`/user/${post.author.id}`} onClick={(e) => e.stopPropagation()}>
             <img
