@@ -23,7 +23,12 @@
     {
       "icon": "trending",
       "label": "Trending",
-      "path": "/community"
+      "path": "/community?sport=Trending"
+    },
+    {
+      "icon": "user",
+      "label": "Profile",
+      "path": "/me"
     }
   ]
 }

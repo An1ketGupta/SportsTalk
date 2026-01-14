@@ -5,24 +5,36 @@ import { GoCheckCircleFill } from "react-icons/go";
 import { useGlobalCache } from "@/context/GlobalCacheContext";
 
 export default function WhoToFollow() {
-  const { whoToFollowData, setWhoToFollowData, whoToFollowFetched, setWhoToFollowFetched } = useGlobalCache();
-  const [loading, setLoading] = useState(!whoToFollowFetched);
+  const {
+    whoToFollowData, setWhoToFollowData,
+    whoToFollowFetched, setWhoToFollowFetched,
+    whoToFollowTimestamp, setWhoToFollowTimestamp
+  } = useGlobalCache();
+  const [loading, setLoading] = useState(false);
   const [followingStates, setFollowingStates] = useState<Record<string, boolean>>({});
 
+  const CACHE_REVALIDATE_MS = 5 * 60 * 1000; // 5 minutes
+
   useEffect(() => {
-    if (!whoToFollowFetched) {
+    const now = Date.now();
+    const isStale = !whoToFollowTimestamp || (now - whoToFollowTimestamp > CACHE_REVALIDATE_MS);
+
+    if (!whoToFollowFetched || isStale) {
       loadSuggestedUsers();
     }
-  }, [whoToFollowFetched]);
+  }, [whoToFollowFetched, whoToFollowTimestamp]);
 
   const loadSuggestedUsers = async (isRefresh = false) => {
     try {
-      if (!isRefresh) setLoading(true);
+      // Only show loading if we don't have data, unless forcing refresh
+      if (!whoToFollowData && !isRefresh) setLoading(true);
+
       const res = await fetch("/api/users/suggested");
       if (!res.ok) throw new Error("Failed to load users");
       const data = await res.json();
       setWhoToFollowData(data.users ?? []);
       setWhoToFollowFetched(true);
+      setWhoToFollowTimestamp(Date.now());
     } catch (error) {
       console.error("Load users error:", error);
     } finally {

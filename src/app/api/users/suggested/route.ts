@@ -10,8 +10,8 @@ const USER_WEIGHTS = {
   RECENCY: 0.1,              // Recently active users
 };
 
-// In-memory cache for suggested users (30 minutes TTL)
-const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
+// In-memory cache for suggested users (5 minutes TTL)
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 const suggestedUsersCache = new Map<string, { data: any; timestamp: number }>();
 
 // Clean up expired cache entries periodically

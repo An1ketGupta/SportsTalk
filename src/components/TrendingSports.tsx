@@ -3,28 +3,40 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useGlobalCache } from "@/context/GlobalCacheContext";
 
-const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
+const CACHE_REVALIDATE_MS = 5 * 60 * 1000; // 5 minutes
 
 export default function TrendingSports() {
-  const { trendingData, setTrendingData, trendingFetched, setTrendingFetched } = useGlobalCache();
-  const [loading, setLoading] = useState(!trendingFetched);
+  const {
+    trendingData, setTrendingData,
+    trendingFetched, setTrendingFetched,
+    trendingTimestamp, setTrendingTimestamp
+  } = useGlobalCache();
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
+  const CACHE_REVALIDATE_MS = 5 * 60 * 1000; // 5 minutes
+
   useEffect(() => {
-    if (!trendingFetched) {
+    const now = Date.now();
+    const isStale = !trendingTimestamp || (now - trendingTimestamp > CACHE_REVALIDATE_MS);
+
+    if (!trendingFetched || isStale) {
       loadTrends();
     }
-  }, [trendingFetched]);
+  }, [trendingFetched, trendingTimestamp]);
 
   const loadTrends = async () => {
     try {
-      setLoading(true);
-      const res = await fetch("/api/trending", { cache: 'force-cache' });
+      // Only show loading if we don't have data
+      if (!trendingData) setLoading(true);
+
+      const res = await fetch("/api/trending", { cache: 'no-cache' }); // Fetch fresh, let API handle headers
       if (!res.ok) throw new Error("Failed to load trends");
       const data = await res.json();
       const newTrends = data.trends ?? [];
       setTrendingData(newTrends);
       setTrendingFetched(true);
+      setTrendingTimestamp(Date.now());
     } catch (error) {
       console.error("Load trends error:", error);
     } finally {

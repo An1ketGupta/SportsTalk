@@ -11,6 +11,10 @@ interface GlobalCacheContextType {
     setTrendingFetched: (fetched: boolean) => void;
     whoToFollowFetched: boolean;
     setWhoToFollowFetched: (fetched: boolean) => void;
+    trendingTimestamp: number | null;
+    setTrendingTimestamp: (ts: number | null) => void;
+    whoToFollowTimestamp: number | null;
+    setWhoToFollowTimestamp: (ts: number | null) => void;
 }
 
 const GlobalCacheContext = createContext<GlobalCacheContextType | undefined>(undefined);
@@ -20,6 +24,8 @@ export function GlobalCacheProvider({ children }: { children: ReactNode }) {
     const [whoToFollowData, setWhoToFollowData] = useState<any[] | null>(null);
     const [trendingFetched, setTrendingFetched] = useState(false);
     const [whoToFollowFetched, setWhoToFollowFetched] = useState(false);
+    const [trendingTimestamp, setTrendingTimestamp] = useState<number | null>(null);
+    const [whoToFollowTimestamp, setWhoToFollowTimestamp] = useState<number | null>(null);
 
     return (
         <GlobalCacheContext.Provider
@@ -32,6 +38,10 @@ export function GlobalCacheProvider({ children }: { children: ReactNode }) {
                 setTrendingFetched,
                 whoToFollowFetched,
                 setWhoToFollowFetched,
+                trendingTimestamp,
+                setTrendingTimestamp,
+                whoToFollowTimestamp,
+                setWhoToFollowTimestamp,
             }}
         >
             {children}

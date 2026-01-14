@@ -45,7 +45,7 @@ export async function GET() {
     return NextResponse.json({ trends }, {
       status: 200,
       headers: {
-        'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=3600',
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=3600',
         'Content-Type': 'application/json',
       },
     });
