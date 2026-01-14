@@ -68,8 +68,11 @@ export async function GET(req: NextRequest) {
     // Get all recent posts with engagement data
     const posts = await prisma.post.findMany({
       where: cursor ? { createdAt: { lt: new Date(cursor) } } : undefined,
-      take: limit * 3, // Fetch more to have room after scoring/filtering
-      orderBy: { createdAt: "desc" },
+      take: limit * 2, // Fetch double the limit to have pool for ranking
+      orderBy: [
+        { createdAt: "desc" },
+        { id: "desc" } // Stable sort
+      ],
       include: {
         author: {
           select: {
@@ -93,6 +96,15 @@ export async function GET(req: NextRequest) {
         },
       },
     });
+
+    if (posts.length === 0) {
+      return NextResponse.json({ posts: [], nextCursor: null });
+    }
+
+    // Determine the next cursor based on the LAST fetched post from DB
+    // This ensures we continue fetching from where we left off chronologically
+    const lastPost = posts[posts.length - 1];
+    const nextCursor = posts.length >= limit * 2 ? lastPost.createdAt.toISOString() : null;
 
     if (!currentUserId) {
       // For unauthenticated users, use simple engagement-based ranking
@@ -246,10 +258,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       posts: filteredPosts.slice(0, limit).map(formatPost),
-      nextCursor:
-        filteredPosts.length > limit
-          ? filteredPosts[limit - 1].createdAt.toISOString()
-          : null,
+      nextCursor,
       debug: process.env.NODE_ENV === "development" ? {
         followingCount: followingIds.size,
         secondDegreeCount: secondDegreeIds.size,
