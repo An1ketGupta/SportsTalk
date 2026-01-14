@@ -18,8 +18,13 @@ export async function GET() {
       setTimeout(() => reject(new Error('Database query timed out')), 4000)
     );
 
+    const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000);
+
     const dbPromise = prisma.post.findMany({
-      where: { sport: { not: null } },
+      where: {
+        sport: { not: null },
+        createdAt: { gte: sixHoursAgo },
+      },
       select: { sport: true },
     });
 

@@ -8,6 +8,7 @@ import { FiSend, FiSearch, FiEdit, FiArrowLeft } from "react-icons/fi";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import Loader from "@/components/ui/loader";
+import { io, Socket } from "socket.io-client";
 
 interface ConversationUser {
   id: string;
@@ -52,9 +53,25 @@ export default function MessagesPage() {
   const [searchResults, setSearchResults] = useState<ConversationUser[]>([]);
   const [showNewChat, setShowNewChat] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const socketRef = useRef<Socket | null>(null);
+  const myUserId = session?.user?.id as string | undefined;
 
   const searchParams = useSearchParams();
   const userIdParam = searchParams.get("userId");
+
+  // Connect to socket server on mount
+  useEffect(() => {
+    const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL as string);
+    socketRef.current = socket;
+
+    socket.on("receive-dm", (message: Message) => {
+      setMessages((prev) => [...prev, message]);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     loadConversations();
@@ -66,11 +83,13 @@ export default function MessagesPage() {
     }
   }, [userIdParam]);
 
+  // Join DM room when selecting a user
   useEffect(() => {
-    if (selectedUserId) {
+    if (selectedUserId && myUserId) {
       loadMessages(selectedUserId);
+      socketRef.current?.emit("join-dm", { myUserId, otherUserId: selectedUserId });
     }
-  }, [selectedUserId]);
+  }, [selectedUserId, myUserId]);
 
   useEffect(() => {
     scrollToBottom();
@@ -145,6 +164,15 @@ export default function MessagesPage() {
       setMessages((prev) =>
         prev.map((m) => (m.id === tempMessage.id ? data.message : m))
       );
+
+      // Emit message via socket for real-time delivery
+      if (myUserId) {
+        socketRef.current?.emit("send-dm", {
+          myUserId,
+          otherUserId: selectedUserId,
+          message: data.message,
+        });
+      }
 
       // Update conversation list
       loadConversations();

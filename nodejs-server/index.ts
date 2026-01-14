@@ -22,6 +22,22 @@ io.on("connection", (socket: Socket) => {
         console.log("Joined the room: " + roomid)
     })
 
+    // Handler for joining a private DM room
+    socket.on("join-dm", (data: { myUserId: string; otherUserId: string }) => {
+        // Create a consistent room ID by sorting user IDs
+        const roomId = [data.myUserId, data.otherUserId].sort().join("-");
+        socket.join(roomId);
+        console.log("Joined DM room: " + roomId);
+    })
+
+    // Handler for sending a private DM
+    socket.on("send-dm", (data: { myUserId: string; otherUserId: string; message: any }) => {
+        const roomId = [data.myUserId, data.otherUserId].sort().join("-");
+        // Emit to everyone in the room except sender
+        socket.to(roomId).emit("receive-dm", data.message);
+        console.log("DM sent in room: " + roomId);
+    })
+
     socket.on("message", (data: any) => {
         console.log("got the message: " + data.message)
         const roomid = data.roomid
