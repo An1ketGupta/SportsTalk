@@ -16,6 +16,7 @@ export async function POST() {
       where: {
         userId,
         read: false,
+        type: { not: "message" },
       },
       data: { read: true },
     });

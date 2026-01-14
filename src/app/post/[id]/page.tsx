@@ -8,6 +8,7 @@ import Link from "next/link";
 import { GoCheckCircleFill } from "react-icons/go";
 import { FaHeart, FaRegHeart, FaShare, FaArrowLeft } from "react-icons/fa";
 import { useToast } from "@/components/ToastProvider";
+import Loader from "@/components/ui/loader";
 
 function formatTimeAgo(date: Date) {
   const diff = Date.now() - date.getTime();
@@ -175,7 +176,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
         </div>
         <div className="border-r max-w-[88vh] border-white border-opacity-20 overflow-y-auto scrollbar-hide flex-1 pb-16 md:pb-0">
           <div className="flex items-center justify-center py-20">
-            <div className="h-8 w-8 border-4 border-gray-700 border-t-blue-500 rounded-full animate-spin" />
+            <Loader />
           </div>
         </div>
         <RightSection />
@@ -330,7 +331,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
         <div>
           {loadingComments ? (
             <div className="flex justify-center py-8">
-              <div className="h-6 w-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+              <Loader />
             </div>
           ) : comments.length === 0 ? (
             <div className="text-center py-8 text-gray-500">

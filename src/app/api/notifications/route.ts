@@ -17,6 +17,10 @@ export async function GET(req: NextRequest) {
     const notifications = await prisma.notification.findMany({
       where: {
         userId,
+        // Exclude message type from the general notifications list
+        type: {
+          not: "message"
+        },
         ...(unreadOnly ? { read: false } : {}),
       },
       include: {
@@ -34,11 +38,21 @@ export async function GET(req: NextRequest) {
       take: 50,
     });
 
-    // Get unread count
+    // Get unread count for non-message notifications
     const unreadCount = await prisma.notification.count({
       where: {
         userId,
         read: false,
+        type: { not: "message" },
+      },
+    });
+
+    // Get unread count for messages
+    const unreadMessageCount = await prisma.notification.count({
+      where: {
+        userId,
+        read: false,
+        type: "message",
       },
     });
 
@@ -58,6 +72,7 @@ export async function GET(req: NextRequest) {
         },
       })),
       unreadCount,
+      unreadMessageCount,
     });
   } catch (error) {
     console.error("Notifications API error:", error);

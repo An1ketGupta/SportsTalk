@@ -21,11 +21,6 @@
       "path": "/notifications"
     },
     {
-      "icon": "trending",
-      "label": "Trending",
-      "path": "/community?sport=Trending"
-    },
-    {
       "icon": "user",
       "label": "Profile",
       "path": "/me"

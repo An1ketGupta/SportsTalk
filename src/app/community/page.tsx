@@ -6,8 +6,10 @@ import TweetBox from "@/components/ui/tweetbox";
 import RightSection from "@/components/rightsection";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState, useCallback, useRef } from "react";
-import { useSearchParams } from "next/navigation";
-import { FiRefreshCw, FiFilter, FiX, FiUsers, FiStar, FiPlus } from "react-icons/fi";
+import { useRouter, useSearchParams } from "next/navigation";
+import { FiRefreshCw, FiFilter, FiX, FiUsers, FiStar, FiPlus, FiTrendingUp } from "react-icons/fi";
+import { useGlobalCache } from "@/context/GlobalCacheContext";
+import Loader from "@/components/ui/loader";
 
 type Tab = "foryou" | "following";
 
@@ -33,33 +35,75 @@ export default function CommunityPage() {
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [filteredPosts, setFilteredPosts] = useState<FeedPost[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [hasTriedFollowing, setHasTriedFollowing] = useState<boolean>(false);
-  const [followingCount, setFollowingCount] = useState<number | null>(null);
-  const [refreshing, setRefreshing] = useState<boolean>(false);
   const [selectedSport, setSelectedSport] = useState<string>("All");
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loadingMore, setLoadingMore] = useState<boolean>(false);
   const loadMoreRef = useRef<HTMLDivElement>(null);
 
+  const { trendingData, trendingFetched, setTrendingData, setTrendingFetched, trendingTimestamp, setTrendingTimestamp } = useGlobalCache();
+  const router = useRouter(); // Ensure useRouter is imported
+
   // Read sport filter from URL params
   useEffect(() => {
     const sportParam = searchParams.get("sport");
     if (sportParam) {
-      const formattedSport = sportParam.charAt(0).toUpperCase() + sportParam.slice(1).toLowerCase();
-      if (SPORTS_CATEGORIES.includes(formattedSport)) {
-        setSelectedSport(formattedSport);
+      if (sportParam === "Trending") {
+        setSelectedSport("Trending");
       } else {
-        setSelectedSport(sportParam); // Use as-is if not in predefined list
+        const formattedSport = sportParam.charAt(0).toUpperCase() + sportParam.slice(1).toLowerCase();
+        if (SPORTS_CATEGORIES.includes(formattedSport)) {
+          setSelectedSport(formattedSport);
+        } else {
+          setSelectedSport(sportParam); // Use as-is if not in predefined list
+        }
       }
+    } else {
+      setSelectedSport("All");
     }
   }, [searchParams]);
+
+  // Load trends if viewing Trending tab
+  useEffect(() => {
+    const CACHE_REVALIDATE_MS = 5 * 60 * 1000;
+    const now = Date.now();
+    const isStale = !trendingTimestamp || (now - trendingTimestamp > CACHE_REVALIDATE_MS);
+
+    if (selectedSport === "Trending" && (!trendingFetched || isStale)) {
+      const loadTrends = async () => {
+        try {
+          // setLoading(true); // Optional: global loading state
+          const res = await fetch("/api/trending", { cache: 'no-cache' });
+          if (!res.ok) throw new Error("Failed to load trends");
+          const data = await res.json();
+          setTrendingData(data.trends ?? []);
+          setTrendingFetched(true);
+          setTrendingTimestamp(Date.now());
+        } catch (e) {
+          console.error(e);
+        }
+      };
+      loadTrends();
+    }
+  }, [selectedSport, trendingFetched, trendingTimestamp, setTrendingData, setTrendingFetched, setTrendingTimestamp]);
+
+  useEffect(() => {
+    if (selectedSport === "All" || selectedSport === "Trending") {
+      setFilteredPosts(posts);
+    } else {
+      setFilteredPosts(
+        posts.filter((p) => {
+          if (!p.sport) return false;
+          const postTags = p.sport.split(',').map(t => t.trim().toLowerCase());
+          return postTags.includes(selectedSport.toLowerCase());
+        })
+      );
+    }
+  }, [posts, selectedSport]);
 
   const loadFeed = useCallback(async (tab: Tab, showRefreshing = false, cursor?: string) => {
     try {
       if (cursor) {
         setLoadingMore(true);
-      } else if (showRefreshing) {
-        setRefreshing(true);
       } else {
         setLoading(true);
       }
@@ -95,53 +139,14 @@ export default function CommunityPage() {
       }
 
       setNextCursor(data.nextCursor ?? null);
-
-      if (tab === "following") {
-        setHasTriedFollowing(true);
-        if (typeof data.followingCount === "number") {
-          setFollowingCount(data.followingCount);
-        }
-      }
     } catch (e) {
       console.error(e);
       if (!cursor) setPosts([]);
     } finally {
       setLoading(false);
-      setRefreshing(false);
       setLoadingMore(false);
     }
   }, []);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && nextCursor && !loadingMore && !loading) {
-          loadFeed(activeTab, false, nextCursor);
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    if (loadMoreRef.current) {
-      observer.observe(loadMoreRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, [nextCursor, loadingMore, loading, activeTab, loadFeed]);
-
-  useEffect(() => {
-    if (selectedSport === "All") {
-      setFilteredPosts(posts);
-    } else {
-      setFilteredPosts(
-        posts.filter((p) => {
-          if (!p.sport) return false;
-          const postTags = p.sport.split(',').map(t => t.trim().toLowerCase());
-          return postTags.includes(selectedSport.toLowerCase());
-        })
-      );
-    }
-  }, [posts, selectedSport]);
 
   const handlePostCreated = () => {
     loadFeed(activeTab, true);
@@ -208,61 +213,99 @@ export default function CommunityPage() {
           </div>
 
           <div className="w-full px-2 pb-6 mt-2">
-            {loading && (
+            {loading && posts.length > 0 && (
               <div className="flex justify-center py-6">
-                <div className="w-8 h-8 border-4 border-gray-700 border-t-blue-500 rounded-full animate-spin"></div>
+                <Loader />
               </div>
             )}
 
-            {!loading && filteredPosts.length === 0 && activeTab === "foryou" && (
-              <div className="flex flex-col items-center justify-center py-10 text-center text-gray-400">
-                <FiStar className="w-12 h-12 mb-4 text-gray-600" />
-                <p className="font-semibold text-lg">
-                  {selectedSport !== "All"
-                    ? `No ${selectedSport} posts yet`
-                    : "No posts yet"}
-                </p>
-                <p className="text-sm mt-1">
-                  Be the first to share what&apos;s happening in sports.
-                </p>
+            {/* Main Feed Render Logic */}
+            {selectedSport === "Trending" ? (
+              <div className="mt-4 space-y-4">
+                <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                  <FiTrendingUp className="text-blue-500" />
+                  Trends for you
+                </h2>
+
+                {trendingData && trendingData.length > 0 ? (
+                  <div className="grid grid-cols-1 gap-4">
+                    {trendingData.map((trend, index) => (
+                      <div
+                        key={trend.tag}
+                        onClick={() => router.push(`/community?sport=${encodeURIComponent(trend.tag)}`)}
+                        className="bg-[#181818] hover:bg-[#202020] p-4 rounded-xl cursor-pointer transition-all border border-transparent hover:border-gray-700"
+                      >
+                        <div className="flex justify-between items-start mb-1">
+                          <span className="text-gray-500 text-sm font-medium">
+                            #{index + 1} Trending
+                          </span>
+                        </div>
+                        <h3 className="text-white text-lg font-bold mb-1">#{trend.tag}</h3>
+                        <p className="text-gray-500 text-sm">
+                          {trend.postCount} post{trend.postCount !== 1 ? "s" : ""}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center text-gray-500 py-10">
+                    {loading ? "Loading trends..." : "No trending topics right now."}
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* Standard Feed View */
+              <div>
+                {selectedSport !== "All" && (
+                  <div className="flex items-center justify-between bg-[#181818] p-3 rounded-lg mb-4">
+                    <span className="text-white font-medium">Filtering by: <span className="text-blue-500 font-bold">{selectedSport}</span></span>
+                    <button
+                      onClick={() => router.push("/community")}
+                      className="text-gray-400 hover:text-white"
+                    >
+                      <FiX />
+                    </button>
+                  </div>
+                )}
+
+                {loading && posts.length === 0 ? (
+                  <div className="mt-8 flex justify-center">
+                    <Loader />
+                  </div>
+                ) : filteredPosts.length === 0 ? (
+                  <div className="text-center py-10">
+                    <div className="text-6xl mb-4">📭</div>
+                    <h3 className="text-xl font-bold text-white mb-2">No posts found</h3>
+                    <p className="text-gray-500">
+                      {activeTab === "following"
+                        ? "Ideally you should follow some people to see their posts here."
+                        : "Be the first to post something!"}
+                    </p>
+                    {activeTab === "following" && (
+                      <Button
+                        className="mt-4 bg-white text-black hover:bg-gray-200"
+                        onClick={() => setActiveTab("foryou")}
+                      >
+                        Explore For You
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    {filteredPosts.map((post) => (
+                      <Post key={post.id} post={post} onDelete={() => handlePostDeleted(post.id)} />
+                    ))}
+
+                    {/* Infinite Scroll Loader */}
+                    <div ref={loadMoreRef} className="h-20 flex items-center justify-center">
+                      {loadingMore && (
+                        <Loader size="sm" />
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
             )}
-
-            {!loading &&
-              filteredPosts.length === 0 &&
-              activeTab === "following" &&
-              hasTriedFollowing && (
-                <div className="flex flex-col items-center justify-center py-10 text-center text-gray-400">
-                  <FiUsers className="w-12 h-12 mb-4 text-gray-600" />
-                  <p className="font-semibold text-lg">
-                    {followingCount === 0
-                      ? "You're not following anyone yet"
-                      : selectedSport !== "All"
-                        ? `No ${selectedSport} posts from people you follow`
-                        : "No posts from people you follow"}
-                  </p>
-                  <p className="text-sm mt-1 max-w-xs">
-                    Follow other fans to see their posts in your Following feed.
-                  </p>
-                </div>
-              )}
-
-            {!loading &&
-              filteredPosts.map((p) => (
-                <Post
-                  key={p.id}
-                  post={p}
-                  onDelete={() => handlePostDeleted(p.id)}
-                />
-              ))}
-
-            <div ref={loadMoreRef} className="py-4">
-              {loadingMore && (
-                <div className="flex justify-center">
-                  <div className="w-8 h-8 border-4 border-gray-700 border-t-blue-500 rounded-full animate-spin"></div>
-                </div>
-              )}
-            </div>
 
             {/* End of Feed Message */}
             {!loading && filteredPosts.length > 0 && !nextCursor && !loadingMore && (

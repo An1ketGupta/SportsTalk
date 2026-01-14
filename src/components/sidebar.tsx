@@ -5,6 +5,7 @@ import { Button } from "./ui/button";
 import sidebarData from "../public/sidebar.json";
 import { Dispatch, SetStateAction, useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import { useGlobalCache } from "@/context/GlobalCacheContext";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 
@@ -14,7 +15,6 @@ const iconMap: { [key: string]: any } = {
     "message": MdMessage,
     "bell": MdNotifications,
     "user": MdPerson,
-    "trending": MdTrendingUp,
 };
 
 export default function Sidebar({
@@ -26,6 +26,7 @@ export default function Sidebar({
     const isMessagesPage = pathname?.startsWith("/messages");
     const [showProfileMenu, setShowProfileMenu] = useState(false);
     const profileMenuRef = useRef<HTMLDivElement>(null);
+    const { unreadNotificationCount, unreadMessageCount } = useGlobalCache();
 
     // Close menu when clicking outside
     useEffect(() => {
@@ -49,10 +50,22 @@ export default function Sidebar({
             const Icon = iconMap[item.icon];
 
             return (
-                <Link href={item.path} key={item.label}>
+                <Link href={item.path} key={item.label} className="relative group">
                     <Button className="w-auto px-3 h-14 hover:bg-[#181818] font-medium" size={"lg"}>
-                        <div className="flex gap-3 items-center">
-                            <Icon size={'37px'} />
+                        <div className="flex gap-3 items-center relative">
+                            <div className="relative">
+                                <Icon size={'37px'} />
+                                {item.label === "Notifications" && unreadNotificationCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-black">
+                                        {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
+                                    </span>
+                                )}
+                                {item.label === "Messages" && unreadMessageCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-black">
+                                        {unreadMessageCount > 9 ? '9+' : unreadMessageCount}
+                                    </span>
+                                )}
+                            </div>
                             <div className={`transition ease-in-out transition-transform duration-100 hidden ${isMessagesPage ? "" : "xl:block"}`}>{item.label}</div>
                         </div>
                     </Button>

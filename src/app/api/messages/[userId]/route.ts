@@ -51,6 +51,17 @@ export async function GET(
       },
     });
 
+    // Mark notifications as read
+    await prisma.notification.updateMany({
+      where: {
+        userId: currentUserId,
+        actorId: otherUserId,
+        type: "message",
+        read: false,
+      },
+      data: { read: true },
+    });
+
     return NextResponse.json({
       user: {
         ...otherUser,
@@ -121,6 +132,18 @@ export async function POST(
         },
       },
     });
+
+    // Create notification
+    if (receiverId !== currentUserId) {
+      await prisma.notification.create({
+        data: {
+          type: "message",
+          userId: receiverId,
+          actorId: currentUserId,
+          read: false,
+        },
+      });
+    }
 
     return NextResponse.json({
       message: {

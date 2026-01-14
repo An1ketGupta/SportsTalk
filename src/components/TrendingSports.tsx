@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useGlobalCache } from "@/context/GlobalCacheContext";
+import Loader from "@/components/ui/loader";
 
 const CACHE_REVALIDATE_MS = 5 * 60 * 1000; // 5 minutes
 
@@ -44,7 +45,14 @@ export default function TrendingSports() {
     }
   };
 
-  if (loading && !trendingData) return null;
+  if (loading && !trendingData) return (
+    <div className="bg-black mr-10 border border-gray-800 rounded-2xl p-4 w-80 mt-4">
+      <h2 className="text-white text-lg font-bold mb-4">Trending</h2>
+      <div className="flex justify-center py-4">
+        <Loader size="sm" />
+      </div>
+    </div>
+  );
   if (!trendingData || trendingData.length === 0) return null;
 
   return (

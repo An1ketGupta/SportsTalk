@@ -6,6 +6,8 @@ import Sidebar from "../../components/sidebar";
 import RightSection from "@/components/rightsection";
 import { FiSend, FiSearch, FiEdit, FiArrowLeft } from "react-icons/fi";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import Loader from "@/components/ui/loader";
 
 interface ConversationUser {
   id: string;
@@ -51,9 +53,18 @@ export default function MessagesPage() {
   const [showNewChat, setShowNewChat] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const searchParams = useSearchParams();
+  const userIdParam = searchParams.get("userId");
+
   useEffect(() => {
     loadConversations();
   }, []);
+
+  useEffect(() => {
+    if (userIdParam) {
+      setSelectedUserId(userIdParam);
+    }
+  }, [userIdParam]);
 
   useEffect(() => {
     if (selectedUserId) {
@@ -325,34 +336,39 @@ export default function MessagesPage() {
 
         {/* Chat Area */}
         <div className={`flex-1 flex flex-col ${!selectedUserId ? "hidden md:flex" : "flex"}`}>
-          {selectedUserId && selectedUser ? (
+          {selectedUserId ? (
             <>
               {/* Chat Header */}
-              <div className="p-4 border-b border-gray-800 flex items-center gap-3">
-                <button
-                  onClick={() => setSelectedUserId(null)}
-                  className="md:hidden p-2 hover:bg-gray-800 rounded-full"
-                >
-                  <FiArrowLeft className="w-5 h-5" />
-                </button>
-                <Link href={`/user/${selectedUser.id}`} className="flex items-center gap-3">
-                  <img
-                    src={selectedUser.image ?? "/default-avatar.png"}
-                    alt={selectedUser.name ?? selectedUser.username}
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="font-semibold truncate">{selectedUser.name ?? selectedUser.username}</p>
-                    <p className="text-sm text-gray-500 truncate">@{selectedUser.username}</p>
-                  </div>
-                </Link>
-              </div>
+              {selectedUser ? (
+                <div className="p-4 border-b border-gray-800 flex items-center gap-3">
+                  <button
+                    onClick={() => setSelectedUserId(null)}
+                    className="md:hidden p-2 hover:bg-gray-800 rounded-full"
+                  >
+                    <FiArrowLeft className="w-5 h-5" />
+                  </button>
+                  <Link href={`/user/${selectedUser.id}`} className="flex items-center gap-3">
+                    <img
+                      src={selectedUser.image ?? "/default-avatar.png"}
+                      alt={selectedUser.name ?? selectedUser.username}
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold truncate">{selectedUser.name ?? selectedUser.username}</p>
+                      <p className="text-sm text-gray-500 truncate">@{selectedUser.username}</p>
+                    </div>
+                  </Link>
+                </div>
+              ) : (
+                <div className="p-4 border-b border-gray-800 flex items-center gap-3 h-[73px]">
+                </div>
+              )}
 
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-hide">
                 {loadingMessages ? (
-                  <div className="flex items-center justify-center py-8">
-                    <div className="h-6 w-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                  <div className="flex items-center justify-center py-8 h-full">
+                    <Loader />
                   </div>
                 ) : messages.length === 0 ? (
                   <div className="text-center py-8 text-gray-500">

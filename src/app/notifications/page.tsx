@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import Sidebar from "../../components/sidebar";
 import RightSection from "@/components/rightsection";
 import Link from "next/link";
 import { FiHeart, FiMessageCircle, FiUserPlus, FiCheckCircle } from "react-icons/fi";
 import { GoCheckCircleFill } from "react-icons/go";
+import { useEffect, useState } from "react";
+import Loader from "@/components/ui/loader";
 
 interface NotificationActor {
   id: string;
@@ -27,9 +29,10 @@ interface Notification {
 
 export default function NotificationsPage() {
   const { data: session } = useSession();
+  const router = useRouter();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"all" | "mentions">("all");
+
 
   useEffect(() => {
     loadNotifications();
@@ -66,6 +69,18 @@ export default function NotificationsPage() {
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     } catch (error) {
       console.error("Mark all as read error:", error);
+    }
+  };
+
+  const handleNotificationClick = (notification: Notification) => {
+    if (!notification.read) {
+      markAsRead(notification.id);
+    }
+
+    if (notification.postId) {
+      router.push(`/post/${notification.postId}`);
+    } else if (notification.type === "follow") {
+      router.push(`/user/${notification.actor.id}`);
     }
   };
 
@@ -170,34 +185,14 @@ export default function NotificationsPage() {
             )}
           </div>
 
-          {/* Tabs */}
-          <div className="flex border-b border-gray-800">
-            <button
-              onClick={() => setActiveTab("all")}
-              className={`flex-1 py-3 text-center font-semibold transition-colors ${activeTab === "all"
-                ? "text-white border-b-2 border-blue-500"
-                : "text-gray-500 hover:bg-gray-900"
-                }`}
-            >
-              All
-            </button>
-            <button
-              onClick={() => setActiveTab("mentions")}
-              className={`flex-1 py-3 text-center font-semibold transition-colors ${activeTab === "mentions"
-                ? "text-white border-b-2 border-blue-500"
-                : "text-gray-500 hover:bg-gray-900"
-                }`}
-            >
-              Mentions
-            </button>
-          </div>
+
         </div>
 
         {/* Notifications List */}
         <div>
           {loading ? (
             <div className="flex items-center justify-center py-8">
-              <div className="h-6 w-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+              <Loader />
             </div>
           ) : notifications.length === 0 ? (
             <div className="text-center py-12 px-4 text-gray-500">
@@ -213,7 +208,7 @@ export default function NotificationsPage() {
             notifications.map((notification) => (
               <div
                 key={notification.id}
-                onClick={() => !notification.read && markAsRead(notification.id)}
+                onClick={() => handleNotificationClick(notification)}
                 className={`flex items-start gap-3 p-4 border-b border-gray-800/50 hover:bg-gray-900/50 transition-colors cursor-pointer ${!notification.read ? "bg-blue-500/5" : ""
                   }`}
               >
@@ -225,7 +220,10 @@ export default function NotificationsPage() {
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start gap-3">
-                    <Link href={`/user/${notification.actor.id}`}>
+                    <Link
+                      href={`/user/${notification.actor.id}`}
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <img
                         src={notification.actor.image ?? "/default-avatar.png"}
                         alt={notification.actor.name ?? notification.actor.username}
@@ -241,16 +239,6 @@ export default function NotificationsPage() {
                       </p>
                     </div>
                   </div>
-
-                  {/* Link to post if applicable */}
-                  {notification.postId && notification.type !== "follow" && (
-                    <Link
-                      href={`/post/${notification.postId}`}
-                      className="text-sm text-gray-500 hover:text-gray-400 mt-2 block"
-                    >
-                      View post →
-                    </Link>
-                  )}
                 </div>
 
                 {/* Read indicator */}
@@ -266,6 +254,6 @@ export default function NotificationsPage() {
       <div className="hidden xl:block">
         <RightSection />
       </div>
-    </div>
+    </div >
   );
 }

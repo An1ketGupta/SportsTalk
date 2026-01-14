@@ -7,9 +7,9 @@ import { GlobalCacheProvider } from "@/context/GlobalCacheContext";
 export const Providers = ({ children }: { children: React.ReactNode }) => {
   return (
     <SessionProvider>
-      <GlobalCacheProvider>
-        <ToastProvider>{children}</ToastProvider>
-      </GlobalCacheProvider>
+      <ToastProvider>
+        <GlobalCacheProvider>{children}</GlobalCacheProvider>
+      </ToastProvider>
     </SessionProvider>
   );
 };

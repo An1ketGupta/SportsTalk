@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { GoCheckCircleFill } from "react-icons/go";
 import { useGlobalCache } from "@/context/GlobalCacheContext";
+import Loader from "@/components/ui/loader";
 
 export default function WhoToFollow() {
   const {
@@ -75,7 +76,7 @@ export default function WhoToFollow() {
     <div className="bg-black border border-gray-800 rounded-2xl p-4 w-full max-w-80 mt-4">
       <h2 className="text-white text-lg font-bold mb-4">Who to follow</h2>
       <div className="flex justify-center py-4 text-gray-500">
-        <div className="w-5 h-5 border-2 border-gray-700 border-t-blue-500 rounded-full animate-spin"></div>
+        <Loader size="sm" />
       </div>
     </div>
   );
