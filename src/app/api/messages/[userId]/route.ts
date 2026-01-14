@@ -48,6 +48,17 @@ export async function GET(
       },
     });
 
+    // Mark messages from other user as read
+    await prisma.message.updateMany({
+      where: {
+        senderId: otherUserId,
+        receiverId: currentUserId,
+        read: false,
+      },
+      data: { read: true },
+    });
+
+    // Mark notifications as read
     await prisma.notification.updateMany({
       where: {
         userId: currentUserId,
