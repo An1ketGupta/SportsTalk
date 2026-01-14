@@ -73,10 +73,10 @@ export default function MessagesPage() {
 
     socket.on("receive-dm", (message: Message) => {
       console.log("Received DM:", message);
-      if (!message.isMine) {
-        setMessages((prev) => [...prev, message]);
-        loadConversations();
-      }
+      // Always add received messages - socket.to() ensures we only receive others' messages
+      // Force isMine to false since we're the receiver
+      setMessages((prev) => [...prev, { ...message, isMine: false }]);
+      loadConversations();
     });
 
     socket.on("disconnect", () => {
