@@ -2,7 +2,6 @@ import { auth } from "@/auth";
 import prisma from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 
-// GET /api/messages/[userId] - Get messages with a specific user
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ userId: string }> }
@@ -16,7 +15,6 @@ export async function GET(
     const currentUserId = session.user.id as string;
     const { userId: otherUserId } = await params;
 
-    // Get other user info
     const otherUser = await prisma.user.findUnique({
       where: { id: otherUserId },
       select: {
@@ -31,7 +29,6 @@ export async function GET(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // Get all messages between the two users
     const messages = await prisma.message.findMany({
       where: {
         OR: [
@@ -51,7 +48,6 @@ export async function GET(
       },
     });
 
-    // Mark notifications as read
     await prisma.notification.updateMany({
       where: {
         userId: currentUserId,

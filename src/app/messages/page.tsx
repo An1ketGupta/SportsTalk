@@ -213,8 +213,22 @@ export default function MessagesPage() {
         });
       }
 
-      // Update conversation list
-      loadConversations();
+      // Update conversation list locally (update lastMessage without refreshing from API)
+      setConversations(prev =>
+        prev.map(conv =>
+          conv.user.id === selectedUserId
+            ? {
+              ...conv,
+              lastMessage: {
+                content: messageContent,
+                createdAt: new Date().toISOString(),
+                isMine: true,
+              },
+              unreadCount: 0,
+            }
+            : conv
+        )
+      );
     } catch (error) {
       console.error("Send message error:", error);
       // Remove temp message on error
@@ -293,14 +307,14 @@ export default function MessagesPage() {
   }
 
   return (
-    <div className="w-full h-[calc(100dvh-3.5rem)] sm:h-[90vh] flex pb-16 md:pb-0">
+    <div className="w-full h-[90vh] md:h-[90vh] flex pb-16 md:pb-0 lg:px-10">
       <div className="hidden md:block">
         <Sidebar />
       </div>
 
       <div className="flex-1 flex border-r border-white border-opacity-20">
         {/* Conversations List */}
-        <div className={`w-full md:w-80 border-r border-gray-800 flex flex-col ${selectedUserId ? "hidden md:flex" : "flex"}`}>
+        <div className={`w-full md:w-80 lg:w-96 border-r border-gray-800 flex flex-col ${selectedUserId ? "hidden md:flex" : "flex"}`}>
           <div className="p-4 border-b border-gray-800 flex items-center justify-between shrink-0">
             <h1 className="text-xl font-bold">Messages</h1>
             <button
@@ -365,15 +379,15 @@ export default function MessagesPage() {
                 <button
                   key={conv.user.id}
                   onClick={() => setSelectedUserId(conv.user.id)}
-                  className={`w-full flex items-center gap-3 p-4 hover:bg-gray-900 transition-colors border-b border-gray-800/50 ${selectedUserId === conv.user.id ? "bg-gray-900" : ""
+                  className={`w-full flex items-center gap-3 p-4 md:p-3 hover:bg-gray-900 active:bg-gray-800 transition-colors border-b border-gray-800/50 ${selectedUserId === conv.user.id ? "bg-gray-900" : ""
                     } ${conv.unreadCount > 0 ? "bg-blue-500/5 border-l-4 border-l-blue-500" : ""}`}
                 >
                   <img
                     src={conv.user.image ?? "/default-avatar.png"}
                     alt={conv.user.name ?? conv.user.username}
-                    className="w-12 h-12 rounded-full object-cover"
+                    className="w-14 h-14 md:w-12 md:h-12 rounded-full object-cover flex-shrink-0"
                   />
-                  <div className="flex-1 text-left overflow-hidden">
+                  <div className="flex-1 text-left overflow-hidden min-w-0">
                     <div className="flex items-center justify-between">
                       <span className={`font-semibold truncate ${conv.unreadCount > 0 ? "text-white font-bold" : "text-white"}`}>
                         {conv.user.name ?? conv.user.username}
@@ -449,13 +463,13 @@ export default function MessagesPage() {
                       className={`flex ${msg.isMine ? "justify-end" : "justify-start"}`}
                     >
                       <div
-                        className={`max-w-[70%] rounded-2xl px-4 py-2 ${msg.isMine
+                        className={`max-w-[80%] md:max-w-[70%] rounded-2xl px-4 py-2.5 ${msg.isMine
                           ? "bg-blue-600 text-white"
                           : "bg-gray-800 text-white"
                           }`}
                       >
-                        <p>{msg.content}</p>
-                        <p className={`text-xs mt-1 ${msg.isMine ? "text-blue-200" : "text-gray-500"}`}>
+                        <p className="text-[15px] md:text-sm leading-relaxed">{msg.content}</p>
+                        <p className={`text-[11px] md:text-xs mt-1 ${msg.isMine ? "text-blue-200" : "text-gray-500"}`}>
                           {formatTime(msg.createdAt)}
                         </p>
                       </div>
@@ -474,7 +488,7 @@ export default function MessagesPage() {
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSendMessage()}
-                    className="flex-1 bg-gray-900 border border-gray-700 rounded-full py-3 px-4 text-white placeholder:text-gray-500 focus:outline-none focus:border-blue-500"
+                    className="flex-1 bg-gray-900 border border-gray-700 rounded-full py-3 px-4 text-base md:text-sm text-white placeholder:text-gray-500 focus:outline-none focus:border-blue-500"
                   />
                   <button
                     onClick={handleSendMessage}

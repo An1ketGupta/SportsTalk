@@ -57,15 +57,8 @@ export async function GET() {
           orderBy: { createdAt: "desc" },
         });
 
-        // Count unread messages
-        const unreadCount = await prisma.message.count({
-          where: {
-            senderId: otherUserId,
-            receiverId: userId,
-            // We don't have a 'read' field, so we'll assume all are unread for now
-            // You could add a 'read' boolean field to the Message model
-          },
-        });
+        // Simple unread logic: mark as unread if last message was from the other user
+        // (This will reset when page refreshes, but doesn't require schema changes)
 
         return {
           user: {
