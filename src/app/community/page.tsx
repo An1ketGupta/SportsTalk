@@ -148,8 +148,14 @@ export default function CommunityPage() {
     }
   }, []);
 
-  const handlePostCreated = () => {
-    loadFeed(activeTab, true);
+  const handlePostCreated = (newPost?: FeedPost) => {
+    if (newPost) {
+      // Prepend the new post to the feed immediately
+      setPosts(prev => [newPost, ...prev]);
+    } else {
+      // Fallback: refresh the feed if no post data provided
+      loadFeed(activeTab, true);
+    }
     setTweetBox(false);
   };
 
@@ -315,11 +321,13 @@ export default function CommunityPage() {
                     ))}
 
                     {/* Infinite Scroll Loader */}
-                    <div ref={loadMoreRef} className="h-20 flex items-center justify-center">
-                      {loadingMore && (
-                        <Loader size="sm" />
-                      )}
-                    </div>
+                    {nextCursor && (
+                      <div ref={loadMoreRef} className="h-20 flex items-center justify-center">
+                        {loadingMore && (
+                          <Loader size="sm" />
+                        )}
+                      </div>
+                    )}
                   </>
                 )}
               </div>

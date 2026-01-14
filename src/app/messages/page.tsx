@@ -352,7 +352,7 @@ export default function MessagesPage() {
                   key={conv.user.id}
                   onClick={() => setSelectedUserId(conv.user.id)}
                   className={`w-full flex items-center gap-3 p-4 hover:bg-gray-900 transition-colors border-b border-gray-800/50 ${selectedUserId === conv.user.id ? "bg-gray-900" : ""
-                    }`}
+                    } ${conv.unreadCount > 0 ? "bg-blue-500/5 border-l-4 border-l-blue-500" : ""}`}
                 >
                   <img
                     src={conv.user.image ?? "/default-avatar.png"}
@@ -361,7 +361,7 @@ export default function MessagesPage() {
                   />
                   <div className="flex-1 text-left overflow-hidden">
                     <div className="flex items-center justify-between">
-                      <span className="font-semibold text-white truncate">
+                      <span className={`font-semibold truncate ${conv.unreadCount > 0 ? "text-white font-bold" : "text-white"}`}>
                         {conv.user.name ?? conv.user.username}
                       </span>
                       {conv.lastMessage && (

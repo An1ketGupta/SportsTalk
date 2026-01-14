@@ -1,12 +1,13 @@
 'use client'
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "@/components/sidebar";
 import RightSection from "@/components/rightsection";
 import Link from "next/link";
 import { GoCheckCircleFill } from "react-icons/go";
 import { FaHeart, FaRegHeart, FaShare, FaArrowLeft } from "react-icons/fa";
+import { FiImage, FiX } from "react-icons/fi";
 import { useToast } from "@/components/ToastProvider";
 import Loader from "@/components/ui/loader";
 
@@ -39,6 +40,13 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [postId, setPostId] = useState("");
+
+  // File upload states for reply
+  const [replyMediaUrl, setReplyMediaUrl] = useState("");
+  const [replyMediaPreview, setReplyMediaPreview] = useState("");
+  const [replyMediaType, setReplyMediaType] = useState<"image" | "video" | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     async function getParams() {
@@ -133,7 +141,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
       const res = await fetch(`/api/posts/${postId}/comments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: commentText }),
+        body: JSON.stringify({ content: commentText, mediaUrl: replyMediaUrl || null }),
       });
 
       if (!res.ok) throw new Error("Failed to post comment");
@@ -142,11 +150,80 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
       setComments([data.comment, ...comments]);
       setCommentText("");
       setCommentCount(commentCount + 1);
+      // Clear media after posting
+      handleRemoveReplyMedia();
     } catch (error) {
       console.error("Comment error:", error);
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // File upload handlers for reply
+  const handleReplyFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    await processReplyFile(file);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const processReplyFile = async (file: File) => {
+    const validImageTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    const validVideoTypes = ["video/mp4", "video/webm", "video/quicktime"];
+    const isImage = validImageTypes.includes(file.type);
+    const isVideo = validVideoTypes.includes(file.type);
+
+    if (!isImage && !isVideo) {
+      showToast("Invalid file type. Only images and videos are allowed.", "error");
+      return;
+    }
+
+    const maxSize = isVideo ? 100 * 1024 * 1024 : 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      showToast(`File too large. Maximum size is ${isVideo ? "100MB" : "10MB"}.`, "error");
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    setReplyMediaPreview(objectUrl);
+    setReplyMediaType(isVideo ? "video" : "image");
+
+    try {
+      setIsUploading(true);
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Upload failed");
+      }
+
+      const data = await response.json();
+      setReplyMediaUrl(data.url);
+      showToast("Media uploaded successfully!", "success");
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      showToast(error.message || "Failed to upload media", "error");
+      setReplyMediaPreview("");
+      setReplyMediaType(null);
+      URL.revokeObjectURL(objectUrl);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleRemoveReplyMedia = () => {
+    if (replyMediaPreview && replyMediaPreview.startsWith("blob:")) {
+      URL.revokeObjectURL(replyMediaPreview);
+    }
+    setReplyMediaUrl("");
+    setReplyMediaPreview("");
+    setReplyMediaType(null);
   };
 
   const handleShare = () => {
@@ -314,13 +391,55 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                 rows={2}
                 className="w-full bg-transparent outline-none resize-none text-[15px]"
               />
-              <div className="flex justify-end mt-2">
+
+              {/* Media Preview */}
+              {replyMediaPreview && (
+                <div className="relative rounded-xl overflow-hidden mt-2 max-w-xs">
+                  {replyMediaType === "video" ? (
+                    <video src={replyMediaPreview} controls className="w-full max-h-40 object-cover" />
+                  ) : (
+                    <img src={replyMediaPreview} alt="Preview" className="w-full max-h-40 object-cover" />
+                  )}
+                  {isUploading && (
+                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                      <div className="h-8 w-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                    </div>
+                  )}
+                  {!isUploading && (
+                    <button
+                      onClick={handleRemoveReplyMedia}
+                      className="absolute top-1 right-1 bg-black/70 rounded-full p-1 hover:bg-black/90 transition-colors"
+                    >
+                      <FiX className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Hidden file input */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/quicktime"
+                onChange={handleReplyFileSelect}
+                className="hidden"
+              />
+
+              <div className="flex justify-between items-center mt-2">
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading || !!replyMediaPreview}
+                  className={`p-2 hover:bg-gray-800 rounded-full transition-colors text-blue-500 ${(isUploading || replyMediaPreview) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  title="Add image or video"
+                >
+                  <FiImage className="w-5 h-5" />
+                </button>
                 <button
                   onClick={handleComment}
-                  disabled={!commentText.trim() || isSubmitting}
+                  disabled={!commentText.trim() || isSubmitting || isUploading}
                   className="bg-blue-500 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-1.5 rounded-full font-semibold text-sm"
                 >
-                  {isSubmitting ? "Posting..." : "Reply"}
+                  {isSubmitting ? "Posting..." : isUploading ? "Uploading..." : "Reply"}
                 </button>
               </div>
             </div>
@@ -362,7 +481,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                           · {formatTimeAgo(new Date(comment.createdAt))}
                         </span>
                       </div>
-                      <p className="text-[15px] mt-1">{comment.content}</p>
+                      <p className="text-[15px] mt-1 whitespace-pre-line">{comment.content}</p>
                     </div>
                   </div>
                 </div>

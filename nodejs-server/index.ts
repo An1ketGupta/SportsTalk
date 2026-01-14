@@ -45,9 +45,9 @@ io.on("connection", (socket: Socket) => {
     })
 
     socket.on("message", (data: any) => {
-        console.log("got the message: " + data.message)
+        console.log("got the message: " + data.message + " from: " + data.username)
         const roomid = data.roomid
-        socket.to(roomid).emit("receivedmessage", (data.message))
+        socket.to(roomid).emit("receivedmessage", { message: data.message, username: data.username })
     })
 
     socket.on("disconnect", () => {

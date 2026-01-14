@@ -6,7 +6,7 @@ import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
 import { useSession } from "next-auth/react";
 import { useToast } from "@/components/ToastProvider";
 
-export default function TweetBox({ onPostCreated }: { onPostCreated?: () => void }) {
+export default function TweetBox({ onPostCreated }: { onPostCreated?: (post?: any) => void }) {
   const { data: session } = useSession();
   const { showToast } = useToast();
   const [text, setText] = useState("");
@@ -235,9 +235,9 @@ export default function TweetBox({ onPostCreated }: { onPostCreated?: () => void
       setTags([]);
       setCustomTag("");
 
-      // Notify parent
+      // Notify parent with the new post
       if (onPostCreated) {
-        onPostCreated();
+        onPostCreated(data.post);
       }
 
       showToast(data.message || "Post created successfully!", "success");

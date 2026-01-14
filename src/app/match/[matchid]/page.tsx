@@ -13,12 +13,14 @@ import ChatBox from "@/components/ui/chatbox";
 import Link from "next/link";
 import { JSX, useEffect, useRef, useState } from "react";
 import { io, Socket } from "socket.io-client"
+import { useSession } from "next-auth/react"
 
 export default function Match({ params }: any) {
   const [loading, setLoading] = useState<boolean>(false);
   const socketref = useRef<Socket>(null)
   const [matchId, setMatchId] = useState<string | null>()
-  const [messages, setmessages] = useState<Array<{ text: string; type: "sent" | "received" }>>([])
+  const [messages, setmessages] = useState<Array<{ text: string; type: "sent" | "received"; username?: string }>>([])
+  const { data: session } = useSession()
   const [sendmessage, setSendMessage] = useState<string>("")
   const [MatchesDiv, setMatchesDiv] = useState<JSX.Element | null>(null);
 
@@ -59,8 +61,8 @@ export default function Match({ params }: any) {
     if (matchId) {
       socketref.current?.emit("joinroom", matchId);
 
-      socketref.current?.on("receivedmessage", (message: string) => {
-        setmessages((prevmessage) => [...prevmessage, { text: message, type: "received" }])
+      socketref.current?.on("receivedmessage", (data: { message: string; username?: string }) => {
+        setmessages((prevmessage) => [...prevmessage, { text: data.message, type: "received", username: data.username }])
       })
 
       return () => {
@@ -168,6 +170,7 @@ export default function Match({ params }: any) {
     const trimmed = sendmessage.trim()
     if (!trimmed || !matchId) return
 
+    const username = (session?.user as any)?.username || session?.user?.name || "Anonymous"
     setmessages((prev) => [...prev, { text: trimmed, type: "sent" }])
 
     socketref.current?.emit(
@@ -175,6 +178,7 @@ export default function Match({ params }: any) {
       {
         roomid: matchId,
         message: trimmed,
+        username: username,
       },
     )
     setSendMessage("")
