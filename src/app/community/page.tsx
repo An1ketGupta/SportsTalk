@@ -299,20 +299,11 @@ export default function CommunityPage() {
                 ) : filteredPosts.length === 0 ? (
                   <div className="text-center py-10">
                     <div className="text-6xl mb-4">📭</div>
-                    <h3 className="text-xl font-bold text-white mb-2">No posts found</h3>
                     <p className="text-gray-500">
                       {activeTab === "following"
-                        ? "Ideally you should follow some people to see their posts here."
+                        ? "You do not follow anyone."
                         : "Be the first to post something!"}
                     </p>
-                    {activeTab === "following" && (
-                      <Button
-                        className="mt-4 bg-white text-black hover:bg-gray-200"
-                        onClick={() => setActiveTab("foryou")}
-                      >
-                        Explore For You
-                      </Button>
-                    )}
                   </div>
                 ) : (
                   <>
