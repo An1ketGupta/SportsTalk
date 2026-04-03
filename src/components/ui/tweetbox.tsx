@@ -5,6 +5,7 @@ import { GoCheckCircleFill } from "react-icons/go";
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
 import { useSession } from "next-auth/react";
 import { useToast } from "@/components/ToastProvider";
+import { AI_AGENT_SUGGESTIONS } from "@/components/ui/AgentMention";
 
 export default function TweetBox({ onPostCreated }: { onPostCreated?: (post?: any) => void }) {
   const { data: session } = useSession();
@@ -147,7 +148,7 @@ export default function TweetBox({ onPostCreated }: { onPostCreated?: (post?: an
       if (!/\s/.test(query) && query.length > 0) {
         setMentionQuery(query);
         setShowSuggestions(true);
-        // Fetch suggestions
+        // Fetch user suggestions
         try {
           const res = await fetch(`/api/users/search?q=${query}`);
           if (res.ok) {
@@ -157,6 +158,11 @@ export default function TweetBox({ onPostCreated }: { onPostCreated?: (post?: an
         } catch (err) {
           console.error("Failed to fetch suggestions", err);
         }
+      } else if (query.length === 0) {
+        // Show agent suggestions when just "@" is typed
+        setMentionQuery("");
+        setShowSuggestions(true);
+        setSuggestions([]);
       } else {
         setShowSuggestions(false);
       }
@@ -278,8 +284,62 @@ export default function TweetBox({ onPostCreated }: { onPostCreated?: (post?: an
           />
 
           {/* Suggestions Dropdown */}
-          {showSuggestions && suggestions.length > 0 && (
-            <div className="absolute top-full left-0 bg-black border border-gray-800 rounded-xl w-64 shadow-xl z-50 max-h-60 overflow-y-auto">
+          {showSuggestions && (
+            <div className="absolute top-full left-0 bg-black border border-gray-800 rounded-xl w-72 shadow-xl z-50 max-h-72 overflow-y-auto">
+              {/* AI Agent Suggestions */}
+              {AI_AGENT_SUGGESTIONS
+                .filter(agent => 
+                  mentionQuery.length === 0 || 
+                  agent.handle.toLowerCase().startsWith(mentionQuery.toLowerCase()) ||
+                  agent.displayName.toLowerCase().startsWith(mentionQuery.toLowerCase())
+                )
+                .map(agent => (
+                  <button
+                    key={`ai-${agent.handle}`}
+                    onClick={() => handleSelectUser(agent.handle)}
+                    className="flex items-center gap-3 w-full p-3 hover:bg-gray-900 text-left transition-colors border-b border-gray-800/50"
+                  >
+                    <div
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-sm"
+                      style={{
+                        background: `${agent.color}20`,
+                        border: `2px solid ${agent.color}40`,
+                      }}
+                    >
+                      {agent.avatar}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <p className="font-bold text-sm" style={{ color: agent.color }}>
+                          {agent.displayName}
+                        </p>
+                        <span
+                          className="text-[9px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider"
+                          style={{
+                            background: `${agent.color}20`,
+                            color: agent.color,
+                            border: `1px solid ${agent.color}30`,
+                          }}
+                        >
+                          AI
+                        </span>
+                      </div>
+                      <p className="text-gray-500 text-xs">@{agent.handle}</p>
+                    </div>
+                  </button>
+                ))}
+
+              {/* Divider between AI agents and users */}
+              {suggestions.length > 0 && AI_AGENT_SUGGESTIONS.filter(a => 
+                mentionQuery.length === 0 || 
+                a.handle.toLowerCase().startsWith(mentionQuery.toLowerCase())
+              ).length > 0 && (
+                <div className="px-3 py-1.5 text-[10px] text-gray-500 uppercase tracking-wider bg-gray-900/50">
+                  Users
+                </div>
+              )}
+
+              {/* User Suggestions */}
               {suggestions.map(user => (
                 <button
                   key={user.id}
@@ -296,6 +356,17 @@ export default function TweetBox({ onPostCreated }: { onPostCreated?: (post?: an
                   </div>
                 </button>
               ))}
+
+              {/* Empty state */}
+              {suggestions.length === 0 && AI_AGENT_SUGGESTIONS.filter(a => 
+                mentionQuery.length === 0 || 
+                a.handle.toLowerCase().startsWith(mentionQuery.toLowerCase()) ||
+                a.displayName.toLowerCase().startsWith(mentionQuery.toLowerCase())
+              ).length === 0 && (
+                <div className="p-3 text-center text-gray-500 text-sm">
+                  No matches found
+                </div>
+              )}
             </div>
           )}
 

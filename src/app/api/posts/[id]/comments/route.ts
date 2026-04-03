@@ -1,12 +1,45 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
+import { parseAgentMentions } from "@/lib/ai/config";
 
 type Params = {
   params: Promise<{
     id: string;
   }>;
 };
+
+/**
+ * Fire-and-forget helper to trigger AI agent responses for comment mentions.
+ */
+async function triggerAgentResponsesForComment(
+  postId: string,
+  commentContent: string,
+  authorName: string,
+  baseUrl: string
+) {
+  const mentions = parseAgentMentions(commentContent);
+  if (mentions.length === 0) return;
+
+  const promises = mentions.map(async (handle) => {
+    try {
+      await fetch(`${baseUrl}/api/ai/respond`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          postId,
+          agentHandle: handle,
+          postContent: commentContent,
+          authorName,
+        }),
+      });
+    } catch (error) {
+      console.error(`[AI Trigger] Failed to trigger ${handle} for comment:`, error);
+    }
+  });
+
+  Promise.allSettled(promises).catch(console.error);
+}
 
 // Get comments for a post
 export async function GET(req: NextRequest, { params }: Params) {
@@ -39,12 +72,16 @@ export async function GET(req: NextRequest, { params }: Params) {
         id: comment.id,
         content: comment.content,
         createdAt: comment.createdAt,
+        isAIGenerated: comment.isAIGenerated,
+        aiProvider: comment.aiProvider,
         author: {
           id: comment.author.id,
           name: comment.author.name,
           image: comment.author.image,
           username: comment.author.email?.split("@")[0] ?? "user",
           isVerified: comment.author.isVerified,
+          isAI: comment.author.isAI,
+          aiProvider: comment.author.aiProvider,
         },
       })),
       hasMore: skip + comments.length < totalCount,
@@ -112,18 +149,31 @@ export async function POST(req: NextRequest, { params }: Params) {
       });
     }
 
+    // Trigger AI agent responses for comment mentions (fire-and-forget)
+    const baseUrl = req.nextUrl.origin;
+    triggerAgentResponsesForComment(
+      postId,
+      content.trim(),
+      comment.author.name || user.email?.split("@")[0] || "A user",
+      baseUrl
+    );
+
     return NextResponse.json({
       message: "Comment created successfully",
       comment: {
         id: comment.id,
         content: comment.content,
         createdAt: comment.createdAt,
+        isAIGenerated: comment.isAIGenerated,
+        aiProvider: comment.aiProvider,
         author: {
           id: comment.author.id,
           name: comment.author.name,
           image: comment.author.image,
           username: comment.author.email?.split("@")[0] ?? "user",
           isVerified: comment.author.isVerified,
+          isAI: comment.author.isAI,
+          aiProvider: comment.author.aiProvider,
         },
       },
     });

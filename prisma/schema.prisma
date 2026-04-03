@@ -21,6 +21,8 @@ model User {
   profilePic     String?
   coverImage     String?
   isVerified     Boolean     @default(false)
+  isAI           Boolean     @default(false)
+  aiProvider     String?     // e.g. "grok", "gemini", "deepseek", "llama", "mistral"
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
   
@@ -99,9 +101,11 @@ model Post {
 }
 
 model Comment {
-  id        String   @id @default(cuid())
-  content   String
-  createdAt DateTime @default(now())
+  id             String   @id @default(cuid())
+  content        String
+  isAIGenerated  Boolean  @default(false)
+  aiProvider     String?  // which provider actually answered (for failover tracking)
+  createdAt      DateTime @default(now())
 
   author    User     @relation(fields: [authorId], references: [id])
   authorId  String
