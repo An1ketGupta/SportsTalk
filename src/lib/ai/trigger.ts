@@ -13,8 +13,11 @@ export async function triggerAgentResponses(
   const mentions = parseAgentMentions(content);
   if (mentions.length === 0) return;
 
-  // Use NEXTAUTH_URL as the base if available, otherwise fall back to the request origin
-  const baseUrl = process.env.NEXTAUTH_URL?.replace(/\/$/, "") || requestOrigin;
+  // Prioritize the actual live request origin since NEXTAUTH_URL might point to an old Vercel deployment
+  let baseUrl = requestOrigin;
+  if (!baseUrl || !baseUrl.startsWith("http")) {
+    baseUrl = process.env.NEXTAUTH_URL?.replace(/\/$/, "") || "http://localhost:3000";
+  }
 
   console.log(`[AI Trigger] 🎯 Found ${mentions.length} agent mention(s): ${mentions.join(", ")}`);
   console.log(`[AI Trigger] 🌐 Base URL: ${baseUrl}`);
