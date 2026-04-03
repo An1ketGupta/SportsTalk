@@ -1,45 +1,13 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
-import { parseAgentMentions } from "@/lib/ai/config";
+import { triggerAgentResponses } from "@/lib/ai/trigger";
 
 type Params = {
   params: Promise<{
     id: string;
   }>;
 };
-
-/**
- * Fire-and-forget helper to trigger AI agent responses for comment mentions.
- */
-async function triggerAgentResponsesForComment(
-  postId: string,
-  commentContent: string,
-  authorName: string,
-  baseUrl: string
-) {
-  const mentions = parseAgentMentions(commentContent);
-  if (mentions.length === 0) return;
-
-  const promises = mentions.map(async (handle) => {
-    try {
-      await fetch(`${baseUrl}/api/ai/respond`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          postId,
-          agentHandle: handle,
-          postContent: commentContent,
-          authorName,
-        }),
-      });
-    } catch (error) {
-      console.error(`[AI Trigger] Failed to trigger ${handle} for comment:`, error);
-    }
-  });
-
-  Promise.allSettled(promises).catch(console.error);
-}
 
 // Get comments for a post
 export async function GET(req: NextRequest, { params }: Params) {
@@ -149,13 +117,13 @@ export async function POST(req: NextRequest, { params }: Params) {
       });
     }
 
-    // Trigger AI agent responses for comment mentions (fire-and-forget)
-    const baseUrl = req.nextUrl.origin;
-    triggerAgentResponsesForComment(
+    // Trigger AI agent responses for comment mentions (await trigger send for stability)
+    const requestOrigin = new URL(req.url).origin;
+    await triggerAgentResponses(
       postId,
       content.trim(),
       comment.author.name || user.email?.split("@")[0] || "A user",
-      baseUrl
+      requestOrigin
     );
 
     return NextResponse.json({
