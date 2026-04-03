@@ -1,57 +1,73 @@
-import { parseAgentMentions } from "./config";
+import { parseAgentMentions, AGENTS } from "./config";
+import { generateWithFailover } from "./failover";
+import prisma from "../db";
 
 /**
- * Triggers AI agent responses by calling the internal /api/ai/respond endpoint.
- * In production (Render/Vercel), we prioritize NEXTAUTH_URL to ensure stable internal routing.
+ * Triggers AI agent responses directly in the background.
+ * By directly executing functions rather than sending an HTTP fetch to our own server,
+ * we entirely bypass proxy latency and routing blocks on Render/Vercel.
  */
 export async function triggerAgentResponses(
   postId: string,
   content: string,
   authorName: string,
-  requestOrigin: string
+  requestOrigin: string // kept for interface compatibility
 ) {
   const mentions = parseAgentMentions(content);
-  if (mentions.length === 0) return;
-
-  // Prioritize the actual live request origin since NEXTAUTH_URL might point to an old Vercel deployment
-  let baseUrl = requestOrigin;
-  if (!baseUrl || !baseUrl.startsWith("http")) {
-    baseUrl = process.env.NEXTAUTH_URL?.replace(/\/$/, "") || "http://localhost:3000";
+  if (mentions.length === 0) {
+    console.log(`[AI Trigger] No agent mentions found in: "${content.substring(0, 40)}"`);
+    return;
   }
 
   console.log(`[AI Trigger] 🎯 Found ${mentions.length} agent mention(s): ${mentions.join(", ")}`);
-  console.log(`[AI Trigger] 🌐 Base URL: ${baseUrl}`);
 
-  // We await the trigger calls themselves to ensure they are at least RECEIVED 
-  // by the background handler before the main request finishes (important for Render/Vercel)
+  // Process triggers quietly in the background without HTTP overhead
   const promises = mentions.map(async (handle) => {
     try {
-      console.log(`[AI Trigger] 📤 Triggering @${handle} for post ${postId}...`);
-      const triggerUrl = `${baseUrl}/api/ai/respond`;
+      console.log(`[AI Trigger] 📤 Generating response for @${handle}...`);
       
-      const res = await fetch(triggerUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          postId,
-          agentHandle: handle,
-          postContent: content,
-          authorName,
-        }),
+      const agentUser = await prisma.user.findFirst({
+        where: { isAI: true, aiProvider: handle },
       });
 
-      if (!res.ok) {
-        const errorText = await res.text().catch(() => "Unknown error");
-        console.error(`[AI Trigger] ❌ @${handle} trigger failed (${res.status}):`, errorText);
-      } else {
-        const data = await res.json().catch(() => ({}));
-        console.log(`[AI Trigger] 📥 @${handle} trigger response: ${res.status} — ${data.success ? "✅ success" : "❌ failed"}`);
+      if (!agentUser) {
+        console.error(`[AI Trigger] ❌ Agent user @${handle} not found in DB! Seed the DB!`);
+        return;
       }
+
+      const context = authorName
+        ? `${authorName} said on SportsTalk: "${content}"`
+        : `A user said on SportsTalk: "${content}"`;
+
+      const startTime = Date.now();
+      const result = await generateWithFailover(handle, content, context);
+      const elapsed = Date.now() - startTime;
+      
+      console.log(`[AI Trigger] ✅ @${result.respondingAgent} completed in ${elapsed}ms`);
+
+      let replyContent = result.content;
+      if (result.didFailover && result.failoverNote) {
+        replyContent += `\n\n_${result.failoverNote}_`;
+      }
+
+      const comment = await prisma.comment.create({
+        data: {
+          content: replyContent,
+          isAIGenerated: true,
+          aiProvider: result.respondingAgent,
+          authorId: agentUser.id,
+          postId: postId,
+        },
+      });
+
+      console.log(`[AI Trigger] 💾 Saved comment ${comment.id} for @${result.respondingAgent}`);
     } catch (error) {
-      console.error(`[AI Trigger] ❌ Failed to trigger @${handle}:`, error instanceof Error ? error.message : error);
+      console.error(`[AI Trigger] ❌ Fatal error for @${handle}:`, error instanceof Error ? error.message : error);
     }
   });
 
-  // Wait for all trigger requests to be sent
-  await Promise.allSettled(promises);
+  // Since we removed network boundaries, awaiting this performs computation inline.
+  // We can let them run concurrently, and just return so the parent request isn't blocked.
+  // On Render, persistent node deployments keep promises alive natively.
+  Promise.allSettled(promises);
 }

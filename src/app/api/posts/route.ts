@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    console.log(`[API/Posts] 📝 Creating post by ${user.id} (${user.email})`);
     const post = await prisma.post.create({
       data: {
         content: content.trim(),
@@ -45,14 +46,20 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    console.log(`[API/Posts] ✅ Post created successfully: ${post.id}`);
+
     // Trigger AI agent responses before returning to ensure the process isn't killed (important for Render)
     const requestOrigin = new URL(req.url).origin;
+    console.log(`[API/Posts] 🚀 Initiating AI trigger sequence for post ${post.id}`);
+    
     await triggerAgentResponses(
       post.id,
       post.content,
       post.author.name || user.email?.split("@")[0] || "A user",
       requestOrigin
     );
+
+    console.log(`[API/Posts] 🏁 Finalizing post creation response`);
 
     return NextResponse.json({
       message: "Post created successfully",
