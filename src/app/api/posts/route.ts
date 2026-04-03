@@ -1,53 +1,7 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
-import { parseAgentMentions } from "@/lib/ai/config";
-
-/**
- * Fire-and-forget helper to trigger AI agent responses.
- * Calls the internal /api/ai/respond endpoint for each mentioned agent.
- * Does not block the post creation response.
- */
-async function triggerAgentResponses(
-  postId: string,
-  postContent: string,
-  authorName: string,
-  baseUrl: string
-) {
-  const mentions = parseAgentMentions(postContent);
-  if (mentions.length === 0) {
-    console.log(`[AI Trigger] No agent mentions found in: "${postContent.substring(0, 80)}"`);
-    return;
-  }
-
-  console.log(`[AI Trigger] 🎯 Found ${mentions.length} agent mention(s): ${mentions.join(", ")}`);
-  console.log(`[AI Trigger] 🌐 Base URL: ${baseUrl}`);
-
-  // Trigger each agent in parallel (fire-and-forget)
-  const promises = mentions.map(async (handle) => {
-    try {
-      console.log(`[AI Trigger] 📤 Triggering @${handle} for post ${postId}...`);
-      const triggerUrl = `${baseUrl}/api/ai/respond`;
-      const res = await fetch(triggerUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          postId,
-          agentHandle: handle,
-          postContent,
-          authorName,
-        }),
-      });
-      const data = await res.json().catch(() => ({}));
-      console.log(`[AI Trigger] 📥 @${handle} trigger response: ${res.status} — ${data.success ? "✅ success" : `❌ ${data.error || "failed"}`}`);
-    } catch (error) {
-      console.error(`[AI Trigger] ❌ Failed to trigger @${handle}:`, error instanceof Error ? error.message : error);
-    }
-  });
-
-  // Don't await — let them run in the background
-  Promise.allSettled(promises).catch(console.error);
-}
+import { triggerAgentResponses } from "@/lib/ai/trigger";
 
 // Create a new post
 export async function POST(req: NextRequest) {
@@ -91,13 +45,13 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Trigger AI agent responses (fire-and-forget)
-    const baseUrl = req.nextUrl.origin;
-    triggerAgentResponses(
+    // Trigger AI agent responses before returning to ensure the process isn't killed (important for Render)
+    const requestOrigin = new URL(req.url).origin;
+    await triggerAgentResponses(
       post.id,
       post.content,
       post.author.name || user.email?.split("@")[0] || "A user",
-      baseUrl
+      requestOrigin
     );
 
     return NextResponse.json({
