@@ -37,10 +37,43 @@ export default function MatchCard({
   href,
 }: MatchCardProps) {
   const isLive = isLiveStatus(status);
+  void matchId;
+  void venue;
+
+  const getStreamedSportFromHref = (matchHref: string): string | null => {
+    const matchPath = matchHref.match(/\/match\/([^/?#]+)/i)?.[1];
+    if (!matchPath) return null;
+
+    const prefix = matchPath.slice(0, 2).toLowerCase();
+    const sportByPrefix: Record<string, string> = {
+      fo: "football",
+      nb: "basketball",
+      bb: "basketball",
+      tn: "tennis",
+      ho: "hockey",
+      mm: "mma",
+    };
+
+    return sportByPrefix[prefix] || null;
+  };
+
+  const streamSport = getStreamedSportFromHref(href);
+  const hrefWithStreamParams = (() => {
+    if (!streamSport) return href;
+
+    const params = new URLSearchParams({
+      streamSport,
+      home: homeTeam.name,
+      away: awayTeam.name,
+    });
+
+    const separator = href.includes("?") ? "&" : "?";
+    return `${href}${separator}${params.toString()}`;
+  })();
 
   return (
     <a
-      href={href}
+      href={hrefWithStreamParams}
       className="group block bg-gradient-to-br from-gray-900/40 to-gray-900/20 hover:from-gray-800/60 hover:to-gray-800/40 border border-white/10 hover:border-white/20 rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] backdrop-blur-sm"
     >
       {/* Header - League Info */}
@@ -58,7 +91,7 @@ export default function MatchCard({
             </div>
           )}
           {status.elapsed && (
-            <span className="text-xs text-gray-400">{status.elapsed}'</span>
+            <span className="text-xs text-gray-400">{status.elapsed}&apos;</span>
           )}
         </div>
       </div>

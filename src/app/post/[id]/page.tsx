@@ -11,6 +11,9 @@ import { FiImage, FiX, FiSmile } from "react-icons/fi";
 import { useToast } from "@/components/ToastProvider";
 import Loader from "@/components/ui/loader";
 import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
+import { RenderContentWithMentions } from "@/components/ui/AgentMention";
+import AIReplyCard from "@/components/ui/AIReplyCard";
+import { AI_AGENT_SUGGESTIONS } from "@/components/ui/AgentMention";
 
 function formatTimeAgo(date: Date) {
   const diff = Date.now() - date.getTime();
@@ -325,7 +328,7 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
           </div>
 
           <div className="mt-3 text-[15px] leading-relaxed whitespace-pre-line">
-            {post.content}
+            <RenderContentWithMentions content={post.content} />
           </div>
 
           {post.mediaUrl && (
@@ -482,7 +485,13 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
             </div>
           ) : (
             <>
-              {comments.map((comment) => (
+              {comments.map((comment) => {
+                // AI comment — special card
+                if (comment.isAIGenerated || comment.author?.isAI) {
+                  return <AIReplyCard key={comment.id} comment={comment} />;
+                }
+                // Regular comment
+                return (
                 <div key={comment.id} className="p-4 border-b border-gray-800 hover:bg-gray-900/50 transition-colors">
                   <div className="flex gap-3">
                     <Link href={`/user/${comment.author.id}`}>
@@ -504,11 +513,14 @@ export default function PostDetailPage({ params }: { params: Promise<{ id: strin
                           · {formatTimeAgo(new Date(comment.createdAt))}
                         </span>
                       </div>
-                      <p className="text-[15px] mt-1 whitespace-pre-line">{comment.content}</p>
+                      <p className="text-[15px] mt-1 whitespace-pre-line">
+                        <RenderContentWithMentions content={comment.content} />
+                      </p>
                     </div>
                   </div>
                 </div>
-              ))}
+                );
+              })}
 
               {hasMore && (
                 <div className="p-4 flex justify-center">

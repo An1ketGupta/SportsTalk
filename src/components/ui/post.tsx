@@ -5,6 +5,8 @@ import SquareBox from "./squarebox";
 import { GoCheckCircleFill } from "react-icons/go";
 import { FaHeart, FaRegHeart, FaRegComment, FaShare, FaTrash } from "react-icons/fa";
 import { useToast } from "@/components/ToastProvider";
+import { RenderContentWithMentions } from "@/components/ui/AgentMention";
+import AIReplyCard from "@/components/ui/AIReplyCard";
 
 export type FeedPost = {
   id: string;
@@ -183,7 +185,7 @@ export default function Post({ post, onDelete, showDeleteButton = false }: { pos
 
           <Link href={`/post/${post.id}`} className="block">
             <div className="text-[15px] leading-relaxed whitespace-pre-line">
-              {post.content}
+              <RenderContentWithMentions content={post.content} />
             </div>
           </Link>
 
@@ -288,28 +290,37 @@ export default function Post({ post, onDelete, showDeleteButton = false }: { pos
                   Loading comments...
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {comments.map((comment) => (
-                    <div key={comment.id} className="flex gap-2">
-                      <img
-                        className="w-8 h-8 rounded-full object-cover"
-                        src={comment.author.image ?? "/default-avatar.png"}
-                        alt={comment.author.name ?? comment.author.username}
-                      />
-                      <div className="flex-1 bg-gray-900 rounded-2xl px-3 py-2">
-                        <div className="flex items-center gap-2 text-xs">
-                          <span className="font-semibold">
-                            {comment.author.name ?? comment.author.username}
-                          </span>
-                          {comment.author.isVerified && <GoCheckCircleFill className="text-blue-500 w-3 h-3" />}
-                          <span className="text-gray-500">
-                            @{comment.author.username}
-                          </span>
+                <div className="space-y-0">
+                  {comments.map((comment) => {
+                    // Render AI comments with special card
+                    if (comment.isAIGenerated || comment.author?.isAI) {
+                      return <AIReplyCard key={comment.id} comment={comment} />;
+                    }
+                    // Regular comment
+                    return (
+                      <div key={comment.id} className="flex gap-2 py-2">
+                        <img
+                          className="w-8 h-8 rounded-full object-cover"
+                          src={comment.author.image ?? "/default-avatar.png"}
+                          alt={comment.author.name ?? comment.author.username}
+                        />
+                        <div className="flex-1 bg-gray-900 rounded-2xl px-3 py-2">
+                          <div className="flex items-center gap-2 text-xs">
+                            <span className="font-semibold">
+                              {comment.author.name ?? comment.author.username}
+                            </span>
+                            {comment.author.isVerified && <GoCheckCircleFill className="text-blue-500 w-3 h-3" />}
+                            <span className="text-gray-500">
+                              @{comment.author.username}
+                            </span>
+                          </div>
+                          <p className="text-sm mt-1">
+                            <RenderContentWithMentions content={comment.content} />
+                          </p>
                         </div>
-                        <p className="text-sm mt-1">{comment.content}</p>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

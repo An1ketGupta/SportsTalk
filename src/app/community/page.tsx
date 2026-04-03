@@ -7,11 +7,22 @@ import RightSection from "@/components/rightsection";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { FiRefreshCw, FiFilter, FiX, FiUsers, FiStar, FiPlus, FiTrendingUp } from "react-icons/fi";
+import { FiX, FiUsers, FiStar, FiPlus, FiTrendingUp } from "react-icons/fi";
 import { useGlobalCache } from "@/context/GlobalCacheContext";
 import Loader from "@/components/ui/loader";
 
 type Tab = "foryou" | "following";
+
+interface FollowingWatchItem {
+  userId: string;
+  userName: string;
+  userImage?: string;
+  sport: string;
+  eventId: string;
+  eventTitle: string;
+  watchPath: string;
+  updatedAt: number;
+}
 
 const SPORTS_CATEGORIES = [
   "All",
@@ -39,6 +50,7 @@ export default function CommunityPage() {
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loadingMore, setLoadingMore] = useState<boolean>(false);
   const [loadMoreNode, setLoadMoreNode] = useState<HTMLDivElement | null>(null);
+  const [followingWatching, setFollowingWatching] = useState<FollowingWatchItem[]>([]);
 
   const { trendingData, trendingFetched, setTrendingData, setTrendingFetched, trendingTimestamp, setTrendingTimestamp } = useGlobalCache();
   const router = useRouter(); // Ensure useRouter is imported
@@ -100,7 +112,7 @@ export default function CommunityPage() {
     }
   }, [posts, selectedSport]);
 
-  const loadFeed = useCallback(async (tab: Tab, showRefreshing = false, cursor?: string) => {
+  const loadFeed = useCallback(async (tab: Tab, cursor?: string) => {
     try {
       if (cursor) {
         setLoadingMore(true);
@@ -154,7 +166,7 @@ export default function CommunityPage() {
       setPosts(prev => [newPost, ...prev]);
     } else {
       // Fallback: refresh the feed if no post data provided
-      loadFeed(activeTab, true);
+      loadFeed(activeTab);
     }
     setTweetBox(false);
   };
@@ -175,6 +187,31 @@ export default function CommunityPage() {
     }
   }, [activeTab, loadFeed]);
 
+  useEffect(() => {
+    if (activeTab !== "following") return;
+
+    let disposed = false;
+    const loadWatching = async () => {
+      try {
+        const response = await fetch("/api/live/watch-presence");
+        const data = (await response.json()) as { watching?: FollowingWatchItem[] };
+        if (disposed) return;
+        setFollowingWatching(Array.isArray(data.watching) ? data.watching : []);
+      } catch {
+        if (disposed) return;
+        setFollowingWatching([]);
+      }
+    };
+
+    loadWatching();
+    const interval = window.setInterval(loadWatching, 20_000);
+
+    return () => {
+      disposed = true;
+      window.clearInterval(interval);
+    };
+  }, [activeTab]);
+
   // Infinite scroll with Intersection Observer using callback ref
   useEffect(() => {
     if (!loadMoreNode || !nextCursor || loading || loadingMore || selectedSport === "Trending") return;
@@ -182,7 +219,7 @@ export default function CommunityPage() {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
-          loadFeed(activeTab, false, nextCursor);
+          loadFeed(activeTab, nextCursor);
         }
       },
       { threshold: 0.1, rootMargin: "200px" }
@@ -280,6 +317,34 @@ export default function CommunityPage() {
             ) : (
               /* Standard Feed View */
               <div>
+                {activeTab === "following" && followingWatching.length > 0 && (
+                  <div className="mb-4 rounded-xl border border-white/10 bg-[#181818] p-3">
+                    <h3 className="text-sm font-semibold text-white mb-2">People you follow watching now</h3>
+                    <div className="space-y-2">
+                      {followingWatching.map((item) => (
+                        <a
+                          key={`${item.userId}-${item.eventId}`}
+                          href={item.watchPath}
+                          className="flex items-center gap-3 rounded-lg border border-white/10 bg-black/30 px-3 py-2 hover:bg-white/5 transition-colors"
+                        >
+                          {item.userImage ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={item.userImage} alt={item.userName} className="h-8 w-8 rounded-full object-cover" />
+                          ) : (
+                            <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center text-xs text-gray-300">
+                              {item.userName.slice(0, 1).toUpperCase()}
+                            </div>
+                          )}
+                          <p className="text-xs text-gray-200 line-clamp-2">
+                            <span className="font-semibold text-white">{item.userName}</span> is watching{" "}
+                            <span className="text-blue-400">{item.eventTitle}</span>
+                          </p>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {selectedSport !== "All" && (
                   <div className="flex items-center justify-between bg-[#181818] p-3 rounded-lg mb-4">
                     <span className="text-white font-medium">Filtering by: <span className="text-blue-500 font-bold">{selectedSport}</span></span>
